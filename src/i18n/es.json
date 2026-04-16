@@ -1,0 +1,179 @@
+{
+  "auth": {
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "passwordLabel": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submitButton": "Iniciar sesión",
+      "noAccount": "¿No tienes cuenta?",
+      "signUpLink": "Regístrate",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "orDivider": "o"
+    },
+    "signup": {
+      "title": "Crear cuenta",
+      "subtitle": "Empieza a gestionar tus finanzas hoy",
+      "firstNameLabel": "Nombre",
+      "firstNamePlaceholder": "Juan",
+      "lastNameLabel": "Apellido",
+      "lastNamePlaceholder": "Pérez",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "passwordLabel": "Contraseña",
+      "confirmPasswordLabel": "Confirmar contraseña",
+      "submitButton": "Crear cuenta",
+      "backToLogin": "Volver al inicio de sesión",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "showConfirmPassword": "Mostrar confirmación de contraseña",
+      "hideConfirmPassword": "Ocultar confirmación de contraseña",
+      "termsNotice": "Al crear una cuenta, aceptas nuestros",
+      "termsLink": "Términos de Servicio",
+      "andConnector": "y",
+      "privacyLink": "Política de Privacidad",
+      "strength": {
+        "weak": "Débil",
+        "fair": "Regular",
+        "good": "Buena",
+        "strong": "Fuerte"
+      }
+    },
+    "forgotPassword": {
+      "title": "Restablecer contraseña",
+      "subtitle": "Ingresa tu correo y te enviaremos un enlace de restablecimiento",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "submitButton": "Enviar enlace",
+      "backToLogin": "Volver al inicio",
+      "successMessage": "Revisa tu correo para el enlace de restablecimiento"
+    },
+    "confirmEmail": {
+      "title": "Revisa tu correo",
+      "subtitle": "Enviamos un enlace de confirmación a tu dirección de correo",
+      "subtitlePasswordReset": "Enviamos un enlace de restablecimiento a tu correo",
+      "resendButton": "Reenviar correo",
+      "backToLogin": "Volver al inicio",
+      "confirmedTitle": "¡Correo confirmado!",
+      "confirmedSubtitle": "Tu cuenta ya está verificada",
+      "expiredTitle": "Enlace expirado",
+      "expiredSubtitle": "Este enlace de confirmación ha expirado. Solicita uno nuevo.",
+      "requestNewLink": "Solicitar nuevo enlace",
+      "continueToLogin": "Continuar al inicio"
+    },
+    "confirmation": {
+      "bannerTitle": "Confirma tu correo",
+      "bannerBody": "Revisa tu bandeja de entrada para verificar tu cuenta.",
+      "resendButton": "Reenviar",
+      "resendSuccess": "¡Correo de confirmación enviado!",
+      "resendError": "No se pudo enviar. Intenta de nuevo."
+    },
+    "errors": {
+      "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",
+      "EMAIL_NOT_CONFIRMED": "Por favor confirma tu dirección de correo",
+      "TOKEN_EXPIRED": "Tu sesión ha expirado. Por favor inicia sesión de nuevo.",
+      "INVALID_TOKEN": "Este enlace es inválido o ha expirado.",
+      "VALIDATION_ERROR": "Por favor revisa los errores en el formulario",
+      "RATE_LIMIT_EXCEEDED": "Demasiados intentos. Intenta más tarde.",
+      "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
+      "resendConfirmation": "Reenviar correo de confirmación",
+      "confirmationSent": "¡Correo de confirmación enviado!",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "firstNameRequired": "El nombre es requerido",
+      "lastNameRequired": "El apellido es requerido",
+      "invalidEmail": "Ingresa una dirección de correo válida"
+    }
+  },
+  "dashboard": {
+    "title": "Panel",
+    "totalBalance": "Saldo Total",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "recentTransactions": "Transacciones recientes",
+    "viewAll": "Ver todas",
+    "categories": "Categorías",
+    "noData": "No hay datos disponibles",
+    "loading": "Cargando panel...",
+    "errors": {
+      "DASHBOARD_LOAD_FAILED": "Error al cargar el panel"
+    }
+  },
+  "transactions": {
+    "title": "Transacciones",
+    "empty": "Sin transacciones",
+    "emptySubtitle": "Agrega tu primera transacción",
+    "addTransaction": "Agregar transacción",
+    "search": "Buscar transacciones",
+    "filter": "Filtrar",
+    "income": "Ingreso",
+    "expense": "Gasto",
+    "transfer": "Transferencia",
+    "errors": {
+      "TRANSACTIONS_LOAD_FAILED": "Error al cargar transacciones"
+    }
+  },
+  "accounts": {
+    "title": "Cuentas",
+    "empty": "Sin cuentas",
+    "emptySubtitle": "Agrega tu primera cuenta bancaria",
+    "addAccount": "Agregar cuenta",
+    "debit": "Débito",
+    "credit": "Crédito",
+    "cash": "Efectivo",
+    "errors": {
+      "ACCOUNTS_LOAD_FAILED": "Error al cargar cuentas"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "logout": "Cerrar sesión",
+    "logoutConfirmTitle": "Cerrar sesión",
+    "logoutConfirmMessage": "¿Estás seguro que deseas cerrar sesión?",
+    "logoutConfirm": "Cerrar sesión",
+    "logoutCancel": "Cancelar",
+    "settings": "Configuración",
+    "account": "Cuenta",
+    "subscription": "Suscripción"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "retry": "Intentar de nuevo",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "done": "Listo",
+    "ok": "OK",
+    "yes": "Sí",
+    "no": "No",
+    "or": "o",
+    "and": "y",
+    "offline": "Sin conexión",
+    "offlineSubtitle": "Mostrando datos guardados"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",
+    "EMAIL_NOT_CONFIRMED": "Por favor confirma tu dirección de correo",
+    "TOKEN_EXPIRED": "Tu sesión ha expirado. Por favor inicia sesión de nuevo.",
+    "INVALID_TOKEN": "Este enlace es inválido o ha expirado.",
+    "VALIDATION_ERROR": "Por favor revisa los errores en el formulario",
+    "RATE_LIMIT_EXCEEDED": "Demasiadas solicitudes. Espera un momento.",
+    "SUBSCRIPTION_REQUIRED": "Se requiere suscripción para esta función",
+    "DASHBOARD_LOAD_FAILED": "Error al cargar el panel",
+    "TRANSACTIONS_LOAD_FAILED": "Error al cargar transacciones",
+    "TRANSACTION_NOT_FOUND": "Transacción no encontrada",
+    "BANK_ACCOUNT_NOT_FOUND": "Cuenta bancaria no encontrada",
+    "ACCOUNTS_LOAD_FAILED": "Error al cargar cuentas",
+    "UNAUTHORIZED": "No tienes permiso para realizar esta acción",
+    "SERVER_ERROR": "Error del servidor. Intenta de nuevo.",
+    "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
+    "UNKNOWN_ERROR": "Ocurrió un error inesperado"
+  }
+}

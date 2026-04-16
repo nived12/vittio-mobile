@@ -1,0 +1,179 @@
+{
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@example.com",
+      "passwordLabel": "Password",
+      "forgotPassword": "Forgot password?",
+      "submitButton": "Sign in",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "orDivider": "or"
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Start managing your finances today",
+      "firstNameLabel": "First name",
+      "firstNamePlaceholder": "Jane",
+      "lastNameLabel": "Last name",
+      "lastNamePlaceholder": "Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@example.com",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm password",
+      "submitButton": "Create account",
+      "backToLogin": "Back to sign in",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "showConfirmPassword": "Show confirm password",
+      "hideConfirmPassword": "Hide confirm password",
+      "termsNotice": "By creating an account, you agree to our",
+      "termsLink": "Terms of Service",
+      "andConnector": "and",
+      "privacyLink": "Privacy Policy",
+      "strength": {
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your email and we'll send you a reset link",
+      "emailLabel": "Email",
+      "emailPlaceholder": "email@example.com",
+      "submitButton": "Send reset link",
+      "backToLogin": "Back to login",
+      "successMessage": "Check your email for a password reset link"
+    },
+    "confirmEmail": {
+      "title": "Check your email",
+      "subtitle": "We sent a confirmation link to your email address",
+      "subtitlePasswordReset": "We sent a password reset link to your email address",
+      "resendButton": "Resend email",
+      "backToLogin": "Back to login",
+      "confirmedTitle": "Email confirmed!",
+      "confirmedSubtitle": "Your account is now verified",
+      "expiredTitle": "Link expired",
+      "expiredSubtitle": "This confirmation link has expired. Request a new one.",
+      "requestNewLink": "Request new link",
+      "continueToLogin": "Continue to login"
+    },
+    "confirmation": {
+      "bannerTitle": "Confirm your email",
+      "bannerBody": "Check your inbox to verify your account.",
+      "resendButton": "Resend",
+      "resendSuccess": "Confirmation email sent!",
+      "resendError": "Failed to send. Try again."
+    },
+    "errors": {
+      "INVALID_CREDENTIALS": "Invalid email or password",
+      "EMAIL_NOT_CONFIRMED": "Please confirm your email address",
+      "TOKEN_EXPIRED": "Your session has expired. Please log in again.",
+      "INVALID_TOKEN": "This link is invalid or has expired.",
+      "VALIDATION_ERROR": "Please check the form for errors",
+      "RATE_LIMIT_EXCEEDED": "Too many attempts. Please try again later.",
+      "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
+      "resendConfirmation": "Resend confirmation email",
+      "confirmationSent": "Confirmation email sent!",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "invalidEmail": "Enter a valid email address"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalBalance": "Total Balance",
+    "income": "Income",
+    "expenses": "Expenses",
+    "recentTransactions": "Recent transactions",
+    "viewAll": "View all",
+    "categories": "Categories",
+    "noData": "No data available",
+    "loading": "Loading dashboard...",
+    "errors": {
+      "DASHBOARD_LOAD_FAILED": "Failed to load dashboard data"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "empty": "No transactions yet",
+    "emptySubtitle": "Add your first transaction",
+    "addTransaction": "Add transaction",
+    "search": "Search transactions",
+    "filter": "Filter",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer",
+    "errors": {
+      "TRANSACTIONS_LOAD_FAILED": "Failed to load transactions"
+    }
+  },
+  "accounts": {
+    "title": "Accounts",
+    "empty": "No accounts yet",
+    "emptySubtitle": "Add your first bank account",
+    "addAccount": "Add account",
+    "debit": "Debit",
+    "credit": "Credit",
+    "cash": "Cash",
+    "errors": {
+      "ACCOUNTS_LOAD_FAILED": "Failed to load accounts"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "logout": "Log out",
+    "logoutConfirmTitle": "Log out",
+    "logoutConfirmMessage": "Are you sure you want to log out?",
+    "logoutConfirm": "Log out",
+    "logoutCancel": "Cancel",
+    "settings": "Settings",
+    "account": "Account",
+    "subscription": "Subscription"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "done": "Done",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "offline": "You're offline",
+    "offlineSubtitle": "Showing cached data"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Invalid email or password",
+    "EMAIL_NOT_CONFIRMED": "Please confirm your email address",
+    "TOKEN_EXPIRED": "Your session has expired. Please log in again.",
+    "INVALID_TOKEN": "This link is invalid or has expired.",
+    "VALIDATION_ERROR": "Please check the form for errors",
+    "RATE_LIMIT_EXCEEDED": "Too many requests. Please wait a moment.",
+    "SUBSCRIPTION_REQUIRED": "A subscription is required for this feature",
+    "DASHBOARD_LOAD_FAILED": "Failed to load dashboard data",
+    "TRANSACTIONS_LOAD_FAILED": "Failed to load transactions",
+    "TRANSACTION_NOT_FOUND": "Transaction not found",
+    "BANK_ACCOUNT_NOT_FOUND": "Bank account not found",
+    "ACCOUNTS_LOAD_FAILED": "Failed to load accounts",
+    "UNAUTHORIZED": "You are not authorized to perform this action",
+    "SERVER_ERROR": "A server error occurred. Please try again.",
+    "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
+    "UNKNOWN_ERROR": "An unexpected error occurred"
+  }
+}
