@@ -84,7 +84,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       setAccountType(account.account_type);
       setCustomName(account.custom_name ?? '');
       const bal = parseFloat(account.opening_balance ?? '0') || 0;
-      setOpeningBalanceStr(bal.toFixed(2));
+      // Credit balances are stored negative — show the absolute value for display
+      setOpeningBalanceStr(Math.abs(bal).toFixed(2));
       setIsCash(account.account_type === 'cash');
       setAccountNumber('');
       setOpeningBalanceDate(new Date());
@@ -158,9 +159,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     return openingBalance < 0 ? '#e11d48' : openingBalance > 0 ? '#10b981' : '#0f172a';
   })();
 
-  const balanceHint = accountType === 'credit'
-    ? t('bank_accounts.opening_balance_hint_credit') ?? 'Saldo adeudado en tu tarjeta. Positivo = deuda.'
-    : t('bank_accounts.opening_balance_hint');
 
   // ── Validation ──
   const canSave = isEditMode
@@ -181,7 +179,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       if (isEditMode && account) {
         const body: UpdateBankAccountBody = {
           ...(customName.trim() ? { custom_name: customName.trim() } : { custom_name: '' }),
-          opening_balance: openingBalance,
+          opening_balance: account.account_type === 'credit' ? -Math.abs(openingBalance) : openingBalance,
         };
         await updateMutation.mutateAsync(body);
         showToast(t('bank_accounts.updated_toast'), 'success');
@@ -192,7 +190,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
           ...(!isCash ? { account_number: accountNumber.trim() } : {}),
           ...(customName.trim() ? { custom_name: customName.trim() } : {}),
           currency: 'MXN',
-          opening_balance: openingBalance,
+          // Credit balances are liabilities — store as negative to match web convention
+          opening_balance: accountType === 'credit' ? -Math.abs(openingBalance) : openingBalance,
           opening_balance_date: toISODate(openingBalanceDate),
         };
         await createMutation.mutateAsync(body);
@@ -460,16 +459,34 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                       {t('bank_accounts.opening_balance_label')}
                     </Text>
                     <View style={styles.balanceRow}>
+                      {/* Credit accounts: tap − to flip sign */}
+                      {accountType === 'credit' && (
+                        <TouchableOpacity
+                          onPress={() => {
+                            const n = parseFloat(openingBalanceStr) || 0;
+                            setOpeningBalanceStr((n * -1).toFixed(2));
+                          }}
+                          accessibilityLabel="Toggle sign"
+                          hitSlop={12}
+                          style={styles.signToggle}
+                        >
+                          <Text style={styles.signToggleText}>−</Text>
+                        </TouchableOpacity>
+                      )}
                       <Text style={styles.currencyPrefix}>MX$</Text>
                       <TextInput
                         style={[styles.balanceInput, { color: balanceColor }]}
                         value={openingBalanceStr}
                         onChangeText={(v) => {
-                          // Allow digits, decimal point, and leading minus
-                          const clean = v.replace(/[^0-9.\-]/g, '');
-                          setOpeningBalanceStr(clean);
+                          const withSign = v.startsWith('-') ? '-' : '';
+                          const digits = v.replace(/[^0-9.]/g, '');
+                          const parts = digits.split('.');
+                          let clean = parts[0];
+                          if (parts.length > 1) {
+                            clean += '.' + parts[1].slice(0, 2);
+                          }
+                          setOpeningBalanceStr(withSign + clean);
                         }}
-                        // FIX 5: Format to 2 decimals on blur
                         onBlur={() => {
                           const n = parseFloat(openingBalanceStr);
                           setOpeningBalanceStr(isNaN(n) ? '0.00' : n.toFixed(2));
@@ -479,10 +496,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                         placeholderTextColor="#94a3b8"
                         selectTextOnFocus
                         returnKeyType="done"
-                        // FIX 1: Removed onSubmitEditing={handleSave} — save only via button
                       />
                     </View>
-                    <Text style={styles.fieldHint}>{balanceHint}</Text>
+                    <Text style={styles.fieldHint}>{t('bank_accounts.opening_balance_hint')}</Text>
                   </View>
 
                   {/* ── Opening balance date (add mode only) ── */}
@@ -505,27 +521,25 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                         {t('bank_accounts.opening_balance_date_hint')}
                       </Text>
 
-                      {/* iOS: inline picker; Android: shown as sheet on button press */}
                       {showDatePicker && (
-                        <DateTimePicker
-                          value={openingBalanceDate}
-                          mode="date"
-                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                          maximumDate={new Date()}
-                          onChange={handleDateChange}
-                          locale={displayLocale}
-                        />
-                      )}
-                      {/* iOS confirm button */}
-                      {showDatePicker && Platform.OS === 'ios' && (
-                        <TouchableOpacity
-                          style={styles.dateConfirmBtn}
-                          onPress={() => setShowDatePicker(false)}
-                        >
-                          <Text style={styles.dateConfirmLabel}>
-                            {t('common.confirm')}
-                          </Text>
-                        </TouchableOpacity>
+                        <>
+                          <DateTimePicker
+                            value={openingBalanceDate}
+                            mode="date"
+                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                            maximumDate={new Date()}
+                            onChange={handleDateChange}
+                            locale={displayLocale}
+                          />
+                          {Platform.OS === 'ios' && (
+                            <TouchableOpacity
+                              style={styles.dateConfirmBtn}
+                              onPress={() => setShowDatePicker(false)}
+                            >
+                              <Text style={styles.dateConfirmLabel}>{t('common.done')}</Text>
+                            </TouchableOpacity>
+                          )}
+                        </>
                       )}
                     </View>
                   )}
@@ -616,6 +630,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9', borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 14,
     flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1.5, borderColor: 'transparent',
+  },
+  signToggle: {
+    marginRight: 4,
+    paddingHorizontal: 2,
+  },
+  signToggleText: {
+    fontSize: 20, fontWeight: '700', color: '#e11d48', lineHeight: 24,
   },
   currencyPrefix: { fontSize: 16, fontWeight: '500', color: '#475569', marginRight: 8 },
   balanceInput: { flex: 1, fontSize: 20, fontWeight: '600', fontVariant: ['tabular-nums'] as any },
