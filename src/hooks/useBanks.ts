@@ -12,6 +12,6 @@ export function useBanks() {
     queryFn: () => getBanks(),
     staleTime: 24 * 60 * 60 * 1000, // 24 hours — banks rarely change
     gcTime: 48 * 60 * 60 * 1000,
-    networkMode: 'offlineFirst',
+    networkMode: 'always',
   });
 }

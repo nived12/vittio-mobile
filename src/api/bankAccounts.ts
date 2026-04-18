@@ -19,13 +19,12 @@ export interface BankAccount {
 
 export type CreateBankAccountBody = {
   bank_id?: number;
-  institution_name?: string;
-  name?: string;
+  account_number?: string;
   account_type: 'debit' | 'credit' | 'cash';
   custom_name?: string;
   currency?: string;
   opening_balance?: number;
-  balance?: number;
+  opening_balance_date?: string; // ISO date string: 'YYYY-MM-DD'
 };
 
 export type UpdateBankAccountBody = {

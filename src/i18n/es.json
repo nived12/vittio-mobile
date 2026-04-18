@@ -258,8 +258,13 @@
     "name_placeholder": "Deja en blanco para usar el nombre del banco",
     "name_hint": "Si lo dejas vacío, se usará el nombre del banco",
     "currency_label": "MONEDA",
+    "account_number_label": "NÚMERO DE CUENTA",
+    "account_number_placeholder": "Últimos 4 dígitos o número completo",
     "opening_balance_label": "SALDO INICIAL",
     "opening_balance_hint": "Ingresa el saldo actual de tu cuenta para empezar con datos correctos",
+    "opening_balance_hint_credit": "Monto adeudado en tu tarjeta. Positivo = deuda.",
+    "opening_balance_date_label": "FECHA DE SALDO INICIAL",
+    "opening_balance_date_hint": "La fecha a la que corresponde tu saldo inicial. No puede ser futura.",
     "save_button": "Guardar Cuenta",
     "save_changes_button": "Guardar Cambios",
     "saved_toast": "Cuenta guardada",
@@ -459,7 +464,8 @@
     "or": "o",
     "and": "y",
     "offline": "Sin conexión",
-    "offlineSubtitle": "Mostrando datos guardados"
+    "offlineSubtitle": "Mostrando datos guardados",
+    "confirm": "Confirmar"
   },
   "statement_upload": {
     "modal_title": "Subir estado de cuenta",
