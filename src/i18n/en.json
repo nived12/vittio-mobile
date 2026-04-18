@@ -258,8 +258,13 @@
     "name_placeholder": "Leave blank to use bank name",
     "name_hint": "If left blank, the bank name will be used",
     "currency_label": "CURRENCY",
+    "account_number_label": "ACCOUNT NUMBER",
+    "account_number_placeholder": "Last 4 digits or full account number",
     "opening_balance_label": "OPENING BALANCE",
     "opening_balance_hint": "Enter your current balance to start with accurate data",
+    "opening_balance_hint_credit": "Amount currently owed on your card. Positive = debt.",
+    "opening_balance_date_label": "OPENING BALANCE DATE",
+    "opening_balance_date_hint": "The date your opening balance is from. Cannot be in the future.",
     "save_button": "Save Account",
     "save_changes_button": "Save Changes",
     "saved_toast": "Account saved",
@@ -459,7 +464,8 @@
     "or": "or",
     "and": "and",
     "offline": "You're offline",
-    "offlineSubtitle": "Showing cached data"
+    "offlineSubtitle": "Showing cached data",
+    "confirm": "Confirm"
   },
   "statement_upload": {
     "modal_title": "Upload statement",
