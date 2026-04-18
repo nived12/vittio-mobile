@@ -30,9 +30,9 @@ export const components = {
       pressedBg:       '#f5f3ff',
     },
     destructive: {
-      backgroundColor: '#dc2626',
+      backgroundColor: '#e11d48',
       color:           '#ffffff',
-      pressedBg:       '#b91c1c',
+      pressedBg:       '#be123c',
     },
     ghost: {
       backgroundColor: 'transparent',

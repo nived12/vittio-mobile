@@ -15,7 +15,7 @@ export const colors = {
   // Semantic — Financial amounts
   // ─────────────────────────────────────────
   income:   '#059669', // emerald-600 — income amounts, positive values, success states
-  expense:  '#dc2626', // red-600     — expense amounts, negative values, error states
+  expense:  '#e11d48', // rose-600    — expense amounts, negative values, error states
   transfer: '#7c3aed', // violet-600  — transfer transactions
   warning:  '#d97706', // amber-600   — warnings, trial notices, pending states
 
@@ -102,7 +102,7 @@ export const colors = {
     inverse:   '#ffffff', // white     — text on dark/colored backgrounds
     link:      '#4f46e5', // indigo-600 — links, interactive text
     income:    '#059669', // emerald-600 — income amounts
-    expense:   '#dc2626', // red-600     — expense amounts
+    expense:   '#e11d48', // rose-600    — expense amounts
     transfer:  '#7c3aed', // violet-600  — transfer amounts
   },
 

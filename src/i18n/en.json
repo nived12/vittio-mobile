@@ -98,22 +98,249 @@
     "categories": "Categories",
     "noData": "No data available",
     "loading": "Loading dashboard...",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "monthPicker": {
+      "label": "Select Month"
+    },
+    "sections": {
+      "accounts": "Accounts",
+      "seeAll": "See all",
+      "spending": "Spending This Month",
+      "recentTransactions": "Recent Transactions"
+    },
+    "chart": {
+      "other": "Other",
+      "ofSpending": "of spending"
+    },
+    "categoryEmpty": {
+      "title": "No spending this month",
+      "subtitle": "Add transactions to see your spending breakdown"
+    },
+    "transactionsEmpty": {
+      "title": "No transactions yet",
+      "subtitle": "Add your first transaction or import a statement"
+    },
+    "accountsEmpty": {
+      "title": "Add your first account",
+      "subtitle": "Get started by adding a bank account",
+      "cta": "Add Account"
+    },
+    "error": {
+      "title": "Couldn't load dashboard",
+      "subtitle": "Pull down to retry or tap the button below",
+      "retry": "Try Again"
+    },
+    "offline": "Offline — showing cached data",
     "errors": {
       "DASHBOARD_LOAD_FAILED": "Failed to load dashboard data"
     }
+  },
+  "balanceCard": {
+    "totalBalance": "Total Balance",
+    "income": "Income",
+    "expenses": "Expenses",
+    "loading": "Loading balance"
+  },
+  "sectionHeader": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "count": "{{count}} item",
+    "count_plural": "{{count}} items",
+    "a11yTransactionsOn": "Transactions on {{date}}",
+    "a11yTransactionsToday": "Transactions today",
+    "a11yTransactionsYesterday": "Transactions yesterday"
   },
   "transactions": {
     "title": "Transactions",
     "empty": "No transactions yet",
     "emptySubtitle": "Add your first transaction",
     "addTransaction": "Add transaction",
-    "search": "Search transactions",
+    "search": {
+      "placeholder": "Search transactions...",
+      "clearFilters": "Clear filters"
+    },
     "filter": "Filter",
     "income": "Income",
     "expense": "Expense",
     "transfer": "Transfer",
+    "summary": {
+      "income": "Income",
+      "expenses": "Expenses"
+    },
+    "sections": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "filters": {
+      "title": "Filter Transactions",
+      "reset": "Reset",
+      "dateRange": "Date Range",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
+      "last3Months": "Last 3 Months",
+      "type": "Transaction Type",
+      "income": "Income",
+      "expenses": "Expenses",
+      "transfers": "Transfers",
+      "category": "Category",
+      "account": "Account",
+      "amountRange": "Amount Range",
+      "minAmount": "Min amount",
+      "maxAmount": "Max amount",
+      "apply": "Show {{count}} transactions"
+    },
+    "empty": {
+      "noTransactions": {
+        "title": "No transactions yet",
+        "subtitle": "Tap + to add your first transaction"
+      },
+      "noResults": {
+        "title": "No matching transactions",
+        "subtitle": "Try adjusting your filters",
+        "clearFilters": "Clear filters"
+      }
+    },
+    "error": {
+      "title": "Couldn't load transactions",
+      "retry": "Try Again"
+    },
+    "delete": {
+      "confirmTitle": "Delete Transaction?",
+      "confirmMessage": "This cannot be undone",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Transaction deleted"
+    },
+    "allCaughtUp": "All caught up",
     "errors": {
       "TRANSACTIONS_LOAD_FAILED": "Failed to load transactions"
+    },
+    "add_title": "New Transaction",
+    "edit_title": "Edit Transaction",
+    "amount_label": "Amount",
+    "type_income": "Income",
+    "type_expense": "Expense",
+    "type_transfer": "Transfer",
+    "type_fixed_expense": "Fixed Expense",
+    "type_variable_expense": "Variable Expense",
+    "type_transfer_in": "Transfer In",
+    "type_transfer_out": "Transfer Out",
+    "description_label": "Description",
+    "description_placeholder": "Starbucks, Oxxo, Netflix...",
+    "date_label": "Date",
+    "account_label": "Account",
+    "category_label": "Category",
+    "concept_label": "Concept",
+    "merchant_label": "Merchant",
+    "reference_label": "Reference",
+    "save_button": "Save Transaction",
+    "save_changes_button": "Save Changes",
+    "saved_toast": "Transaction saved",
+    "updated_toast": "Transaction updated",
+    "select_account_title": "Select Account",
+    "no_account_warning": "Add an account first",
+    "add_account_cta": "+ Add new account"
+  },
+  "bank_accounts": {
+    "add_title": "New Account",
+    "edit_title": "Edit Account",
+    "bank_label": "BANK",
+    "bank_placeholder": "Select a bank",
+    "type_label": "ACCOUNT TYPE",
+    "type_debit": "Debit",
+    "type_credit": "Credit",
+    "type_cash": "Cash",
+    "name_label": "NAME",
+    "name_placeholder": "Leave blank to use bank name",
+    "name_hint": "If left blank, the bank name will be used",
+    "currency_label": "CURRENCY",
+    "opening_balance_label": "OPENING BALANCE",
+    "opening_balance_hint": "Enter your current balance to start with accurate data",
+    "save_button": "Save Account",
+    "save_changes_button": "Save Changes",
+    "saved_toast": "Account saved",
+    "updated_toast": "Account updated",
+    "bank_picker_title": "Select your bank",
+    "bank_search_placeholder": "Search bank...",
+    "cash_option_label": "Cash",
+    "cash_option_subtitle": "No associated bank",
+    "locked_field_hint": "Not editable"
+  },
+  "transactionRow": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "uncategorized": "Uncategorized",
+    "delete": "Delete",
+    "categorize": "Categorize",
+    "swipeDeleteConfirm": {
+      "title": "Delete Transaction?",
+      "message": "This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "deleteError": "Couldn't delete transaction",
+    "types": {
+      "income": "Income",
+      "fixed_expense": "Fixed",
+      "variable_expense": "Expense",
+      "transfer_in": "Transfer",
+      "transfer_out": "Transfer"
+    },
+    "longPress": {
+      "edit": "Edit",
+      "categorize": "Categorize",
+      "copyAmount": "Copy amount",
+      "share": "Share",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    }
+  },
+  "transactionDetail": {
+    "title": "Transaction",
+    "edit": "Edit",
+    "moreOptions": "More options",
+    "back": "Transaction",
+    "fields": {
+      "category": "Category",
+      "account": "Account",
+      "type": "Type",
+      "source": "Source",
+      "merchant": "Merchant",
+      "reference": "Reference",
+      "uncategorized": "Uncategorized",
+      "manual": "Manual",
+      "statement": "Bank Statement"
+    },
+    "types": {
+      "income": "Income",
+      "fixed_expense": "Fixed Expense",
+      "variable_expense": "Variable Expense",
+      "transfer_in": "Transfer In",
+      "transfer_out": "Transfer Out"
+    },
+    "actions": {
+      "copyAmount": "Copy amount",
+      "share": "Share",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "deleteButton": "Delete Transaction",
+    "deleteConfirm": {
+      "title": "Delete Transaction?",
+      "message": "This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "deleteSuccess": "Transaction deleted",
+    "deleteError": "Couldn't delete transaction",
+    "notFound": {
+      "title": "Transaction not found",
+      "subtitle": "It may have been deleted",
+      "goBack": "Go Back"
     }
   },
   "accounts": {
@@ -121,11 +348,82 @@
     "empty": "No accounts yet",
     "emptySubtitle": "Add your first bank account",
     "addAccount": "Add account",
+    "addButton": "Add Bank Account",
+    "totalBalance": "Total Balance",
+    "accountCount": "{{count}} account",
+    "accountCount_plural": "{{count}} accounts",
     "debit": "Debit",
     "credit": "Credit",
     "cash": "Cash",
+    "types": {
+      "debit": "Debit",
+      "credit": "Credit",
+      "cash": "Cash"
+    },
+    "empty": {
+      "title": "No bank accounts yet",
+      "subtitle": "Add a bank account to start tracking your finances",
+      "cta": "Add Account"
+    },
+    "error": {
+      "title": "Couldn't load accounts",
+      "retry": "Try Again"
+    },
+    "addModal": {
+      "title": "Add Bank Account",
+      "bankLabel": "Bank",
+      "bankPlaceholder": "Search banks...",
+      "typeLabel": "Account Type",
+      "customNameLabel": "Custom Name (optional)",
+      "customNamePlaceholder": "e.g. My BBVA Debit",
+      "openingBalanceLabel": "Opening Balance",
+      "currencyLabel": "Currency",
+      "save": "Save Account",
+      "cancel": "Cancel",
+      "success": "Account added"
+    },
     "errors": {
       "ACCOUNTS_LOAD_FAILED": "Failed to load accounts"
+    }
+  },
+  "accountDetail": {
+    "back": "Accounts",
+    "edit": "Edit",
+    "moreOptions": "More options",
+    "meta": "{{currency}} · {{type}} · {{count}} transactions",
+    "sections": {
+      "transactions": "Transactions"
+    },
+    "editModal": {
+      "title": "Edit Account",
+      "nameLabel": "Account Name",
+      "openingBalanceLabel": "Opening Balance",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "success": "Account updated"
+    },
+    "deleteModal": {
+      "title": "Delete Account?",
+      "message": "This will permanently delete the account and all {{count}} transactions. This cannot be undone.",
+      "confirm": "Delete Account and Transactions",
+      "cancel": "Keep Account",
+      "success": "Account deleted",
+      "error": "Couldn't delete account"
+    },
+    "actions": {
+      "editAccount": "Edit Account",
+      "deleteAccount": "Delete Account",
+      "cancel": "Cancel"
+    },
+    "empty": {
+      "noTransactions": {
+        "title": "No transactions yet",
+        "subtitle": "Transactions in this account will appear here"
+      },
+      "notFound": {
+        "title": "Account not found",
+        "goBack": "Go Back"
+      }
     }
   },
   "profile": {
@@ -137,7 +435,12 @@
     "logoutCancel": "Cancel",
     "settings": "Settings",
     "account": "Account",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "language": "Language",
+    "statementUpload": "Upload bank statement",
+    "statementUploadTitle": "Coming soon",
+    "statementUploadMessage": "Bank statement upload will be available in a future update.",
+    "comingSoon": "Soon"
   },
   "common": {
     "loading": "Loading...",
@@ -158,6 +461,30 @@
     "offline": "You're offline",
     "offlineSubtitle": "Showing cached data"
   },
+  "statement_upload": {
+    "modal_title": "Upload statement",
+    "pick_file": "Select PDF file",
+    "file_card_label": "Selected file",
+    "cutoff_date_label": "Statement end date",
+    "account_question": "Which account does this belong to?",
+    "duplicate_note": "Only new transactions are imported. Duplicates are handled automatically.",
+    "upload_button": "Upload statement",
+    "uploading_title": "Uploading file...",
+    "uploading_hint": "Don't close the app",
+    "processing_title": "Analyzing your statement...",
+    "processing_subtitle": "We're reading and categorizing your transactions with AI.",
+    "processing_wait": "This may take up to a minute.",
+    "success_title": "Statement imported!",
+    "success_body": "{{count}} new transactions were found.",
+    "partial_body": "{{new}} new · {{dupes}} pending review",
+    "view_transactions": "View transactions →",
+    "failure_title": "Could not process",
+    "failure_body": "We couldn't read this file. Make sure it's a bank statement PDF.",
+    "retry_button": "Try again",
+    "close_button": "Close",
+    "timeout_message": "This is taking longer than expected. Check back in a moment.",
+    "cancel_confirm": "Cancel the upload?"
+  },
   "errors": {
     "INVALID_CREDENTIALS": "Invalid email or password",
     "EMAIL_NOT_CONFIRMED": "Please confirm your email address",
@@ -174,6 +501,7 @@
     "UNAUTHORIZED": "You are not authorized to perform this action",
     "SERVER_ERROR": "A server error occurred. Please try again.",
     "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
-    "UNKNOWN_ERROR": "An unexpected error occurred"
+    "UNKNOWN_ERROR": "An unexpected error occurred",
+    "generic": "Something went wrong. Please try again."
   }
 }

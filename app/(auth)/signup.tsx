@@ -173,7 +173,7 @@ export default function SignupScreen() {
                 render={({ field: { onChange, onBlur, value, ref } }) => (
                   <>
                     <TextInput
-                      ref={ref as React.RefObject<TextInput>}
+                      ref={ref}
                       style={[styles.input, errors.first_name ? styles.inputError : null]}
                       value={value}
                       onChangeText={onChange}

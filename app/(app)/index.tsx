@@ -1,47 +1,462 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useState } from 'react';
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  useWindowDimensions,
+  Modal,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { ChevronDown, Check } from 'lucide-react-native';
+import { format, parseISO } from 'date-fns';
+import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { useDashboard } from '../../src/hooks/useDashboard';
+import { useUIStore } from '../../src/stores/uiStore';
+import { useAuth } from '../../src/hooks/useAuth';
+import { BalanceCard } from '../../src/components/ui/BalanceCard';
+import { ChartBar } from '../../src/components/ui/ChartBar';
+import { TransactionRow, TransactionRowSkeleton } from '../../src/components/ui/TransactionRow';
+import { EmptyState } from '../../src/components/ui/EmptyState';
+import {
+  AccountChipSkeleton,
+  BalanceCardSkeleton,
+  ChartBarSkeleton,
+} from '../../src/components/ui/SkeletonLoader';
 
-import { colors, spacing, textStyles } from '../../src/theme';
+function getGreetingKey(): 'morning' | 'afternoon' | 'evening' {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
+}
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const { user } = useAuth();
+  const locale = useUIStore((s) => s.locale);
+  const selectedMonth = useUIStore((s) => s.selectedMonth);
+  const setSelectedMonth = useUIStore((s) => s.setSelectedMonth);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const { data, isLoading, isError, refetch } = useDashboard(selectedMonth);
+  const cardWidth = width - 32;
+
+  const handleRefresh = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch]);
+
+  const dateFnsLocale = locale === 'es' ? es : enUS;
+  const monthLabel = data?.summary.selected_month
+    ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
+    : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+
+  if (isError && !data) {
+    return (
+      <View style={[styles.errorContainer, { paddingTop: insets.top + 16 }]}>
+        <EmptyState
+          icon="wifi-off"
+          iconColor="#cbd5e1"
+          title={t('dashboard.error.title')}
+          subtitle={t('dashboard.error.subtitle')}
+          ctaLabel={t('dashboard.error.retry')}
+          ctaVariant="primary"
+          onCta={() => refetch()}
+          fullScreen
+        />
+      </View>
+    );
+  }
+
+  const rawCategories = data?.category_summary.categories ?? [];
+  const topCategories = rawCategories.slice(0, 5);
+  const otherCategories = rawCategories.slice(5);
+  const otherSum = otherCategories.reduce((sum, c) => sum + c.amount, 0);
+  const chartCategories = [
+    ...topCategories,
+    ...(otherSum > 0
+      ? [{ id: null as number | null, name: t('dashboard.chart.other'), icon: 'more-horizontal' as string | null, amount: otherSum }]
+      : []),
+  ];
+  const maxCategoryAmount = Math.max(...chartCategories.map((c) => c.amount), 1);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('dashboard.title')}</Text>
-      </View>
-      {/* Phase 4: implement full dashboard */}
-      <View style={styles.placeholder}>
-        <Text style={styles.placeholderText}>Dashboard — Phase 4</Text>
-      </View>
-    </SafeAreaView>
+    <>
+      <ScrollView
+        style={[styles.screen, { paddingTop: insets.top }]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#4f46e5"
+          />
+        }
+      >
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <Text style={styles.greeting}>
+            {t(`dashboard.greeting.${getGreetingKey()}`, { name: user?.first_name ?? '' })}
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowMonthPicker(true)}
+            style={styles.monthPickerBtn}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('dashboard.monthPicker.label')}: ${monthLabel}, tap to change`}
+          >
+            <Text style={styles.monthPickerText}>{monthLabel}</Text>
+            <ChevronDown size={16} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Balance card */}
+        <View style={styles.sectionPad}>
+          {isLoading ? (
+            <BalanceCardSkeleton width={cardWidth} />
+          ) : (
+            <BalanceCard
+              totalBalance={data?.summary.total_balance ?? 0}
+              totalIncome={data?.monthly_summary.total_income ?? 0}
+              totalExpenses={data?.monthly_summary.total_expenses ?? 0}
+              netIncome={data?.monthly_summary.net_income ?? 0}
+              currency={data?.bank_accounts?.[0]?.currency ?? 'MXN'}
+              selectedMonth={monthLabel}
+              locale={locale === 'es' ? 'es-MX' : 'en-MX'}
+            />
+          )}
+        </View>
+
+        {/* Accounts */}
+        <View style={styles.sectionGap}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>{t('dashboard.sections.accounts')}</Text>
+            <TouchableOpacity
+              onPress={() => router.navigate('/(app)/accounts')}
+              accessibilityLabel={`${t('dashboard.sections.seeAll')} accounts`}
+              style={styles.seeAllBtn}
+            >
+              <Text style={styles.seeAllText}>{t('dashboard.sections.seeAll')} →</Text>
+            </TouchableOpacity>
+          </View>
+          {isLoading ? (
+            <FlatList
+              horizontal
+              data={[1, 2] as number[]}
+              keyExtractor={(i) => String(i)}
+              renderItem={() => <AccountChipSkeleton />}
+              ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={false}
+            />
+          ) : (data?.bank_accounts?.length ?? 0) === 0 ? (
+            <View style={styles.inlineCard}>
+              <EmptyState
+                icon="credit-card"
+                iconSize={48}
+                iconColor="#c7d2fe"
+                title={t('dashboard.accountsEmpty.title')}
+                subtitle={t('dashboard.accountsEmpty.subtitle')}
+                ctaLabel={t('dashboard.accountsEmpty.cta')}
+                ctaVariant="primary"
+                onCta={() => router.navigate('/(app)/accounts')}
+                topPadding={8}
+              />
+            </View>
+          ) : (
+            <FlatList
+              horizontal
+              data={data!.bank_accounts}
+              keyExtractor={(item) => String(item.id)}
+              ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => {
+                const dotColors: Record<string, string> = { debit: '#0ea5e9', credit: '#8b5cf6', cash: '#10b981' };
+                const dotColor = dotColors[item.account_type] ?? '#94a3b8';
+                const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+                return (
+                  <TouchableOpacity
+                    onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
+                    style={styles.accountChip}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.bank_name}, ${item.account_type}, balance ${item.balance}`}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.chipTopRow}>
+                      <View style={[styles.typeDot, { backgroundColor: dotColor }]} />
+                      <Text style={styles.chipName} numberOfLines={1}>
+                        {item.custom_name ?? item.name}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.chipBalance,
+                        item.balance < 0 && { color: '#e11d48' },
+                        item.balance === 0 && { color: '#94a3b8' },
+                      ]}
+                    >
+                      {new Intl.NumberFormat(resolvedLocale, {
+                        style: 'currency',
+                        currency: item.currency,
+                        minimumFractionDigits: 2,
+                      }).format(item.balance)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
+        </View>
+
+        {/* Spending chart */}
+        <View style={styles.sectionGap}>
+          <Text style={[styles.sectionTitle, styles.sectionTitlePad]}>
+            {t('dashboard.sections.spending')}
+          </Text>
+          <View style={styles.card}>
+            {isLoading ? (
+              [1, 2, 3, 4].map((i) => <ChartBarSkeleton key={i} />)
+            ) : !data?.category_summary.has_data ? (
+              <EmptyState
+                icon="chart-bar"
+                iconSize={48}
+                iconColor="#c7d2fe"
+                title={t('dashboard.categoryEmpty.title')}
+                subtitle={t('dashboard.categoryEmpty.subtitle')}
+                topPadding={8}
+              />
+            ) : (
+              chartCategories.map((cat, idx) => (
+                <ChartBar
+                  key={cat.id ?? 'other'}
+                  label={cat.name}
+                  icon={cat.icon ?? 'tag'}
+                  amount={cat.amount}
+                  value={cat.amount}
+                  maxValue={maxCategoryAmount}
+                  index={idx}
+                  locale={locale === 'es' ? 'es-MX' : 'en-MX'}
+                />
+              ))
+            )}
+          </View>
+        </View>
+
+        {/* Recent transactions */}
+        <View style={styles.sectionGap}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>{t('dashboard.sections.recentTransactions')}</Text>
+            <TouchableOpacity
+              onPress={() => router.navigate('/(app)/transactions')}
+              accessibilityLabel={`${t('dashboard.sections.seeAll')} transactions`}
+              style={styles.seeAllBtn}
+            >
+              <Text style={styles.seeAllText}>{t('dashboard.sections.seeAll')} →</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
+            {isLoading ? (
+              [1, 2, 3, 4, 5].map((i) => (
+                <React.Fragment key={i}>
+                  <TransactionRowSkeleton />
+                  {i < 5 && <View style={styles.separator} />}
+                </React.Fragment>
+              ))
+            ) : (data?.recent_transactions?.length ?? 0) === 0 ? (
+              <EmptyState
+                icon="receipt"
+                iconSize={48}
+                iconColor="#c7d2fe"
+                title={t('dashboard.transactionsEmpty.title')}
+                subtitle={t('dashboard.transactionsEmpty.subtitle')}
+                topPadding={8}
+              />
+            ) : (
+              data!.recent_transactions.map((tx, idx) => (
+                <React.Fragment key={tx.id}>
+                  <TransactionRow
+                    {...tx}
+                    onPress={() => router.push(`/(app)/transactions/${tx.id}` as `/(app)/transactions/${string}`)}
+                    showAccountName
+                    enableSwipeActions={false}
+                  />
+                  {idx < data!.recent_transactions.length - 1 && (
+                    <View style={styles.separator} />
+                  )}
+                </React.Fragment>
+              ))
+            )}
+          </View>
+        </View>
+
+        <View style={{ height: 32 + insets.bottom }} />
+      </ScrollView>
+
+      {/* Month Picker Modal */}
+      <Modal
+        visible={showMonthPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowMonthPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowMonthPicker(false)}
+        />
+        <View style={[styles.monthSheet, { paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.sheetHandle} />
+          <Text style={styles.sheetTitle}>{t('dashboard.monthPicker.label')}</Text>
+          <FlatList
+            data={data?.available_months ?? []}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => {
+              const isSelected = item.value === (data?.summary.selected_month ?? selectedMonth);
+              return (
+                <TouchableOpacity
+                  style={styles.monthRow}
+                  onPress={() => {
+                    setSelectedMonth(item.value);
+                    setShowMonthPicker(false);
+                  }}
+                >
+                  <Text style={[styles.monthRowText, isSelected && styles.monthRowActive]}>
+                    {item.label}
+                  </Text>
+                  {isSelected && <Check size={16} color="#4f46e5" />}
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+      </Modal>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex:            1,
-    backgroundColor: colors.bg.screen,
+  screen: { flex: 1, backgroundColor: '#f8fafc' },
+  scrollContent: { paddingBottom: 16 },
+  errorContainer: { flex: 1, backgroundColor: '#f8fafc' },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    height: 56,
   },
-  header: {
-    paddingHorizontal: spacing.screenPaddingH,
-    paddingTop:        spacing.md,
-    paddingBottom:     spacing.sm,
+  greeting: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#475569' },
+  monthPickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    minWidth: 100,
+    minHeight: 44,
+    justifyContent: 'flex-end',
   },
-  title: {
-    ...textStyles.displayLg,
-    color: colors.text.primary,
+  monthPickerText: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22, color: '#0f172a' },
+  sectionPad: { paddingHorizontal: 16, marginTop: 4 },
+  sectionGap: { marginTop: 20 },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 8,
   },
-  placeholder: {
-    flex:            1,
-    alignItems:      'center',
-    justifyContent:  'center',
+  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22, color: '#0f172a' },
+  sectionTitlePad: { paddingHorizontal: 16, marginBottom: 8 },
+  seeAllBtn: { minHeight: 44, justifyContent: 'center' },
+  seeAllText: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 18, color: '#4f46e5' },
+  accountChip: {
+    width: 160,
+    minHeight: 80,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#ffffff',
+    padding: 12,
+    justifyContent: 'space-between',
   },
-  placeholderText: {
-    ...textStyles.bodyMd,
-    color: colors.text.muted,
+  chipTopRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typeDot: { width: 8, height: 8, borderRadius: 4 },
+  chipName: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 18, color: '#334155', flex: 1 },
+  chipBalance: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 17,
+    lineHeight: 22,
+    color: '#0f172a',
+    fontVariant: ['tabular-nums'],
+    marginTop: 4,
   },
+  card: {
+    marginHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 16,
+  },
+  inlineCard: {
+    marginHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  separator: { height: 1, backgroundColor: '#f1f5f9' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
+  monthSheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+    maxHeight: 400,
+  },
+  sheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#e2e8f0',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  sheetTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 17,
+    lineHeight: 22,
+    color: '#0f172a',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  monthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 52,
+    paddingHorizontal: 8,
+  },
+  monthRowText: { fontFamily: 'Inter_400Regular', fontSize: 16, lineHeight: 22, color: '#0f172a' },
+  monthRowActive: { color: '#4f46e5', fontFamily: 'Inter_600SemiBold' },
 });

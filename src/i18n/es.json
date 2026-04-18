@@ -98,22 +98,249 @@
     "categories": "Categorías",
     "noData": "No hay datos disponibles",
     "loading": "Cargando panel...",
+    "greeting": {
+      "morning": "Buenos días, {{name}}",
+      "afternoon": "Buenas tardes, {{name}}",
+      "evening": "Buenas noches, {{name}}"
+    },
+    "monthPicker": {
+      "label": "Seleccionar mes"
+    },
+    "sections": {
+      "accounts": "Cuentas",
+      "seeAll": "Ver todo",
+      "spending": "Gastos este mes",
+      "recentTransactions": "Transacciones recientes"
+    },
+    "chart": {
+      "other": "Otros",
+      "ofSpending": "del gasto total"
+    },
+    "categoryEmpty": {
+      "title": "Sin gastos este mes",
+      "subtitle": "Agrega transacciones para ver tu desglose de gastos"
+    },
+    "transactionsEmpty": {
+      "title": "Sin transacciones aún",
+      "subtitle": "Agrega tu primera transacción o importa un estado de cuenta"
+    },
+    "accountsEmpty": {
+      "title": "Agrega tu primera cuenta",
+      "subtitle": "Comienza agregando una cuenta bancaria",
+      "cta": "Agregar cuenta"
+    },
+    "error": {
+      "title": "No se pudo cargar el panel",
+      "subtitle": "Desliza hacia abajo para reintentar",
+      "retry": "Intentar de nuevo"
+    },
+    "offline": "Sin conexión — mostrando datos guardados",
     "errors": {
       "DASHBOARD_LOAD_FAILED": "Error al cargar el panel"
     }
+  },
+  "balanceCard": {
+    "totalBalance": "Saldo total",
+    "income": "Ingresos",
+    "expenses": "Gastos",
+    "loading": "Cargando saldo"
+  },
+  "sectionHeader": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "count": "{{count}} elemento",
+    "count_plural": "{{count}} elementos",
+    "a11yTransactionsOn": "Transacciones el {{date}}",
+    "a11yTransactionsToday": "Transacciones hoy",
+    "a11yTransactionsYesterday": "Transacciones ayer"
   },
   "transactions": {
     "title": "Transacciones",
     "empty": "Sin transacciones",
     "emptySubtitle": "Agrega tu primera transacción",
     "addTransaction": "Agregar transacción",
-    "search": "Buscar transacciones",
+    "search": {
+      "placeholder": "Buscar transacciones...",
+      "clearFilters": "Limpiar filtros"
+    },
     "filter": "Filtrar",
     "income": "Ingreso",
     "expense": "Gasto",
     "transfer": "Transferencia",
+    "summary": {
+      "income": "Ingresos",
+      "expenses": "Gastos"
+    },
+    "sections": {
+      "today": "Hoy",
+      "yesterday": "Ayer"
+    },
+    "filters": {
+      "title": "Filtrar transacciones",
+      "reset": "Restablecer",
+      "dateRange": "Rango de fechas",
+      "thisMonth": "Este mes",
+      "lastMonth": "Mes pasado",
+      "last3Months": "Últimos 3 meses",
+      "type": "Tipo de transacción",
+      "income": "Ingresos",
+      "expenses": "Gastos",
+      "transfers": "Transferencias",
+      "category": "Categoría",
+      "account": "Cuenta",
+      "amountRange": "Rango de monto",
+      "minAmount": "Monto mínimo",
+      "maxAmount": "Monto máximo",
+      "apply": "Mostrar {{count}} transacciones"
+    },
+    "empty": {
+      "noTransactions": {
+        "title": "Sin transacciones aún",
+        "subtitle": "Toca + para agregar tu primera transacción"
+      },
+      "noResults": {
+        "title": "Sin resultados",
+        "subtitle": "Intenta ajustar los filtros",
+        "clearFilters": "Limpiar filtros"
+      }
+    },
+    "error": {
+      "title": "No se pudieron cargar las transacciones",
+      "retry": "Intentar de nuevo"
+    },
+    "delete": {
+      "confirmTitle": "¿Eliminar transacción?",
+      "confirmMessage": "Esta acción no se puede deshacer",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar",
+      "success": "Transacción eliminada"
+    },
+    "allCaughtUp": "¡Al día!",
     "errors": {
       "TRANSACTIONS_LOAD_FAILED": "Error al cargar transacciones"
+    },
+    "add_title": "Nueva Transacción",
+    "edit_title": "Editar Transacción",
+    "amount_label": "Monto",
+    "type_income": "Ingreso",
+    "type_expense": "Gasto",
+    "type_transfer": "Transferencia",
+    "type_fixed_expense": "Gasto fijo",
+    "type_variable_expense": "Gasto variable",
+    "type_transfer_in": "Transferencia entrada",
+    "type_transfer_out": "Transferencia salida",
+    "description_label": "Descripción",
+    "description_placeholder": "Starbucks, Oxxo, Netflix...",
+    "date_label": "Fecha",
+    "account_label": "Cuenta",
+    "category_label": "Categoría",
+    "concept_label": "Concepto",
+    "merchant_label": "Comercio",
+    "reference_label": "Referencia",
+    "save_button": "Guardar Transacción",
+    "save_changes_button": "Guardar Cambios",
+    "saved_toast": "Transacción guardada",
+    "updated_toast": "Transacción actualizada",
+    "select_account_title": "Seleccionar cuenta",
+    "no_account_warning": "Agrega una cuenta primero",
+    "add_account_cta": "+ Agregar cuenta nueva"
+  },
+  "bank_accounts": {
+    "add_title": "Nueva Cuenta",
+    "edit_title": "Editar Cuenta",
+    "bank_label": "BANCO",
+    "bank_placeholder": "Selecciona un banco",
+    "type_label": "TIPO DE CUENTA",
+    "type_debit": "Débito",
+    "type_credit": "Crédito",
+    "type_cash": "Efectivo",
+    "name_label": "NOMBRE",
+    "name_placeholder": "Deja en blanco para usar el nombre del banco",
+    "name_hint": "Si lo dejas vacío, se usará el nombre del banco",
+    "currency_label": "MONEDA",
+    "opening_balance_label": "SALDO INICIAL",
+    "opening_balance_hint": "Ingresa el saldo actual de tu cuenta para empezar con datos correctos",
+    "save_button": "Guardar Cuenta",
+    "save_changes_button": "Guardar Cambios",
+    "saved_toast": "Cuenta guardada",
+    "updated_toast": "Cuenta actualizada",
+    "bank_picker_title": "Selecciona tu banco",
+    "bank_search_placeholder": "Buscar banco...",
+    "cash_option_label": "Efectivo",
+    "cash_option_subtitle": "Sin banco asociado",
+    "locked_field_hint": "No editable"
+  },
+  "transactionRow": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "uncategorized": "Sin categoría",
+    "delete": "Eliminar",
+    "categorize": "Categorizar",
+    "swipeDeleteConfirm": {
+      "title": "¿Eliminar transacción?",
+      "message": "Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "deleteError": "No se pudo eliminar la transacción",
+    "types": {
+      "income": "Ingreso",
+      "fixed_expense": "Fijo",
+      "variable_expense": "Gasto",
+      "transfer_in": "Transferencia",
+      "transfer_out": "Transferencia"
+    },
+    "longPress": {
+      "edit": "Editar",
+      "categorize": "Categorizar",
+      "copyAmount": "Copiar monto",
+      "share": "Compartir",
+      "delete": "Eliminar",
+      "cancel": "Cancelar"
+    }
+  },
+  "transactionDetail": {
+    "title": "Transacción",
+    "edit": "Editar",
+    "moreOptions": "Más opciones",
+    "back": "Transacción",
+    "fields": {
+      "category": "Categoría",
+      "account": "Cuenta",
+      "type": "Tipo",
+      "source": "Fuente",
+      "merchant": "Comercio",
+      "reference": "Referencia",
+      "uncategorized": "Sin categoría",
+      "manual": "Manual",
+      "statement": "Extracto bancario"
+    },
+    "types": {
+      "income": "Ingreso",
+      "fixed_expense": "Gasto fijo",
+      "variable_expense": "Gasto variable",
+      "transfer_in": "Transferencia entrante",
+      "transfer_out": "Transferencia saliente"
+    },
+    "actions": {
+      "copyAmount": "Copiar monto",
+      "share": "Compartir",
+      "delete": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "deleteButton": "Eliminar transacción",
+    "deleteConfirm": {
+      "title": "¿Eliminar transacción?",
+      "message": "Esta acción no se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "deleteSuccess": "Transacción eliminada",
+    "deleteError": "No se pudo eliminar la transacción",
+    "notFound": {
+      "title": "Transacción no encontrada",
+      "subtitle": "Puede que haya sido eliminada",
+      "goBack": "Volver"
     }
   },
   "accounts": {
@@ -121,11 +348,82 @@
     "empty": "Sin cuentas",
     "emptySubtitle": "Agrega tu primera cuenta bancaria",
     "addAccount": "Agregar cuenta",
+    "addButton": "Agregar cuenta bancaria",
+    "totalBalance": "Saldo total",
+    "accountCount": "{{count}} cuenta",
+    "accountCount_plural": "{{count}} cuentas",
     "debit": "Débito",
     "credit": "Crédito",
     "cash": "Efectivo",
+    "types": {
+      "debit": "Débito",
+      "credit": "Crédito",
+      "cash": "Efectivo"
+    },
+    "empty": {
+      "title": "Sin cuentas bancarias",
+      "subtitle": "Agrega una cuenta bancaria para comenzar a rastrear tus finanzas",
+      "cta": "Agregar cuenta"
+    },
+    "error": {
+      "title": "No se pudieron cargar las cuentas",
+      "retry": "Intentar de nuevo"
+    },
+    "addModal": {
+      "title": "Agregar cuenta bancaria",
+      "bankLabel": "Banco",
+      "bankPlaceholder": "Buscar bancos...",
+      "typeLabel": "Tipo de cuenta",
+      "customNameLabel": "Nombre personalizado (opcional)",
+      "customNamePlaceholder": "ej. Mi BBVA Débito",
+      "openingBalanceLabel": "Saldo inicial",
+      "currencyLabel": "Moneda",
+      "save": "Guardar cuenta",
+      "cancel": "Cancelar",
+      "success": "Cuenta agregada"
+    },
     "errors": {
       "ACCOUNTS_LOAD_FAILED": "Error al cargar cuentas"
+    }
+  },
+  "accountDetail": {
+    "back": "Cuentas",
+    "edit": "Editar",
+    "moreOptions": "Más opciones",
+    "meta": "{{currency}} · {{type}} · {{count}} transacciones",
+    "sections": {
+      "transactions": "Transacciones"
+    },
+    "editModal": {
+      "title": "Editar cuenta",
+      "nameLabel": "Nombre de cuenta",
+      "openingBalanceLabel": "Saldo inicial",
+      "save": "Guardar cambios",
+      "cancel": "Cancelar",
+      "success": "Cuenta actualizada"
+    },
+    "deleteModal": {
+      "title": "¿Eliminar cuenta?",
+      "message": "Esto eliminará permanentemente la cuenta y sus {{count}} transacciones. Esta acción no se puede deshacer.",
+      "confirm": "Eliminar cuenta y transacciones",
+      "cancel": "Conservar cuenta",
+      "success": "Cuenta eliminada",
+      "error": "No se pudo eliminar la cuenta"
+    },
+    "actions": {
+      "editAccount": "Editar cuenta",
+      "deleteAccount": "Eliminar cuenta",
+      "cancel": "Cancelar"
+    },
+    "empty": {
+      "noTransactions": {
+        "title": "Sin transacciones",
+        "subtitle": "Las transacciones de esta cuenta aparecerán aquí"
+      },
+      "notFound": {
+        "title": "Cuenta no encontrada",
+        "goBack": "Volver"
+      }
     }
   },
   "profile": {
@@ -137,7 +435,12 @@
     "logoutCancel": "Cancelar",
     "settings": "Configuración",
     "account": "Cuenta",
-    "subscription": "Suscripción"
+    "subscription": "Suscripción",
+    "language": "Idioma",
+    "statementUpload": "Subir estado de cuenta",
+    "statementUploadTitle": "Próximamente",
+    "statementUploadMessage": "La subida de estados de cuenta estará disponible en una próxima actualización.",
+    "comingSoon": "Pronto"
   },
   "common": {
     "loading": "Cargando...",
@@ -158,6 +461,30 @@
     "offline": "Sin conexión",
     "offlineSubtitle": "Mostrando datos guardados"
   },
+  "statement_upload": {
+    "modal_title": "Subir estado de cuenta",
+    "pick_file": "Seleccionar archivo PDF",
+    "file_card_label": "Archivo seleccionado",
+    "cutoff_date_label": "Fecha de corte",
+    "account_question": "¿A qué cuenta pertenece?",
+    "duplicate_note": "Solo se importan transacciones nuevas. Los duplicados se omiten automáticamente.",
+    "upload_button": "Subir estado de cuenta",
+    "uploading_title": "Subiendo archivo...",
+    "uploading_hint": "No cierres la aplicación",
+    "processing_title": "Analizando tu estado...",
+    "processing_subtitle": "Estamos leyendo y clasificando tus transacciones con IA.",
+    "processing_wait": "Esto puede tardar hasta un minuto.",
+    "success_title": "¡Estado importado!",
+    "success_body": "Se encontraron {{count}} transacciones nuevas.",
+    "partial_body": "{{new}} nuevas · {{dupes}} pendientes de revisión",
+    "view_transactions": "Ver transacciones →",
+    "failure_title": "No se pudo procesar",
+    "failure_body": "No pudimos leer este archivo. Asegúrate de que es un estado de cuenta en PDF.",
+    "retry_button": "Intentar de nuevo",
+    "close_button": "Cerrar",
+    "timeout_message": "Tomó más de lo esperado. Revisa en un momento.",
+    "cancel_confirm": "¿Cancelar la subida?"
+  },
   "errors": {
     "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",
     "EMAIL_NOT_CONFIRMED": "Por favor confirma tu dirección de correo",
@@ -174,6 +501,7 @@
     "UNAUTHORIZED": "No tienes permiso para realizar esta acción",
     "SERVER_ERROR": "Error del servidor. Intenta de nuevo.",
     "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
-    "UNKNOWN_ERROR": "Ocurrió un error inesperado"
+    "UNKNOWN_ERROR": "Ocurrió un error inesperado",
+    "generic": "Algo salió mal. Por favor intenta de nuevo."
   }
 }

@@ -30,6 +30,10 @@ interface UIState {
   pendingDeepLink: string | null;
   setPendingDeepLink: (route: string) => void;
   clearPendingDeepLink: () => void;
+
+  // Selected month for dashboard (persists across tab switches)
+  selectedMonth: string | undefined;
+  setSelectedMonth: (month: string | undefined) => void;
 }
 
 let toastIdCounter = 0;
@@ -68,4 +72,8 @@ export const useUIStore = create<UIState>((set) => ({
   pendingDeepLink: null,
   setPendingDeepLink: (route) => set({ pendingDeepLink: route }),
   clearPendingDeepLink: () => set({ pendingDeepLink: null }),
+
+  // ── Selected month ─────────────────────────────────────────────────────────
+  selectedMonth: undefined,
+  setSelectedMonth: (month) => set({ selectedMonth: month }),
 }));

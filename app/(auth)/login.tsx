@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
 
 import { useAuthStore } from '../../src/stores/authStore';
-import { getApiErrorCode, getApiErrorDetails, isApiError } from '../../src/api/client';
+import { getApiErrorCode, isApiError } from '../../src/api/client';
 import { authApi } from '../../src/api/auth';
 import { colors, components, spacing, textStyles } from '../../src/theme';
 
@@ -248,7 +248,7 @@ export default function LoginScreen() {
                 name="email"
                 render={({ field: { onChange, onBlur, value, ref } }) => (
                   <TextInput
-                    ref={ref as React.RefObject<TextInput>}
+                    ref={ref}
                     style={[
                       styles.input,
                       errors.email ? styles.inputError : null,

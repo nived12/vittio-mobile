@@ -14,7 +14,9 @@
     "ios": {
       "bundleIdentifier": "io.vitt.app",
       "supportsTablet": false,
-      "associatedDomains": ["applinks:app.vitt.io"]
+      "associatedDomains": [
+        "applinks:app.vitt.io"
+      ]
     },
     "android": {
       "package": "io.vitt.app",
@@ -32,7 +34,10 @@
               "host": "app.vitt.io"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -52,7 +57,8 @@
           "image": "./assets/images/splash.png",
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

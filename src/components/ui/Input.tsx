@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors, components, textStyles } from '../../theme';
+import { colors, components } from '../../theme';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
