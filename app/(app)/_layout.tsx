@@ -3,33 +3,38 @@ import { ActionSheetIOS, Alert, Platform, TouchableOpacity, View } from 'react-n
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
+import { useUIStore } from '../../src/stores/uiStore';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
 export default function AppLayout() {
+  const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
-  const [showUploadStatement, setShowUploadStatement] = useState(false);
+  const showUploadStatement = useUIStore((s) => s.showStatementUpload);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
+  const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', 'Nueva transacción', 'Subir estado de cuenta'],
+          options: [t('navigation.fab.cancel'), t('navigation.fab.newTransaction'), t('navigation.fab.uploadStatement')],
           cancelButtonIndex: 0,
         },
         (idx) => {
           if (idx === 1) setShowAddTransaction(true);
-          if (idx === 2) setShowUploadStatement(true);
+          if (idx === 2) openStatementUpload();
         },
       );
     } else {
-      Alert.alert('Opciones', '', [
-        { text: 'Nueva transacción', onPress: () => setShowAddTransaction(true) },
-        { text: 'Subir estado de cuenta', onPress: () => setShowUploadStatement(true) },
-        { text: 'Cancelar', style: 'cancel' },
+      Alert.alert(t('navigation.fab.options'), '', [
+        { text: t('navigation.fab.newTransaction'), onPress: () => setShowAddTransaction(true) },
+        { text: t('navigation.fab.uploadStatement'), onPress: () => openStatementUpload() },
+        { text: t('navigation.fab.cancel'), style: 'cancel' },
       ]);
     }
   }
@@ -59,11 +64,11 @@ export default function AppLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: t('navigation.home'),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
             ),
-            tabBarAccessibilityLabel: 'Home tab',
+            tabBarAccessibilityLabel: t('navigation.homeTab'),
           }}
           listeners={{ tabPress: () => Haptics.selectionAsync() }}
         />
@@ -72,11 +77,11 @@ export default function AppLayout() {
         <Tabs.Screen
           name="transactions"
           options={{
-            title: 'Activity',
+            title: t('navigation.activity'),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={22} color={color} />
             ),
-            tabBarAccessibilityLabel: 'Activity tab',
+            tabBarAccessibilityLabel: t('navigation.activityTab'),
           }}
           listeners={{ tabPress: () => Haptics.selectionAsync() }}
         />
@@ -107,9 +112,9 @@ export default function AppLayout() {
                     shadowRadius: 8,
                     elevation: 8,
                   }}
-                  accessibilityLabel="Add transaction"
+                  accessibilityLabel={t('navigation.addTransaction')}
                   accessibilityRole="button"
-                  accessibilityHint="Tap to add a transaction. Long press for more options."
+                  accessibilityHint={t('navigation.addTransactionHint')}
                 >
                   <Ionicons name="add" size={28} color="#ffffff" />
                 </TouchableOpacity>
@@ -122,27 +127,30 @@ export default function AppLayout() {
         <Tabs.Screen
           name="accounts"
           options={{
-            title: 'Accounts',
+            title: t('navigation.accounts'),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={22} color={color} />
             ),
-            tabBarAccessibilityLabel: 'Accounts tab',
+            tabBarAccessibilityLabel: t('navigation.accountsTab'),
           }}
           listeners={{ tabPress: () => Haptics.selectionAsync() }}
         />
 
-        {/* 5. More */}
+        {/* 5. Finances */}
         <Tabs.Screen
-          name="profile"
+          name="finances"
           options={{
-            title: 'More',
+            title: t('navigation.finances'),
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
+              <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={22} color={color} />
             ),
-            tabBarAccessibilityLabel: 'More tab',
+            tabBarAccessibilityLabel: t('navigation.financesTab'),
           }}
           listeners={{ tabPress: () => Haptics.selectionAsync() }}
         />
+
+        {/* Hide profile from tab bar (kept as dead code) */}
+        <Tabs.Screen name="profile" options={{ href: null }} />
 
         {/* Hide settings from tab bar */}
         <Tabs.Screen name="settings" options={{ href: null }} />
@@ -154,7 +162,7 @@ export default function AppLayout() {
       />
       <StatementUploadModal
         visible={showUploadStatement}
-        onClose={() => setShowUploadStatement(false)}
+        onClose={closeStatementUpload}
       />
     </>
   );

@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#4f46e5"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "bundleIdentifier": "io.vitt.app",

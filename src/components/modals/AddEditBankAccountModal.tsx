@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useBanks } from '../../hooks/useBanks';
 import { useCreateBankAccount, useUpdateBankAccount } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
+import { getBankLogoComponent } from '../../utils/bankLogos';
 import type { Bank } from '../../api/banks';
 import type { BankAccount, CreateBankAccountBody, UpdateBankAccountBody } from '../../api/bankAccounts';
 
@@ -47,6 +48,29 @@ function formatDisplayDate(d: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
     day: '2-digit', month: '2-digit', year: 'numeric',
   }).format(d);
+}
+
+// ── BankLogo ───────────────────────────────────────────────────────────────
+
+const INIT_COLORS_LOCAL = ['#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#14b8a6', '#64748b'];
+
+function BankLogo({ bank, size = 40 }: { bank: Bank; size?: number }) {
+  const Logo = getBankLogoComponent(bank.logo_url);
+  if (Logo) {
+    return (
+      <View style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0' }]}>
+        <Logo width={size * 0.7} height={size * 0.7} />
+      </View>
+    );
+  }
+  // Fallback: colored circle with initials
+  const initials = bank.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase();
+  const bgColor = INIT_COLORS_LOCAL[bank.name.charCodeAt(0) % INIT_COLORS_LOCAL.length];
+  return (
+    <View style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: bgColor, alignItems: 'center', justifyContent: 'center' }]}>
+      <Text style={{ fontSize: size * 0.32, fontWeight: '700', color: '#ffffff' }}>{initials}</Text>
+    </View>
+  );
 }
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
@@ -110,11 +134,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     if (!q) return banks;
     return banks.filter((b) => b.name.toLowerCase().includes(q));
   }, [banks, bankQuery]);
-
-  const initials = (name: string) =>
-    name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
-  const INIT_COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#e11d48'];
-  const initColor = (name: string) => INIT_COLORS[name.charCodeAt(0) % INIT_COLORS.length];
 
   // ── Bank selection ──
   const handleBankSelect = (bank: Bank | null) => {
@@ -276,9 +295,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                         ]}
                         onPress={() => handleBankSelect(item)}
                       >
-                        <View style={[styles.bankAvatar, { backgroundColor: initColor(item.name) }]}>
-                          <Text style={styles.bankAvatarText}>{initials(item.name)}</Text>
-                        </View>
+                        <BankLogo bank={item} size={40} />
                         <Text style={styles.bankName}>{item.name}</Text>
                         {item.id === selectedBank?.id && <Text style={styles.checkmark}>✓</Text>}
                       </TouchableOpacity>

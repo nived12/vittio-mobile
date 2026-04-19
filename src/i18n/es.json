@@ -450,11 +450,13 @@
   "common": {
     "loading": "Cargando...",
     "error": "Algo salió mal",
+    "tryAgain": "Intentar de nuevo",
     "retry": "Intentar de nuevo",
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
     "edit": "Editar",
+    "notes": "Notas",
     "close": "Cerrar",
     "back": "Atrás",
     "done": "Listo",
@@ -490,6 +492,282 @@
     "close_button": "Cerrar",
     "timeout_message": "Tomó más de lo esperado. Revisa en un momento.",
     "cancel_confirm": "¿Cancelar la subida?"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "activity": "Actividad",
+    "accounts": "Cuentas",
+    "finances": "Finanzas",
+    "homeTab": "Pestaña Inicio",
+    "activityTab": "Pestaña Actividad",
+    "accountsTab": "Pestaña Cuentas",
+    "financesTab": "Pestaña Finanzas",
+    "addTransaction": "Agregar transacción",
+    "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
+    "fab": {
+      "cancel": "Cancelar",
+      "newTransaction": "Nueva transacción",
+      "uploadStatement": "Subir estado de cuenta",
+      "options": "Opciones"
+    }
+  },
+  "finances": {
+    "header": {
+      "profileButton": "Abrir menú de perfil"
+    },
+    "tabs": {
+      "savings": "Ahorros",
+      "debts": "Deudas",
+      "goals": "Metas"
+    }
+  },
+  "savings": {
+    "title": "Ahorros",
+    "addButton": "Agregar ahorro",
+    "editButton": "Editar ahorro",
+    "status": {
+      "active": "Activo",
+      "completed": "Completado",
+      "paused": "Pausado",
+      "archived": "Archivado"
+    },
+    "daysLeft": "{{count}} día restante",
+    "daysLeft_plural": "{{count}} días restantes",
+    "empty": {
+      "title": "Sin ahorros aún",
+      "subtitle": "Comienza a ahorrar para tu primera meta",
+      "cta": "Agregar ahorro"
+    },
+    "error": {
+      "title": "No se pudieron cargar los ahorros"
+    },
+    "detail": {
+      "percentSaved": "{{percent}}% ahorrado",
+      "currentAmount": "Monto actual",
+      "targetAmount": "Meta",
+      "remaining": "Restante",
+      "targetDate": "Fecha límite",
+      "monthlyContribution": "Contribución mensual",
+      "linkedGoals": "Metas vinculadas",
+      "notes": "Notas",
+      "error": {
+        "title": "No se pudo cargar el ahorro"
+      }
+    },
+    "frequency": {
+      "monthly": "Mensual",
+      "weekly": "Semanal",
+      "biweekly": "Quincenal"
+    },
+    "delete": {
+      "title": "Eliminar ahorro",
+      "message": "Este ahorro se eliminará permanentemente. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "fields": {
+      "currentAmount": "Monto actual",
+      "targetAmount": "Meta",
+      "remaining": "Restante",
+      "targetDate": "Fecha límite",
+      "contribution": "Contribución"
+    },
+    "addModal": {
+      "titleAdd": "Nuevo Ahorro",
+      "titleEdit": "Editar Ahorro",
+      "nameLabel": "NOMBRE",
+      "namePlaceholder": "ej. Fondo de vacaciones",
+      "targetAmountLabel": "MONTO META",
+      "currentAmountLabel": "YA AHORRADO",
+      "currentAmountHint": "Ingresa 0 si estás empezando desde cero",
+      "targetDateLabel": "FECHA LÍMITE (opcional)",
+      "targetDatePlaceholder": "Establecer una fecha...",
+      "colorLabel": "COLOR",
+      "statusLabel": "ESTADO",
+      "notesLabel": "NOTAS (opcional)",
+      "notesPlaceholder": "Agregar una nota...",
+      "statusActive": "Activo",
+      "statusPaused": "Pausado",
+      "saveButton": "Guardar Ahorro",
+      "saveChangesButton": "Guardar Cambios",
+      "savedToast": "Ahorro agregado",
+      "updatedToast": "Ahorro actualizado",
+      "errors": {
+        "nameRequired": "El nombre es requerido",
+        "targetAmountRequired": "El monto meta es requerido",
+        "targetAmountPositive": "El monto meta debe ser mayor a 0",
+        "currentAmountExceedsTarget": "El monto actual no puede superar la meta",
+        "targetDatePast": "La fecha límite debe ser futura"
+      }
+    }
+  },
+  "debts": {
+    "title": "Deudas",
+    "addButton": "Agregar deuda",
+    "editButton": "Editar deuda",
+    "dueDay": "Vence día {{day}}",
+    "delete": {
+      "title": "Eliminar deuda",
+      "message": "Esta deuda se eliminará permanentemente. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "fields": {
+      "currentBalance": "Balance actual",
+      "originalAmount": "Monto original",
+      "amountPaid": "Monto pagado",
+      "interestRate": "Tasa de interés",
+      "monthlyPayment": "Pago mensual"
+    },
+    "status": {
+      "active": "Activa",
+      "paused": "Pausada",
+      "archived": "Archivada"
+    },
+    "empty": {
+      "title": "Sin deudas registradas",
+      "subtitle": "Registra una deuda para monitorear tu progreso de pago",
+      "cta": "Agregar deuda"
+    },
+    "error": {
+      "title": "No se pudieron cargar las deudas"
+    },
+    "detail": {
+      "percentPaidOff": "{{percent}}% pagado",
+      "currentBalance": "Balance actual",
+      "originalAmount": "Monto original",
+      "amountPaid": "Monto pagado",
+      "interestRate": "Tasa de interés",
+      "monthlyPayment": "Pago mensual",
+      "nextDue": "Próximo vencimiento: {{date}}",
+      "linkedGoals": "Metas vinculadas",
+      "notes": "Notas",
+      "error": {
+        "title": "No se pudo cargar la deuda"
+      }
+    },
+    "frequency": {
+      "monthly": "Mensual",
+      "weekly": "Semanal",
+      "biweekly": "Quincenal"
+    },
+    "addModal": {
+      "titleAdd": "Nueva Deuda",
+      "titleEdit": "Editar Deuda",
+      "nameLabel": "NOMBRE",
+      "namePlaceholder": "ej. Tarjeta BBVA",
+      "originalAmountLabel": "MONTO ORIGINAL",
+      "originalAmountHint": "Monto total cuando adquiriste esta deuda",
+      "currentBalanceLabel": "BALANCE ACTUAL",
+      "currentBalanceHint": "Lo que actualmente debes",
+      "interestRateLabel": "TASA DE INTERÉS (opcional)",
+      "minimumPaymentLabel": "PAGO MÍNIMO (opcional)",
+      "dueDayLabel": "DÍA DE PAGO DEL MES (opcional)",
+      "dueDayPlaceholder": "Sin día de pago",
+      "dueDaySuffix": "de cada mes",
+      "targetDateLabel": "FECHA LÍMITE DE PAGO (opcional)",
+      "targetDatePlaceholder": "Establecer una fecha límite...",
+      "colorLabel": "COLOR",
+      "statusLabel": "ESTADO",
+      "statusActive": "Activa",
+      "statusPaused": "Pausada",
+      "notesLabel": "NOTAS (opcional)",
+      "notesPlaceholder": "Agregar una nota...",
+      "saveButton": "Guardar Deuda",
+      "saveChangesButton": "Guardar Cambios",
+      "savedToast": "Deuda agregada",
+      "updatedToast": "Deuda actualizada",
+      "errors": {
+        "nameRequired": "El nombre es requerido",
+        "originalAmountRequired": "El monto original es requerido",
+        "originalAmountPositive": "El monto original debe ser mayor a 0",
+        "currentBalanceRequired": "El balance actual es requerido",
+        "currentBalanceExceedsOriginal": "El balance no puede superar el monto original",
+        "targetDatePast": "La fecha límite de pago debe ser futura",
+        "dueDayRange": "El día debe estar entre 1 y 31"
+      }
+    }
+  },
+  "goals": {
+    "title": "Metas",
+    "addButton": "Agregar meta",
+    "editButton": "Editar meta",
+    "daysLeft": "{{count}} día restante",
+    "daysLeft_plural": "{{count}} días restantes",
+    "percentComplete": "{{percent}}% completado",
+    "noLinkedSavings": "Ningún ahorro vinculado a esta meta aún.",
+    "noLinkedDebts": "Ninguna deuda vinculada a esta meta aún.",
+    "delete": {
+      "title": "Eliminar meta",
+      "message": "Esta meta se eliminará permanentemente. Esta acción no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar"
+    },
+    "type": {
+      "savingsGoal": "Meta de ahorro",
+      "debtPayoff": "Pago de deuda"
+    },
+    "strategy": {
+      "snowball": "Bola de nieve",
+      "avalanche": "Avalancha",
+      "snowballExplain": "Paga el saldo más pequeño primero para ganar impulso",
+      "avalancheExplain": "Paga la tasa de interés más alta primero para minimizar el interés total"
+    },
+    "empty": {
+      "title": "Sin metas aún",
+      "subtitle": "Crea una meta para rastrear tus hitos financieros",
+      "cta": "Agregar meta"
+    },
+    "error": {
+      "title": "No se pudieron cargar las metas"
+    },
+    "detail": {
+      "complete": "completado",
+      "daysElapsed": "Días transcurridos",
+      "daysRemaining": "Días restantes",
+      "amountRemaining": "Monto restante",
+      "monthlyNeeded": "Mensual requerido",
+      "linkedSavings": "Ahorros vinculados",
+      "linkedDebts": "Deudas vinculadas",
+      "notes": "Notas",
+      "error": {
+        "title": "No se pudo cargar la meta"
+      }
+    },
+    "addModal": {
+      "titleAdd": "Nueva Meta",
+      "titleEdit": "Editar Meta",
+      "nameLabel": "NOMBRE",
+      "namePlaceholder": "ej. Pagar todas las deudas",
+      "goalTypeLabel": "TIPO DE META",
+      "startDateLabel": "FECHA DE INICIO",
+      "deadlineLabel": "FECHA LÍMITE",
+      "deadlinePlaceholder": "Establecer una fecha límite",
+      "debtStrategyLabel": "ESTRATEGIA DE DEUDA",
+      "colorLabel": "COLOR",
+      "notesLabel": "NOTAS (opcional)",
+      "notesPlaceholder": "Agregar una nota...",
+      "saveButton": "Guardar Meta",
+      "saveChangesButton": "Guardar Cambios",
+      "savedToast": "Meta agregada",
+      "updatedToast": "Meta actualizada",
+      "errors": {
+        "nameRequired": "El nombre es requerido",
+        "deadlineRequired": "La fecha límite es requerida",
+        "deadlineBeforeStart": "La fecha límite debe ser después de la fecha de inicio",
+        "deadlinePast": "La fecha límite debe ser futura"
+      }
+    }
+  },
+  "colorPicker": {
+    "blue": "Azul",
+    "green": "Verde",
+    "amber": "Ámbar",
+    "red": "Rojo",
+    "violet": "Violeta",
+    "pink": "Rosa",
+    "teal": "Turquesa",
+    "orange": "Naranja"
   },
   "errors": {
     "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",

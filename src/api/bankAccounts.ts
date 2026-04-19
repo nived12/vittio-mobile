@@ -6,8 +6,9 @@ export interface BankAccount {
   id: number;
   name: string;
   custom_name: string | null;
-  bank_name: string;
-  bank_id: number;
+  bank_name: string | null;
+  bank_id: number | null;
+  bank_logo_url: string | null;
   account_type: 'debit' | 'credit' | 'cash';
   currency: string;
   opening_balance: string;

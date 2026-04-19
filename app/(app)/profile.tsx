@@ -14,8 +14,9 @@ export default function ProfileScreen() {
   const { t }      = useTranslation();
   const user       = useAuthStore((s) => s.user);
   const logout     = useAuthStore((s) => s.logout);
-  const locale     = useUIStore((s) => s.locale);
-  const setLocale  = useUIStore((s) => s.setLocale);
+  const locale             = useUIStore((s) => s.locale);
+  const setLocale          = useUIStore((s) => s.setLocale);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
 
   function toggleLanguage() {
     const next = locale === 'es' ? 'en' : 'es';
@@ -83,22 +84,14 @@ export default function ProfileScreen() {
         {/* Statement upload */}
         <TouchableOpacity
           style={styles.settingsRow}
-          onPress={() =>
-            Alert.alert(
-              t('profile.statementUploadTitle'),
-              t('profile.statementUploadMessage'),
-              [{ text: t('common.ok') }],
-            )
-          }
+          onPress={openStatementUpload}
           accessibilityRole="button"
         >
           <View style={styles.settingsRowLeft}>
             <Feather name="upload" size={18} color={colors.text.secondary} style={styles.rowIcon} />
             <Text style={styles.settingsRowLabel}>{t('profile.statementUpload')}</Text>
           </View>
-          <View style={styles.comingSoonBadge}>
-            <Text style={styles.comingSoonText}>{t('profile.comingSoon')}</Text>
-          </View>
+          <Feather name="chevron-right" size={16} color="#94a3b8" />
         </TouchableOpacity>
       </View>
 

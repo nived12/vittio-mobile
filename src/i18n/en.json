@@ -450,11 +450,13 @@
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
+    "tryAgain": "Try again",
     "retry": "Try again",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
+    "notes": "Notes",
     "close": "Close",
     "back": "Back",
     "done": "Done",
@@ -490,6 +492,282 @@
     "close_button": "Close",
     "timeout_message": "This is taking longer than expected. Check back in a moment.",
     "cancel_confirm": "Cancel the upload?"
+  },
+  "navigation": {
+    "home": "Home",
+    "activity": "Activity",
+    "accounts": "Accounts",
+    "finances": "Finances",
+    "homeTab": "Home tab",
+    "activityTab": "Activity tab",
+    "accountsTab": "Accounts tab",
+    "financesTab": "Finances tab",
+    "addTransaction": "Add transaction",
+    "addTransactionHint": "Tap to add a transaction. Long press for more options.",
+    "fab": {
+      "cancel": "Cancel",
+      "newTransaction": "New transaction",
+      "uploadStatement": "Upload bank statement",
+      "options": "Options"
+    }
+  },
+  "finances": {
+    "header": {
+      "profileButton": "Open profile menu"
+    },
+    "tabs": {
+      "savings": "Savings",
+      "debts": "Debts",
+      "goals": "Goals"
+    }
+  },
+  "savings": {
+    "title": "Savings",
+    "addButton": "Add saving",
+    "editButton": "Edit saving",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "paused": "Paused",
+      "archived": "Archived"
+    },
+    "daysLeft": "{{count}} day left",
+    "daysLeft_plural": "{{count}} days left",
+    "empty": {
+      "title": "No savings yet",
+      "subtitle": "Start saving towards your first goal",
+      "cta": "Add Saving"
+    },
+    "error": {
+      "title": "Couldn't load savings"
+    },
+    "detail": {
+      "percentSaved": "{{percent}}% saved",
+      "currentAmount": "Current Amount",
+      "targetAmount": "Target Amount",
+      "remaining": "Remaining",
+      "targetDate": "Target Date",
+      "monthlyContribution": "Monthly contribution",
+      "linkedGoals": "Linked Goals",
+      "notes": "Notes",
+      "error": {
+        "title": "Couldn't load saving"
+      }
+    },
+    "frequency": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly"
+    },
+    "delete": {
+      "title": "Delete Saving",
+      "message": "This saving will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "fields": {
+      "currentAmount": "Current Amount",
+      "targetAmount": "Target Amount",
+      "remaining": "Remaining",
+      "targetDate": "Target Date",
+      "contribution": "Contribution"
+    },
+    "addModal": {
+      "titleAdd": "New Saving",
+      "titleEdit": "Edit Saving",
+      "nameLabel": "NAME",
+      "namePlaceholder": "e.g. Vacation Fund",
+      "targetAmountLabel": "TARGET AMOUNT",
+      "currentAmountLabel": "ALREADY SAVED",
+      "currentAmountHint": "Enter 0 if starting fresh",
+      "targetDateLabel": "TARGET DATE (optional)",
+      "targetDatePlaceholder": "Set a deadline...",
+      "colorLabel": "COLOR",
+      "statusLabel": "STATUS",
+      "notesLabel": "NOTES (optional)",
+      "notesPlaceholder": "Add a note...",
+      "statusActive": "Active",
+      "statusPaused": "Paused",
+      "saveButton": "Save Saving",
+      "saveChangesButton": "Save Changes",
+      "savedToast": "Saving added",
+      "updatedToast": "Saving updated",
+      "errors": {
+        "nameRequired": "Name is required",
+        "targetAmountRequired": "Target amount is required",
+        "targetAmountPositive": "Target amount must be greater than 0",
+        "currentAmountExceedsTarget": "Current amount cannot exceed target",
+        "targetDatePast": "Target date must be in the future"
+      }
+    }
+  },
+  "debts": {
+    "title": "Debts",
+    "addButton": "Add debt",
+    "editButton": "Edit debt",
+    "dueDay": "Due day {{day}}",
+    "delete": {
+      "title": "Delete Debt",
+      "message": "This debt will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "fields": {
+      "currentBalance": "Current Balance",
+      "originalAmount": "Original Amount",
+      "amountPaid": "Amount Paid",
+      "interestRate": "Interest Rate",
+      "monthlyPayment": "Monthly Payment"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "Paused",
+      "archived": "Archived"
+    },
+    "empty": {
+      "title": "No debts tracked",
+      "subtitle": "Track a debt to monitor your payoff progress",
+      "cta": "Add Debt"
+    },
+    "error": {
+      "title": "Couldn't load debts"
+    },
+    "detail": {
+      "percentPaidOff": "{{percent}}% paid off",
+      "currentBalance": "Current Balance",
+      "originalAmount": "Original Amount",
+      "amountPaid": "Amount Paid",
+      "interestRate": "Interest Rate",
+      "monthlyPayment": "Monthly payment",
+      "nextDue": "Next due: {{date}}",
+      "linkedGoals": "Linked Goals",
+      "notes": "Notes",
+      "error": {
+        "title": "Couldn't load debt"
+      }
+    },
+    "frequency": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly"
+    },
+    "addModal": {
+      "titleAdd": "New Debt",
+      "titleEdit": "Edit Debt",
+      "nameLabel": "NAME",
+      "namePlaceholder": "e.g. BBVA Credit Card",
+      "originalAmountLabel": "ORIGINAL AMOUNT",
+      "originalAmountHint": "Total amount when you took on this debt",
+      "currentBalanceLabel": "CURRENT BALANCE",
+      "currentBalanceHint": "What you currently owe",
+      "interestRateLabel": "INTEREST RATE (optional)",
+      "minimumPaymentLabel": "MINIMUM PAYMENT (optional)",
+      "dueDayLabel": "DUE DAY OF MONTH (optional)",
+      "dueDayPlaceholder": "No due day set",
+      "dueDaySuffix": "of each month",
+      "targetDateLabel": "TARGET PAYOFF DATE (optional)",
+      "targetDatePlaceholder": "Set a target date...",
+      "colorLabel": "COLOR",
+      "statusLabel": "STATUS",
+      "statusActive": "Active",
+      "statusPaused": "Paused",
+      "notesLabel": "NOTES (optional)",
+      "notesPlaceholder": "Add a note...",
+      "saveButton": "Save Debt",
+      "saveChangesButton": "Save Changes",
+      "savedToast": "Debt added",
+      "updatedToast": "Debt updated",
+      "errors": {
+        "nameRequired": "Name is required",
+        "originalAmountRequired": "Original amount is required",
+        "originalAmountPositive": "Original amount must be greater than 0",
+        "currentBalanceRequired": "Current balance is required",
+        "currentBalanceExceedsOriginal": "Current balance cannot exceed original amount",
+        "targetDatePast": "Target payoff date must be in the future",
+        "dueDayRange": "Due day must be between 1 and 31"
+      }
+    }
+  },
+  "goals": {
+    "title": "Goals",
+    "addButton": "Add goal",
+    "editButton": "Edit goal",
+    "daysLeft": "{{count}} day left",
+    "daysLeft_plural": "{{count}} days left",
+    "percentComplete": "{{percent}}% complete",
+    "noLinkedSavings": "No savings linked to this goal yet.",
+    "noLinkedDebts": "No debts linked to this goal yet.",
+    "delete": {
+      "title": "Delete Goal",
+      "message": "This goal will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "type": {
+      "savingsGoal": "Savings Goal",
+      "debtPayoff": "Debt Payoff"
+    },
+    "strategy": {
+      "snowball": "Snowball",
+      "avalanche": "Avalanche",
+      "snowballExplain": "Pay smallest balance first to build momentum",
+      "avalancheExplain": "Pay highest interest rate first to minimize total interest paid"
+    },
+    "empty": {
+      "title": "No goals yet",
+      "subtitle": "Create a goal to track your financial milestones",
+      "cta": "Add Goal"
+    },
+    "error": {
+      "title": "Couldn't load goals"
+    },
+    "detail": {
+      "complete": "complete",
+      "daysElapsed": "Days Elapsed",
+      "daysRemaining": "Days Remaining",
+      "amountRemaining": "Amount Remaining",
+      "monthlyNeeded": "Monthly Needed",
+      "linkedSavings": "Linked Savings",
+      "linkedDebts": "Linked Debts",
+      "notes": "Notes",
+      "error": {
+        "title": "Couldn't load goal"
+      }
+    },
+    "addModal": {
+      "titleAdd": "New Goal",
+      "titleEdit": "Edit Goal",
+      "nameLabel": "NAME",
+      "namePlaceholder": "e.g. Pay Off All Debts",
+      "goalTypeLabel": "GOAL TYPE",
+      "startDateLabel": "START DATE",
+      "deadlineLabel": "DEADLINE",
+      "deadlinePlaceholder": "Set a deadline",
+      "debtStrategyLabel": "DEBT STRATEGY",
+      "colorLabel": "COLOR",
+      "notesLabel": "NOTES (optional)",
+      "notesPlaceholder": "Add a note...",
+      "saveButton": "Save Goal",
+      "saveChangesButton": "Save Changes",
+      "savedToast": "Goal added",
+      "updatedToast": "Goal updated",
+      "errors": {
+        "nameRequired": "Name is required",
+        "deadlineRequired": "Deadline is required",
+        "deadlineBeforeStart": "Deadline must be after start date",
+        "deadlinePast": "Deadline must be in the future"
+      }
+    }
+  },
+  "colorPicker": {
+    "blue": "Blue",
+    "green": "Green",
+    "amber": "Amber",
+    "red": "Red",
+    "violet": "Violet",
+    "pink": "Pink",
+    "teal": "Teal",
+    "orange": "Orange"
   },
   "errors": {
     "INVALID_CREDENTIALS": "Invalid email or password",

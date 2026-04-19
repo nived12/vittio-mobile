@@ -21,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
+import { Image } from 'react-native';
 
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, isApiError } from '../../src/api/client';
@@ -213,10 +214,12 @@ export default function LoginScreen() {
         >
           {/* ── Logo ── */}
           <Animated.View style={[styles.logoContainer, { opacity: logoOpacity }]}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>V</Text>
-            </View>
-            <Text style={styles.tagline}>Personal Finance</Text>
+            <Image
+              source={require('../../assets/images/vittio_logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+              accessibilityLabel="Vittio"
+            />
           </Animated.View>
 
           {/* ── Form ── */}
@@ -454,24 +457,11 @@ const styles = StyleSheet.create({
     marginTop:   64,
     marginBottom: spacing.xxl,
   },
-  logoCircle: {
-    width:           56,
-    height:          56,
-    borderRadius:    28,
-    backgroundColor: colors.brand.primary,
-    alignItems:      'center',
-    justifyContent:  'center',
+  logoImage: {
+    width:  180,
+    height: 60,
   },
-  logoText: {
-    color:      '#ffffff',
-    fontSize:   28,
-    fontFamily: 'Inter_700Bold',
-  },
-  tagline: {
-    ...textStyles.bodySm,
-    color:     colors.neutral[400],
-    marginTop: 8,
-  },
+
 
   // Form
   formContainer: {

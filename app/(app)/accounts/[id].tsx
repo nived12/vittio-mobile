@@ -20,6 +20,7 @@ import { ChevronLeft, CreditCard, Banknote, MoreHorizontal } from 'lucide-react-
 import { useTranslation } from 'react-i18next';
 import { useBankAccount, useDeleteBankAccount } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
+import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
@@ -339,9 +340,21 @@ export default function AccountDetailScreen() {
                 </View>
                 {/* Top row */}
                 <View style={styles.cardTopRow}>
-                  <View style={[styles.accountIcon, { backgroundColor: cfg.bg }]}>
-                    <Icon size={24} color={cfg.iconColor} />
-                  </View>
+                  {(() => {
+                    const Logo = getBankLogoComponent(account.bank_logo_url);
+                    if (Logo) {
+                      return (
+                        <View style={[styles.accountIcon, { backgroundColor: '#ffffff', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }]}>
+                          <Logo width={28} height={28} />
+                        </View>
+                      );
+                    }
+                    return (
+                      <View style={[styles.accountIcon, { backgroundColor: cfg.bg }]}>
+                        <Icon size={24} color={cfg.iconColor} />
+                      </View>
+                    );
+                  })()}
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={styles.accountName} numberOfLines={2}>
                       {account.custom_name ?? account.name}

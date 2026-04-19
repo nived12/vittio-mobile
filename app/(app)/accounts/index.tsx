@@ -17,6 +17,7 @@ import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditB
 import { useUIStore } from '../../../src/stores/uiStore';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
+import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import type { BankAccount } from '../../../src/api/bankAccounts';
 
 // ── Account icon config ────────────────────────────────────────────────────
@@ -52,10 +53,22 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
       accessibilityRole="button"
       accessibilityLabel={`${account.custom_name ?? account.name}, ${typeLabel} account, balance ${fmtBalance}`}
     >
-      {/* Icon */}
-      <View style={[styles.accountIcon, { backgroundColor: config.bg }]}>
-        <Icon size={20} color={config.iconColor} />
-      </View>
+      {/* Bank logo or type icon */}
+      {(() => {
+        const Logo = getBankLogoComponent(account.bank_logo_url);
+        if (Logo) {
+          return (
+            <View style={[styles.accountIcon, { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e2e8f0' }]}>
+              <Logo width={24} height={24} />
+            </View>
+          );
+        }
+        return (
+          <View style={[styles.accountIcon, { backgroundColor: config.bg }]}>
+            <Icon size={20} color={config.iconColor} />
+          </View>
+        );
+      })()}
       {/* Text */}
       <View style={styles.accountCenter}>
         <Text style={styles.accountName} numberOfLines={1}>

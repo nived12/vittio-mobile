@@ -34,6 +34,11 @@ interface UIState {
   // Selected month for dashboard (persists across tab switches)
   selectedMonth: string | undefined;
   setSelectedMonth: (month: string | undefined) => void;
+
+  // Statement upload modal trigger (opened from profile or account detail)
+  showStatementUpload: boolean;
+  openStatementUpload: () => void;
+  closeStatementUpload: () => void;
 }
 
 let toastIdCounter = 0;
@@ -76,4 +81,9 @@ export const useUIStore = create<UIState>((set) => ({
   // ── Selected month ─────────────────────────────────────────────────────────
   selectedMonth: undefined,
   setSelectedMonth: (month) => set({ selectedMonth: month }),
+
+  // ── Statement upload modal ─────────────────────────────────────────────────
+  showStatementUpload: false,
+  openStatementUpload: () => set({ showStatementUpload: true }),
+  closeStatementUpload: () => set({ showStatementUpload: false }),
 }));
