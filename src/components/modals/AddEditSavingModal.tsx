@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -119,10 +118,7 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}
-      >
+      <View style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}>
         {/* Handle + header */}
         <View style={s.handle} />
         <View style={s.header}>
@@ -134,7 +130,7 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets>
           {/* Name */}
           <View style={s.field}>
             <Text style={s.label}>{t('savings.addModal.nameLabel')}</Text>
@@ -269,7 +265,7 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
             {isEdit ? t('savings.addModal.saveChangesButton') : t('savings.addModal.saveButton')}
           </Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

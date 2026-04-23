@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Keyboard,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -341,11 +340,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
           onPress={isSaving ? undefined : onClose}
         />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
             <View style={styles.handle} />
 
             {/* Header */}
@@ -363,6 +358,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.scrollContent}
+              automaticallyAdjustKeyboardInsets
             >
               {/* Amount */}
               <View style={styles.amountRow}>
@@ -580,7 +576,6 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
               </TouchableOpacity>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
       </View>
 
       {/* Sub-sheets */}
@@ -614,9 +609,6 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  keyboardView: {
-    justifyContent: 'flex-end',
   },
   modalContainer: {
     backgroundColor: '#ffffff',

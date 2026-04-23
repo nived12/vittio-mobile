@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -120,10 +119,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}
-      >
+      <View style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}>
         <View style={s.handle} />
         <View style={s.header}>
           <Text style={s.title}>
@@ -134,7 +130,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets>
           {/* Name */}
           <View style={s.field}>
             <Text style={s.label}>{t('goals.addModal.nameLabel')}</Text>
@@ -237,7 +233,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
             {isEdit ? t('goals.addModal.saveChangesButton') : t('goals.addModal.saveButton')}
           </Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

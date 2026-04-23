@@ -4,6 +4,7 @@ const KEYS = {
   ACCESS_TOKEN:  'vittio_access_token',
   REFRESH_TOKEN: 'vittio_refresh_token',
   USER:          'vittio_user',
+  LOCALE:        'vittio_locale',
 } as const;
 
 export interface StoredTokens {
@@ -68,7 +69,24 @@ async function getUser<T = unknown>(): Promise<T | null> {
 }
 
 /**
+ * Persist the user's chosen locale.
+ */
+async function saveLocale(locale: 'en' | 'es'): Promise<void> {
+  await SecureStore.setItemAsync(KEYS.LOCALE, locale);
+}
+
+/**
+ * Read the persisted locale. Returns null if never set.
+ */
+async function getLocale(): Promise<'en' | 'es' | null> {
+  const stored = await SecureStore.getItemAsync(KEYS.LOCALE);
+  if (stored === 'en' || stored === 'es') return stored;
+  return null;
+}
+
+/**
  * Remove all stored tokens and user data (call on logout or auth failure).
+ * Locale is intentionally NOT cleared on logout — it's a device preference.
  */
 async function clearTokens(): Promise<void> {
   await Promise.all([
@@ -85,5 +103,7 @@ export const tokenStorage = {
   getRefreshToken,
   saveUser,
   getUser,
+  saveLocale,
+  getLocale,
   clearTokens,
 };

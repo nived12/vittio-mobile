@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '../src/stores/authStore';
+import { useUIStore } from '../src/stores/uiStore';
 import '../src/i18n'; // Initialize i18next
 
 // ── Splash screen — keep visible until hydration completes ─────────────────
@@ -41,6 +42,7 @@ export default function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrated      = useAuthStore((s) => s.isHydrated);
   const hydrate         = useAuthStore((s) => s.hydrate);
+  const hydrateLocale   = useUIStore((s) => s.hydrateLocale);
 
   const segments = useSegments();
 
@@ -53,7 +55,7 @@ export default function RootLayout() {
         Inter_600SemiBold,
         Inter_700Bold,
       });
-      await hydrate();
+      await Promise.all([hydrate(), hydrateLocale()]);
     }
     prepare();
   }, [hydrate]);

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -134,10 +133,7 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}
-      >
+      <View style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}>
         <View style={s.handle} />
         <View style={s.header}>
           <Text style={s.title}>
@@ -148,7 +144,7 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets>
           <View style={s.field}>
             <Text style={s.label}>{t('debts.addModal.nameLabel')}</Text>
             <TextInput style={[s.input, errors.name && s.inputError]} value={name} onChangeText={setName}
@@ -251,7 +247,7 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
             {isEdit ? t('debts.addModal.saveChangesButton') : t('debts.addModal.saveButton')}
           </Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

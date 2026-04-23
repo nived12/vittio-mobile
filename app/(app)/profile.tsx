@@ -4,8 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import i18n from '../../src/i18n';
-
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
@@ -19,9 +17,7 @@ export default function ProfileScreen() {
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
 
   function toggleLanguage() {
-    const next = locale === 'es' ? 'en' : 'es';
-    setLocale(next);
-    i18n.changeLanguage(next);
+    setLocale(locale === 'es' ? 'en' : 'es');
   }
 
   const handleLogout = () => {

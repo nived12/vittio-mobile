@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -84,6 +84,10 @@ export default function SignupScreen() {
   });
 
   const passwordValue = watch('password');
+
+  useEffect(() => {
+    setPasswordStrength(calculateStrength(passwordValue));
+  }, [passwordValue]);
 
   const allFieldsFilled =
     watch('first_name').length > 0 &&
@@ -268,100 +272,90 @@ export default function SignupScreen() {
           {/* Password */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>{t('auth.signup.passwordLabel')}</Text>
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <>
-                  <View style={[styles.inputWrapper, errors.password ? styles.inputWrapperError : null]}>
-                    <TextInput
-                      ref={passwordRef}
-                      style={[styles.inputInner]}
-                      value={value}
-                      onChangeText={(text) => {
-                        onChange(text);
-                        setPasswordStrength(calculateStrength(text));
-                      }}
-                      onBlur={onBlur}
-                      placeholder="••••••••"
-                      placeholderTextColor={colors.neutral[400]}
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      autoComplete="new-password"
-                      textContentType="newPassword"
-                      returnKeyType="next"
-                      onSubmitEditing={() => confirmPasswordRef.current?.focus()}
-                      editable={!isLoading}
-                      accessibilityLabel="Password"
-                      accessibilityHint="Must be at least 8 characters"
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowPassword((v) => !v)}
-                      accessibilityRole="button"
-                      accessibilityLabel={showPassword ? t('auth.signup.hidePassword') : t('auth.signup.showPassword')}
-                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    >
-                      <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color={colors.neutral[400]} />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Strength bar */}
-                  {value.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
-
-                  {errors.password?.message != null && (
-                    <Text style={styles.fieldError}>{errors.password.message}</Text>
-                  )}
-                </>
-              )}
-            />
+            <View style={[styles.inputWrapper, errors.password ? styles.inputWrapperError : null]}>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    ref={passwordRef}
+                    style={styles.inputInner}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.neutral[400]}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="new-password"
+                    textContentType="none"
+                    returnKeyType="next"
+                    onSubmitEditing={() => confirmPasswordRef.current?.focus()}
+                    editable={!isLoading}
+                    accessibilityLabel="Password"
+                    accessibilityHint="Must be at least 8 characters"
+                  />
+                )}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? t('auth.signup.hidePassword') : t('auth.signup.showPassword')}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color={colors.neutral[400]} />
+              </TouchableOpacity>
+            </View>
+            {passwordValue.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
+            {errors.password?.message != null && (
+              <Text style={styles.fieldError}>{errors.password.message}</Text>
+            )}
           </View>
 
           {/* Confirm password */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>{t('auth.signup.confirmPasswordLabel')}</Text>
-            <Controller
-              control={control}
-              name="password_confirmation"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <>
-                  <View style={[styles.inputWrapper, errors.password_confirmation ? styles.inputWrapperError : null]}>
-                    <TextInput
-                      ref={confirmPasswordRef}
-                      style={styles.inputInner}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      placeholder="••••••••"
-                      placeholderTextColor={colors.neutral[400]}
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      autoComplete="new-password"
-                      textContentType="newPassword"
-                      returnKeyType="done"
-                      onSubmitEditing={handleSubmit(onSubmit)}
-                      editable={!isLoading}
-                      accessibilityLabel="Confirm password"
-                      accessibilityHint="Re-enter your password"
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeButton}
-                      onPress={() => setShowConfirmPassword((v) => !v)}
-                      accessibilityRole="button"
-                      accessibilityLabel={showConfirmPassword ? t('auth.signup.hideConfirmPassword') : t('auth.signup.showConfirmPassword')}
-                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    >
-                      <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color={colors.neutral[400]} />
-                    </TouchableOpacity>
-                  </View>
-                  {errors.password_confirmation?.message != null && (
-                    <Text style={styles.fieldError}>{errors.password_confirmation.message}</Text>
-                  )}
-                </>
-              )}
-            />
+            <View style={[styles.inputWrapper, errors.password_confirmation ? styles.inputWrapperError : null]}>
+              <Controller
+                control={control}
+                name="password_confirmation"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    ref={confirmPasswordRef}
+                    style={styles.inputInner}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.neutral[400]}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="new-password"
+                    textContentType="none"
+                    returnKeyType="done"
+                    onSubmitEditing={handleSubmit(onSubmit)}
+                    editable={!isLoading}
+                    accessibilityLabel="Confirm password"
+                    accessibilityHint="Re-enter your password"
+                  />
+                )}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={showConfirmPassword ? t('auth.signup.hideConfirmPassword') : t('auth.signup.showConfirmPassword')}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color={colors.neutral[400]} />
+              </TouchableOpacity>
+            </View>
+            {errors.password_confirmation?.message != null && (
+              <Text style={styles.fieldError}>{errors.password_confirmation.message}</Text>
+            )}
           </View>
 
           {/* Submit */}
@@ -503,11 +497,11 @@ const styles = StyleSheet.create({
     backgroundColor: components.input.error.backgroundColor,
   },
   inputInner: {
-    flex:       1,
-    fontFamily: components.input.fontFamily,
-    fontSize:   components.input.fontSize,
-    color:      components.input.resting.color,
-    padding:    0,
+    flex:              1,
+    fontFamily:        components.input.fontFamily,
+    fontSize:          components.input.fontSize,
+    color:             components.input.resting.color,
+    paddingHorizontal: components.input.paddingH,
   },
   eyeButton: {
     padding:        8,

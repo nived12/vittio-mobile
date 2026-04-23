@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -238,11 +237,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
           activeOpacity={1}
           onPress={isSaving || showBankPicker ? undefined : onClose}
         />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
             <View style={styles.handle} />
 
             {showBankPicker ? (
@@ -335,6 +330,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
                   contentContainerStyle={styles.scrollContent}
+                  automaticallyAdjustKeyboardInsets
                 >
                   {/* ── Bank picker trigger (add mode only) ── */}
                   {!isEditMode && (
@@ -582,7 +578,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
               </>
             )}
           </View>
-        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -593,7 +588,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
-  keyboardView: { justifyContent: 'flex-end' },
   modalContainer: {
     backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,

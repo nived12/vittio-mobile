@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import i18n from '../i18n';
+import { tokenStorage } from '../utils/tokenStorage';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
@@ -16,6 +18,7 @@ interface UIState {
   // Locale
   locale: 'en' | 'es';
   setLocale: (locale: 'en' | 'es') => void;
+  hydrateLocale: () => Promise<void>;
 
   // Toasts
   toasts: Toast[];
@@ -45,8 +48,23 @@ let toastIdCounter = 0;
 
 export const useUIStore = create<UIState>((set) => ({
   // ── Locale ─────────────────────────────────────────────────────────────────
-  locale: 'en',
-  setLocale: (locale) => set({ locale }),
+  locale: 'es',
+  setLocale: (locale) => {
+    set({ locale });
+    void tokenStorage.saveLocale(locale);
+    void i18n.changeLanguage(locale);
+  },
+  hydrateLocale: async () => {
+    try {
+      const stored = await tokenStorage.getLocale();
+      const locale = stored ?? 'es';
+      set({ locale });
+      await i18n.changeLanguage(locale);
+    } catch {
+      set({ locale: 'es' });
+      void i18n.changeLanguage('es');
+    }
+  },
 
   // ── Toasts ─────────────────────────────────────────────────────────────────
   toasts: [],

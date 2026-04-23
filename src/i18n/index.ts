@@ -20,7 +20,7 @@ function detectLocale(): SupportedLocale {
       return lang as SupportedLocale;
     }
   }
-  return 'en';
+  return 'es';
 }
 
 i18n
@@ -31,7 +31,7 @@ i18n
       es: { translation: es },
     },
     lng:              detectLocale(),
-    fallbackLng:      'en',
+    fallbackLng:      'es',
     interpolation: {
       escapeValue: false, // React already escapes by default
     },
