@@ -130,10 +130,16 @@ apiClient.interceptors.response.use(
     }
 
     if (__DEV__) {
-      console.error(
-        `[API] Error ${error.response?.status} ${originalRequest.url}`,
-        error.response?.data,
-      );
+      if (error.response) {
+        console.error(
+          `[API] Error ${error.response.status} ${originalRequest.url}`,
+          error.response.data,
+        );
+      } else {
+        console.warn(
+          `[API] Network error — server unreachable (${originalRequest.url})`,
+        );
+      }
     }
 
     return Promise.reject(error);

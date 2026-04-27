@@ -19,6 +19,7 @@ import { AddEditSavingModal } from '../../../../src/components/modals/AddEditSav
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { useUIStore } from '../../../../src/stores/uiStore';
+import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
 
 function formatCurrency(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }).format(amount);
@@ -40,6 +41,7 @@ export default function SavingDetailScreen() {
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const [showEdit, setShowEdit] = useState(false);
+  const requireConfirmed = useRequireConfirmed();
 
   const savingId = Number(id);
   const { data: saving, isLoading, isError, refetch } = useSaving(savingId);
@@ -190,7 +192,7 @@ export default function SavingDetailScreen() {
           )}
 
           {/* Edit button */}
-          <TouchableOpacity style={s.editBtn} onPress={() => setShowEdit(true)}>
+          <TouchableOpacity style={s.editBtn} onPress={() => requireConfirmed(() => setShowEdit(true))}>
             <Text style={s.editBtnText}>{t('common.edit')}</Text>
           </TouchableOpacity>
         </ScrollView>

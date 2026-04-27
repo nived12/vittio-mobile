@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
+import * as ExpoLinking from 'expo-linking';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +29,7 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, isApiError } from '../../src/api/client';
 import { authApi } from '../../src/api/auth';
 import { colors, components, spacing, textStyles } from '../../src/theme';
+import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
 
 // ── Validation schema ──────────────────────────────────────────────────────
 
@@ -49,13 +52,15 @@ type ErrorVariant =
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function LoginScreen() {
-  const { t }       = useTranslation();
-  const login       = useAuthStore((s) => s.login);
-  const isLoading   = useAuthStore((s) => s.isLoading);
+  const { t }            = useTranslation();
+  const login            = useAuthStore((s) => s.login);
+  const loginWithGoogle  = useAuthStore((s) => s.loginWithGoogle);
+  const isLoading        = useAuthStore((s) => s.isLoading);
 
   const [showPassword,    setShowPassword]    = useState(false);
   const [errorCode,       setErrorCode]       = useState<ErrorVariant>(null);
   const [resendSuccess,   setResendSuccess]   = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const passwordRef = useRef<TextInput>(null);
@@ -172,11 +177,59 @@ export default function LoginScreen() {
   // ── Resend confirmation ───────────────────────────────────────────────────
   const handleResendConfirmation = async () => {
     try {
-      await authApi.resendConfirmation();
+      // Pass the email from the form — the user isn't logged in yet at this point
+      const email = watch('email');
+      await authApi.resendConfirmation(email || undefined);
       setResendSuccess(true);
       setTimeout(() => setResendSuccess(false), 3000);
     } catch {
       // Silent fail — the user can try again
+    }
+  };
+
+  // ── Google Sign-In ────────────────────────────────────────────────────────
+  const handleGoogleSignIn = async () => {
+    if (isGoogleLoading || isLoading) return;
+    setIsGoogleLoading(true);
+    setErrorCode(null);
+
+    try {
+      const apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
+      const baseUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
+      const redirectUri = 'vittio://auth/callback';
+      const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+      const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
+      console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : '');
+
+      if (result.type !== 'success') return;
+
+      const parsed = ExpoLinking.parse(result.url);
+      const access_token  = parsed.queryParams?.['access_token'] as string | undefined;
+      const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
+      const expires_in    = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
+      const error         = parsed.queryParams?.['error'] as string | undefined;
+
+      if (error != null) {
+        setErrorCode('INVALID_CREDENTIALS');
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+
+      if (!access_token || !refresh_token) {
+        setErrorCode('INVALID_CREDENTIALS');
+        return;
+      }
+
+      await loginWithGoogle({ access_token, refresh_token, expires_in, token_type: 'Bearer' });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(app)');
+    } catch (err) {
+      console.error('[Google OAuth] error:', err);
+      setErrorCode('NETWORK_ERROR');
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -418,6 +471,30 @@ export default function LoginScreen() {
               <View style={styles.dividerLine} />
             </View>
 
+            {/* Google Sign-In button */}
+            <TouchableOpacity
+              style={[
+                styles.googleButton,
+                (isGoogleLoading || isLoading) && styles.googleButtonDisabled,
+              ]}
+              onPress={handleGoogleSignIn}
+              disabled={isGoogleLoading || isLoading}
+              accessibilityRole="button"
+              accessibilityLabel={t('auth.oauth.continueWithGoogle')}
+              accessibilityState={{ busy: isGoogleLoading, disabled: isGoogleLoading || isLoading }}
+            >
+              {isGoogleLoading ? (
+                <ActivityIndicator size="small" color={colors.text.secondary} />
+              ) : (
+                <>
+                  <GoogleLogo size={20} />
+                  <Text style={styles.googleButtonText}>
+                    {t('auth.oauth.continueWithGoogle')}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
             {/* Sign up link */}
             <View style={styles.signUpRow}>
               <Text style={styles.signUpText}>{t('auth.login.noAccount')}</Text>
@@ -613,6 +690,28 @@ const styles = StyleSheet.create({
     ...textStyles.bodySm,
     color:           colors.neutral[400],
     marginHorizontal: 12,
+  },
+
+  // Google Sign-In
+  googleButton: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    justifyContent:  'center',
+    height:          components.button.heightLg,
+    borderRadius:    components.button.borderRadius,
+    borderWidth:     1,
+    borderColor:     colors.border.default,
+    backgroundColor: '#ffffff',
+    gap:             10,
+    marginBottom:    spacing.md,
+  },
+  googleButtonDisabled: {
+    opacity: 0.6,
+  },
+  googleButtonText: {
+    ...textStyles.bodyMd,
+    fontFamily: 'Inter_600SemiBold',
+    color:      colors.text.primary,
   },
 
   // Sign up

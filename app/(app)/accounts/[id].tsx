@@ -24,6 +24,7 @@ import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
@@ -109,6 +110,7 @@ export default function AccountDetailScreen() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showEditAccount, setShowEditAccount] = useState(false);
+  const requireConfirmed = useRequireConfirmed();
   const [categorizingTxId, setCategorizingTxId] = useState<number | null>(null);
 
   const { data: account, isLoading: accountLoading, isError: accountError, refetch: refetchAccount } =
@@ -220,7 +222,7 @@ export default function AccountDetailScreen() {
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
-            setShowEditAccount(true);
+            requireConfirmed(() => setShowEditAccount(true));
           } else if (buttonIndex === 1) {
             handleDeleteAccount();
           }
@@ -231,7 +233,7 @@ export default function AccountDetailScreen() {
         'Opciones',
         undefined,
         [
-          { text: 'Editar', onPress: () => Alert.alert('Próximamente', 'La edición estará disponible en la próxima versión.') },
+          { text: 'Editar', onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
           { text: 'Eliminar', style: 'destructive', onPress: handleDeleteAccount },
           { text: 'Cancelar', style: 'cancel' },
         ],

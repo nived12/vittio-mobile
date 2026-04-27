@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
 
 import { authApi } from '../../src/api/auth';
+import { getApiErrorCode } from '../../src/api/client';
 import { colors, components, spacing, textStyles } from '../../src/theme';
 
 const forgotSchema = z.object({
@@ -31,8 +32,9 @@ type ForgotFormValues = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordScreen() {
   const { t }      = useTranslation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [sent,      setSent]      = useState(false);
+  const [isLoading,  setIsLoading]  = useState(false);
+  const [sent,       setSent]       = useState(false);
+  const [errorCode,  setErrorCode]  = useState<string | null>(null);
 
   const {
     control,
@@ -50,12 +52,22 @@ export default function ForgotPasswordScreen() {
   const onSubmit = async (values: ForgotFormValues) => {
     if (isLoading) return;
     setIsLoading(true);
+    setErrorCode(null);
     Keyboard.dismiss();
     try {
       await authApi.forgotPassword(values.email);
       setSent(true);
-    } catch {
-      setSent(true); // Don't reveal whether email exists
+    } catch (err) {
+      const code = getApiErrorCode(err);
+      if (code != null) {
+        // API returned a specific error code — surface it so the user can act
+        // (e.g. OAUTH_ACCOUNT → "use Google Sign-In instead")
+        setErrorCode(code);
+      } else {
+        // No structured error (network down, 404 email-not-found, etc.) —
+        // show success screen to prevent email enumeration
+        setSent(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -136,6 +148,15 @@ export default function ForgotPasswordScreen() {
             />
           </View>
 
+          {errorCode != null && (
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={16} color={colors.expense} style={{ marginRight: 8, marginTop: 1 }} />
+              <Text style={styles.errorBannerText}>
+                {t(`auth.errors.${errorCode}`, t('auth.errors.NETWORK_ERROR'))}
+              </Text>
+            </View>
+          )}
+
           <Pressable
             onPress={canSubmit && !isLoading ? handleSubmit(onSubmit) : undefined}
             disabled={!canSubmit || isLoading}
@@ -202,6 +223,21 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor:     components.input.error.borderColor,
     backgroundColor: components.input.error.backgroundColor,
+  },
+  errorBanner: {
+    flexDirection:    'row',
+    alignItems:       'flex-start',
+    backgroundColor:  '#fef2f2',
+    borderWidth:      1,
+    borderColor:      '#fecaca',
+    borderRadius:     10,
+    padding:          12,
+    marginBottom:     spacing.md,
+  },
+  errorBannerText: {
+    ...textStyles.bodySm,
+    color:  colors.expense,
+    flex:   1,
   },
   submitButton: {
     height:          components.button.heightLg,

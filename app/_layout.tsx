@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -15,6 +16,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
+import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import '../src/i18n'; // Initialize i18next
 
 // ── Splash screen — keep visible until hydration completes ─────────────────
@@ -39,12 +41,16 @@ const queryClient = new QueryClient({
 // ── Root layout ────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const isHydrated      = useAuthStore((s) => s.isHydrated);
-  const hydrate         = useAuthStore((s) => s.hydrate);
-  const hydrateLocale   = useUIStore((s) => s.hydrateLocale);
+  const isAuthenticated     = useAuthStore((s) => s.isAuthenticated);
+  const isHydrated          = useAuthStore((s) => s.isHydrated);
+  const hydrate             = useAuthStore((s) => s.hydrate);
+  const hydrateLocale       = useUIStore((s) => s.hydrateLocale);
+  const hydrateBiometricLock = useUIStore((s) => s.hydrateBiometricLock);
+  const biometricLock       = useUIStore((s) => s.biometricLock);
 
-  const segments = useSegments();
+  const segments    = useSegments();
+  const appState    = useRef<AppStateStatus>(AppState.currentState);
+  const [showLock, setShowLock] = useState(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
   useEffect(() => {
@@ -55,10 +61,10 @@ export default function RootLayout() {
         Inter_600SemiBold,
         Inter_700Bold,
       });
-      await Promise.all([hydrate(), hydrateLocale()]);
+      await Promise.all([hydrate(), hydrateLocale(), hydrateBiometricLock()]);
     }
     prepare();
-  }, [hydrate]);
+  }, [hydrate, hydrateLocale, hydrateBiometricLock]);
 
   // ── 2. Once hydrated: hide splash + enforce auth routing ───────────────
   useEffect(() => {
@@ -76,12 +82,34 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, isHydrated, segments]);
 
+  // ── 3. Biometric lock on app resume from background ───────────────────
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextState: AppStateStatus) => {
+        const wasBackground =
+          appState.current === 'background' ||
+          appState.current === 'inactive';
+        const isNowActive = nextState === 'active';
+
+        if (wasBackground && isNowActive && biometricLock && isAuthenticated) {
+          setShowLock(true);
+        }
+        appState.current = nextState;
+      },
+    );
+    return () => subscription.remove();
+  }, [biometricLock, isAuthenticated]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <StatusBar style="auto" />
           <Slot />
+          {showLock && (
+            <BiometricLockScreen onUnlock={() => setShowLock(false)} />
+          )}
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

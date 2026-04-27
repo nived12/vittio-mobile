@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
+import * as ExpoLinking from 'expo-linking';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,6 +27,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, getApiErrorDetails } from '../../src/api/client';
 import { colors, components, spacing, textStyles } from '../../src/theme';
+import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
 import {
   PasswordStrengthBar,
   calculateStrength,
@@ -50,13 +53,15 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function SignupScreen() {
-  const { t }     = useTranslation();
-  const signup    = useAuthStore((s) => s.signup);
-  const isLoading = useAuthStore((s) => s.isLoading);
+  const { t }            = useTranslation();
+  const signup           = useAuthStore((s) => s.signup);
+  const loginWithGoogle  = useAuthStore((s) => s.loginWithGoogle);
+  const isLoading        = useAuthStore((s) => s.isLoading);
 
   const [showPassword,         setShowPassword]         = useState(false);
   const [showConfirmPassword,  setShowConfirmPassword]  = useState(false);
   const [passwordStrength,     setPasswordStrength]     = useState<0|1|2|3|4>(0);
+  const [isGoogleLoading,      setIsGoogleLoading]      = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const scrollViewRef      = useRef<ScrollView>(null);
@@ -134,6 +139,54 @@ export default function SignupScreen() {
           message: t('errors.UNKNOWN_ERROR'),
         });
       }
+    }
+  };
+
+  // ── Google Sign-In ────────────────────────────────────────────────────────
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    if (isGoogleLoading || isLoading) return;
+    setIsGoogleLoading(true);
+    setGoogleError(null);
+
+    try {
+      const apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
+      const baseUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
+      const redirectUri = 'vittio://auth/callback';
+      const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+      const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
+      console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : '');
+
+      if (result.type !== 'success') return;
+
+      const parsed = ExpoLinking.parse(result.url);
+      const access_token  = parsed.queryParams?.['access_token'] as string | undefined;
+      const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
+      const expires_in    = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
+      const error         = parsed.queryParams?.['error'] as string | undefined;
+
+      if (error != null) {
+        setGoogleError(t('auth.oauth.error'));
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+
+      if (!access_token || !refresh_token) {
+        setGoogleError(t('auth.oauth.error'));
+        return;
+      }
+
+      await loginWithGoogle({ access_token, refresh_token, expires_in, token_type: 'Bearer' });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(app)');
+    } catch (err) {
+      console.error('[Google OAuth] error:', err);
+      setGoogleError(t('auth.oauth.error'));
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -405,6 +458,42 @@ export default function SignupScreen() {
               {t('auth.signup.privacyLink')}
             </Text>
           </Text>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>{t('auth.login.orDivider')}</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Google Sign-In error */}
+          {googleError != null && (
+            <Text style={styles.googleError}>{googleError}</Text>
+          )}
+
+          {/* Google Sign-In */}
+          <TouchableOpacity
+            style={[
+              styles.googleButton,
+              (isGoogleLoading || isLoading) && styles.googleButtonDisabled,
+            ]}
+            onPress={handleGoogleSignIn}
+            disabled={isGoogleLoading || isLoading}
+            accessibilityRole="button"
+            accessibilityLabel={t('auth.oauth.continueWithGoogle')}
+            accessibilityState={{ busy: isGoogleLoading, disabled: isGoogleLoading || isLoading }}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator size="small" color={colors.text.secondary} />
+            ) : (
+              <>
+                <GoogleLogo size={20} />
+                <Text style={styles.googleButtonText}>
+                  {t('auth.oauth.continueWithGoogle')}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -530,6 +619,51 @@ const styles = StyleSheet.create({
   },
   submitButtonTextDisabled: {
     color: components.button.primary.disabledColor,
+  },
+
+  // Divider
+  divider: {
+    flexDirection:  'row',
+    alignItems:     'center',
+    marginVertical: spacing.md,
+  },
+  dividerLine: {
+    flex:            1,
+    height:          1,
+    backgroundColor: colors.border.default,
+  },
+  dividerText: {
+    ...textStyles.bodySm,
+    color:           colors.neutral[400],
+    marginHorizontal: 12,
+  },
+
+  // Google Sign-In
+  googleButton: {
+    flexDirection:   'row',
+    alignItems:      'center',
+    justifyContent:  'center',
+    height:          components.button.heightLg,
+    borderRadius:    components.button.borderRadius,
+    borderWidth:     1,
+    borderColor:     colors.border.default,
+    backgroundColor: '#ffffff',
+    gap:             10,
+    marginBottom:    spacing.lg,
+  },
+  googleButtonDisabled: {
+    opacity: 0.6,
+  },
+  googleError: {
+    ...textStyles.bodySm,
+    color:        colors.error.icon,
+    textAlign:    'center',
+    marginBottom: spacing.sm,
+  },
+  googleButtonText: {
+    ...textStyles.bodyMd,
+    fontFamily: 'Inter_600SemiBold',
+    color:      colors.text.primary,
   },
 
   // Terms

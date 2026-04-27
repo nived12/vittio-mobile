@@ -28,6 +28,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   signup: (fields: SignupFields) => Promise<void>;
+  loginWithGoogle: (tokens: TokenPayload) => Promise<void>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<string>;
   hydrate: () => Promise<void>;
@@ -90,34 +91,61 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // ── login ─────────────────────────────────────────────────────────────────
   login: async (email, password) => {
     set({ isLoading: true });
-    // Imported lazily to avoid circular dep with apiClient
-    const { authApi } = await import('../api/auth');
-    const response = await authApi.login(email, password);
-    await get()._setAuth(
-      {
-        access_token:  response.data.access_token,
-        refresh_token: response.data.refresh_token,
-        expires_in:    response.data.expires_in,
-        token_type:    response.data.token_type,
-      },
-      response.data.user,
-    );
+    try {
+      // Imported lazily to avoid circular dep with apiClient
+      const { authApi } = await import('../api/auth');
+      const response = await authApi.login(email, password);
+      await get()._setAuth(
+        {
+          access_token:  response.data.access_token,
+          refresh_token: response.data.refresh_token,
+          expires_in:    response.data.expires_in,
+          token_type:    response.data.token_type,
+        },
+        response.data.user,
+      );
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
+  },
+
+  // ── loginWithGoogle ───────────────────────────────────────────────────────
+  // Called after WebBrowser returns the OAuth callback URL with JWT tokens.
+  // Saves tokens to SecureStore first so apiClient can pick them up for /user.
+  loginWithGoogle: async (tokens) => {
+    set({ isLoading: true });
+    try {
+      await tokenStorage.saveTokens(tokens.access_token, tokens.refresh_token);
+      set({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token });
+      const { authApi } = await import('../api/auth');
+      const user = await authApi.me();
+      await get()._setAuth(tokens, user);
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
   },
 
   // ── signup ────────────────────────────────────────────────────────────────
   signup: async (fields) => {
     set({ isLoading: true });
-    const { authApi } = await import('../api/auth');
-    const response = await authApi.signup(fields);
-    await get()._setAuth(
-      {
-        access_token:  response.data.access_token,
-        refresh_token: response.data.refresh_token,
-        expires_in:    response.data.expires_in,
-        token_type:    response.data.token_type,
-      },
-      response.data.user,
-    );
+    try {
+      const { authApi } = await import('../api/auth');
+      const response = await authApi.signup(fields);
+      await get()._setAuth(
+        {
+          access_token:  response.data.access_token,
+          refresh_token: response.data.refresh_token,
+          expires_in:    response.data.expires_in,
+          token_type:    response.data.token_type,
+        },
+        response.data.user,
+      );
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
   },
 
   // ── logout ────────────────────────────────────────────────────────────────

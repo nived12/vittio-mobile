@@ -23,7 +23,7 @@ export interface Transaction {
   bank_account: { id: number; name: string; account_type: 'debit' | 'credit' | 'cash' };
   category: { id: number; name: string; icon: string } | null;
   is_transfer: boolean;
-  transfer_account: { name: string } | null;
+  transfer_account: { id: number; name: string } | null;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +75,7 @@ export type CreateTransactionBody = {
   merchant?: string;
   reference?: string;
   category_id?: number;
+  transfer_account_id?: number;
 };
 
 export type UpdateTransactionBody = Partial<CreateTransactionBody> & {

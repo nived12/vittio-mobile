@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
+  Modal,
   ScrollView,
   View,
   Text,
@@ -8,21 +9,19 @@ import {
   RefreshControl,
   StyleSheet,
   useWindowDimensions,
-  Modal,
   Image,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, Check, LogOut, Globe } from 'lucide-react-native';
+import { ChevronDown, Check } from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../src/i18n';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuth } from '../../src/hooks/useAuth';
+import { ProfileBottomSheet } from '../../src/components/modals/ProfileBottomSheet';
 import { BalanceCard } from '../../src/components/ui/BalanceCard';
 import { ChartBar } from '../../src/components/ui/ChartBar';
 import { TransactionRow, TransactionRowSkeleton } from '../../src/components/ui/TransactionRow';
@@ -38,58 +37,6 @@ function AvatarCircle({ initials, onPress }: { initials: string; onPress: () => 
     <TouchableOpacity onPress={onPress} style={styles.avatarCircle} accessibilityRole="button">
       <Text style={styles.avatarInitials}>{initials}</Text>
     </TouchableOpacity>
-  );
-}
-
-function ProfileSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { t } = useTranslation();
-  const { user, logout } = useAuth();
-  const insets = useSafeAreaInsets();
-  const locale = useUIStore((s) => s.locale);
-  const setLocale = useUIStore((s) => s.setLocale);
-
-  function handleLogout() {
-    Alert.alert(t('profile.logout'), t('profile.logoutConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('profile.logout'), style: 'destructive',
-        onPress: async () => { onClose(); await logout(); },
-      },
-    ]);
-  }
-
-  function toggleLocale() {
-    const next = locale === 'es' ? 'en' : 'es';
-    setLocale(next);
-    i18n.changeLanguage(next);
-  }
-
-  const initials = [user?.first_name?.[0], user?.last_name?.[0]].filter(Boolean).join('').toUpperCase() || '?';
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.profileSheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHandle} />
-        <View style={styles.profileHeader}>
-          <View style={styles.profileAvatar}>
-            <Text style={styles.profileAvatarText}>{initials}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.profileName}>{[user?.first_name, user?.last_name].filter(Boolean).join(' ')}</Text>
-            <Text style={styles.profileEmail}>{user?.email ?? ''}</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.profileRow} onPress={toggleLocale}>
-          <Globe size={20} color="#64748b" />
-          <Text style={styles.profileRowText}>{locale === 'es' ? 'Switch to English' : 'Cambiar a Español'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.profileRow, { marginTop: 8 }]} onPress={handleLogout}>
-          <LogOut size={20} color="#e11d48" />
-          <Text style={[styles.profileRowText, { color: '#e11d48' }]}>{t('profile.logout')}</Text>
-        </TouchableOpacity>
-      </View>
-    </Modal>
   );
 }
 
@@ -373,7 +320,7 @@ export default function DashboardScreen() {
         <View style={{ height: 32 + insets.bottom }} />
       </ScrollView>
 
-      <ProfileSheet visible={showProfile} onClose={() => setShowProfile(false)} />
+      <ProfileBottomSheet visible={showProfile} onClose={() => setShowProfile(false)} />
 
       {/* Month Picker Modal */}
       <Modal

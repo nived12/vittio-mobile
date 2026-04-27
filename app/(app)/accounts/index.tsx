@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useBankAccounts } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
@@ -104,6 +105,7 @@ export default function AccountsScreen() {
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const requireConfirmed = useRequireConfirmed();
 
   const { data: accounts, isLoading, isError, refetch } = useBankAccounts();
 
@@ -152,7 +154,7 @@ export default function AccountsScreen() {
         <Text style={styles.navTitle} accessibilityRole="header">{t('accounts.title')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
-          onPress={() => setShowAddModal(true)}
+          onPress={() => requireConfirmed(() => setShowAddModal(true))}
           accessibilityRole="button"
           accessibilityLabel={t('accounts.addButton')}
         >
@@ -228,7 +230,7 @@ export default function AccountsScreen() {
             subtitle={t('accounts.empty.subtitle')}
             ctaLabel={t('accounts.empty.cta')}
             ctaVariant="primary"
-            onCta={() => setShowAddModal(true)}
+            onCta={() => requireConfirmed(() => setShowAddModal(true))}
             fullScreen
           />
         ) : (
@@ -246,7 +248,7 @@ export default function AccountsScreen() {
         {(accounts?.length ?? 0) > 0 && (
           <TouchableOpacity
             style={styles.addAccountCard}
-            onPress={() => setShowAddModal(true)}
+            onPress={() => requireConfirmed(() => setShowAddModal(true))}
             accessibilityRole="button"
             accessibilityLabel={t('accounts.addButton')}
           >

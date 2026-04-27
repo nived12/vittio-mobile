@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { useCreateTransaction, useUpdateTransaction } from '../../hooks/useTransactions';
 import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useCategories } from '../../hooks/useCategories';
+import { useMerchantRule, useCreateMerchantRule } from '../../hooks/useMerchantRules';
 import { useUIStore } from '../../stores/uiStore';
 import type { Transaction, TransactionType, CreateTransactionBody } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
@@ -71,11 +72,12 @@ interface AccountPickerProps {
   accounts: BankAccount[];
   selectedId: number | null;
   locale: string;
+  title?: string;
   onSelect: (account: BankAccount) => void;
   onClose: () => void;
 }
 
-function AccountPickerSheet({ visible, accounts, selectedId, locale, onSelect, onClose }: AccountPickerProps) {
+function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSelect, onClose }: AccountPickerProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
@@ -87,13 +89,14 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, onSelect, o
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.sheet, styles.accountSheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.handle} />
-        <Text style={styles.sheetTitle}>{t('transactions.select_account_title')}</Text>
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.sheet, styles.accountSheet, { paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.handle} />
+          <Text style={styles.sheetTitle}>{title ?? t('transactions.select_account_title')}</Text>
 
-        <FlatList
-          data={accounts}
+          <FlatList
+            data={accounts}
           keyExtractor={(a) => String(a.id)}
           renderItem={({ item }) => {
             const selected = item.id === selectedId;
@@ -122,6 +125,7 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, onSelect, o
             <Text style={styles.emptyText}>{t('transactions.no_account_warning')}</Text>
           }
         />
+        </View>
       </View>
     </Modal>
   );
@@ -155,32 +159,34 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.handle} />
-        <Text style={styles.sheetTitle}>{t('transactions.category_label')}</Text>
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.handle} />
+          <Text style={styles.sheetTitle}>{t('transactions.category_label')}</Text>
 
-        <TouchableOpacity
-          style={styles.categoryRow}
-          onPress={() => { onSelect(null); onClose(); }}
-        >
-          <Text style={styles.categoryRowText}>{t('transactionDetail.fields.uncategorized')}</Text>
-          {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.categoryRow}
+            onPress={() => { onSelect(null); onClose(); }}
+          >
+            <Text style={styles.categoryRowText}>{t('transactionDetail.fields.uncategorized')}</Text>
+            {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
+          </TouchableOpacity>
 
-        <FlatList
-          data={flat}
-          keyExtractor={(item) => String(item.cat.id)}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20 }]}
-              onPress={() => { onSelect(item.cat); onClose(); }}
-            >
-              <Text style={styles.categoryRowText}>{item.cat.name}</Text>
-              {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
-            </TouchableOpacity>
-          )}
-        />
+          <FlatList
+            data={flat}
+            keyExtractor={(item) => String(item.cat.id)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20 }]}
+                onPress={() => { onSelect(item.cat); onClose(); }}
+              >
+                <Text style={styles.categoryRowText}>{item.cat.name}</Text>
+                {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -202,6 +208,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
   // ── Mutations ──
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction(transaction?.id ?? 0);
+  const createRuleMutation = useCreateMerchantRule();
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
@@ -219,6 +226,43 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
   const [reference, setReference] = useState('');
   const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [transferToAccount, setTransferToAccount] = useState<BankAccount | null>(null);
+  const [showTransferToPicker, setShowTransferToPicker] = useState(false);
+  const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
+
+  // ── Smart categorization — committed merchant name (set on blur) ──
+  const [committedMerchant, setCommittedMerchant] = useState('');
+  const [ruleApplied, setRuleApplied] = useState(false);
+
+  // Look up merchant rule whenever committedMerchant changes
+  const { data: merchantRule } = useMerchantRule(committedMerchant);
+
+  // Auto-fill category from merchant rule (add mode only, and only once per modal open)
+  useEffect(() => {
+    if (
+      !visible ||
+      isEditMode ||
+      ruleApplied ||
+      !merchantRule ||
+      selectedCategory !== null
+    ) {
+      return;
+    }
+    // Find the category in the loaded list
+    const matchCat = categories.find(
+      (c) =>
+        c.id === merchantRule.category_id ||
+        (c.children ?? []).some((ch) => ch.id === merchantRule.category_id),
+    );
+    if (matchCat) {
+      const isChild = matchCat.id !== merchantRule.category_id;
+      const cat = isChild
+        ? (matchCat.children ?? []).find((ch) => ch.id === merchantRule.category_id) ?? matchCat
+        : matchCat;
+      setSelectedCategory(cat);
+      setRuleApplied(true);
+    }
+  }, [merchantRule, visible, isEditMode, ruleApplied, selectedCategory, categories]);
 
   // ── Pre-fill for edit mode ──
   useEffect(() => {
@@ -240,6 +284,13 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
       setConcept(transaction.concept ?? '');
       setMerchant(transaction.merchant ?? '');
       setReference(transaction.reference ?? '');
+      // Pre-fill destination account for transfer edits
+      if (transaction.is_transfer && transaction.transfer_account?.id) {
+        const destAcct = accounts.find((a) => a.id === transaction.transfer_account!.id) ?? null;
+        setTransferToAccount(destAcct);
+      } else {
+        setTransferToAccount(null);
+      }
     } else {
       // Reset for add mode
       setAmountStr('');
@@ -252,7 +303,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
       setConcept('');
       setMerchant('');
       setReference('');
+      setTransferToAccount(null);
     }
+    setHasAttemptedSave(false);
+    setCommittedMerchant('');
+    setRuleApplied(false);
   }, [visible, transaction]);
 
   // Pre-select first account when accounts load (add mode)
@@ -267,6 +322,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
     Haptics.selectionAsync();
     setTopType(t);
     setSubType(defaultSubType(t));
+    if (t !== 'transfer') setTransferToAccount(null);
   };
 
   // ── Amount color ──
@@ -274,7 +330,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
 
   // ── Validation ──
   const amountNum = parseFloat(amountStr) || 0;
-  const canSave = amountNum > 0 && description.trim().length > 0 && selectedAccount !== null;
+  const canSave =
+    amountNum > 0 &&
+    description.trim().length > 0 &&
+    selectedAccount !== null &&
+    (topType !== 'transfer' || transferToAccount !== null);
 
   // ── Date display ──
   const dateLocale = locale === 'es' ? es : enUS;
@@ -294,6 +354,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
 
   // ── Save ──
   const handleSave = async () => {
+    setHasAttemptedSave(true);
     if (!canSave || !selectedAccount) return;
     Keyboard.dismiss();
 
@@ -307,6 +368,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
       ...(merchant.trim() ? { merchant: merchant.trim() } : {}),
       ...(reference.trim() ? { reference: reference.trim() } : {}),
       ...(selectedCategory ? { category_id: selectedCategory.id } : {}),
+      ...(topType === 'transfer' && transferToAccount ? { transfer_account_id: transferToAccount.id } : {}),
     };
 
     try {
@@ -503,10 +565,32 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
                   </Text>
                   <ChevronRight size={16} color="#94a3b8" />
                 </TouchableOpacity>
-                {!selectedAccount && (
+                {hasAttemptedSave && !selectedAccount && (
                   <Text style={styles.fieldError}>{t('transactions.no_account_warning')}</Text>
                 )}
               </View>
+
+              {/* Transfer destination account */}
+              {topType === 'transfer' && (
+                <View style={styles.fieldBlock}>
+                  <Text style={styles.fieldLabel}>{t('transactions.transfer_to_label')} *</Text>
+                  <TouchableOpacity
+                    style={[styles.fieldRow, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
+                    onPress={() => setShowTransferToPicker(true)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={transferToAccount ? styles.fieldRowText : styles.fieldRowPlaceholder}>
+                      {transferToAccount
+                        ? (transferToAccount.custom_name ?? transferToAccount.name)
+                        : t('transactions.select_transfer_account_title')}
+                    </Text>
+                    <ChevronRight size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+                  {hasAttemptedSave && !transferToAccount && (
+                    <Text style={styles.fieldError}>{t('transactions.no_account_warning')}</Text>
+                  )}
+                </View>
+              )}
 
               {/* Category */}
               <View style={styles.fieldBlock}>
@@ -540,6 +624,10 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
                   style={styles.fieldInput}
                   value={merchant}
                   onChangeText={setMerchant}
+                  onBlur={() => {
+                    const trimmed = merchant.trim();
+                    if (trimmed) setCommittedMerchant(trimmed);
+                  }}
                   placeholder="Walmart, Cinépolis..."
                   placeholderTextColor="#94a3b8"
                   returnKeyType="next"
@@ -588,11 +676,31 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
         onClose={() => setShowAccountPicker(false)}
       />
 
+      <AccountPickerSheet
+        visible={showTransferToPicker}
+        accounts={accounts.filter((a) => a.id !== selectedAccount?.id)}
+        selectedId={transferToAccount?.id ?? null}
+        locale={locale}
+        title={t('transactions.select_transfer_account_title')}
+        onSelect={setTransferToAccount}
+        onClose={() => setShowTransferToPicker(false)}
+      />
+
       <CategoryPickerSheet
         visible={showCategoryPicker}
         categories={categories}
         selectedId={selectedCategory?.id ?? null}
-        onSelect={setSelectedCategory}
+        onSelect={(cat) => {
+          setSelectedCategory(cat);
+          // Save merchant rule whenever user picks a category and a merchant name is known
+          const merchantName = merchant.trim() || committedMerchant;
+          if (cat && merchantName) {
+            createRuleMutation.mutate({
+              merchant_name: merchantName,
+              category_id: cat.id,
+            });
+          }
+        }}
         onClose={() => setShowCategoryPicker(false)}
       />
     </Modal>
@@ -743,6 +851,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  fieldRowError: {
+    borderWidth: 1,
+    borderColor: '#e11d48',
   },
   fieldRowText: {
     fontSize: 15,

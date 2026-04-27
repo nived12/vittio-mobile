@@ -68,22 +68,26 @@ async function refresh(refreshToken: string): Promise<RefreshResponse> {
  * Used during app hydration to validate the stored access token.
  */
 async function me(): Promise<AuthUser> {
-  const response = await apiClient.get<{ data: { user: AuthUser } }>('/user');
-  return response.data.data.user;
+  const response = await apiClient.get<{ data: AuthUser }>('/user');
+  return response.data.data;
 }
 
 /**
  * Request a password reset email.
  */
 async function forgotPassword(email: string): Promise<void> {
-  await apiClient.post('/password', { user: { email } });
+  await apiClient.post('/password_resets', { user: { email } });
 }
 
 /**
- * Resend the email confirmation to the current user.
+ * Resend the email confirmation.
+ * - When the user is already authenticated (in-app banner): call with no args —
+ *   the server uses the Bearer token to find the current user.
+ * - When the user is not yet logged in (login screen): pass the email address
+ *   so the server can look the user up.
  */
-async function resendConfirmation(): Promise<void> {
-  await apiClient.post('/email_confirmations');
+async function resendConfirmation(email?: string): Promise<void> {
+  await apiClient.post('/email_confirmations', email ? { email } : undefined);
 }
 
 /**

@@ -98,6 +98,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showBankPicker, setShowBankPicker] = useState(false);
   const [bankQuery, setBankQuery] = useState('');
+  const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
 
   // ── Reset on open/close ──
   useEffect(() => {
@@ -125,6 +126,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     setShowBankPicker(false);
     setShowDatePicker(false);
     setBankQuery('');
+    setHasAttemptedSave(false);
   }, [visible, account]);
 
   // ── Bank picker filter ──
@@ -192,6 +194,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 
   // ── Save ──
   const handleSave = async () => {
+    setHasAttemptedSave(true);
     if (!canSave || isSaving) return;
     try {
       if (isEditMode && account) {
@@ -339,7 +342,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                       <TouchableOpacity
                         style={[
                           styles.fieldRow,
-                          !selectedBank && !isCash && styles.fieldRowRequired,
+                          hasAttemptedSave && !selectedBank && !isCash && styles.fieldRowRequired,
                         ]}
                         onPress={() => setShowBankPicker(true)}
                         accessibilityRole="button"
@@ -374,7 +377,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                       <TextInput
                         style={[
                           styles.fieldInput,
-                          accountNumber.trim().length === 0 && styles.fieldInputRequired,
+                          hasAttemptedSave && accountNumber.trim().length === 0 && styles.fieldInputRequired,
                         ]}
                         value={accountNumber}
                         onChangeText={(v) => setAccountNumber(v.replace(/[^0-9]/g, ''))}

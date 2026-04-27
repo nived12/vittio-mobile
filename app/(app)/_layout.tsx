@@ -6,16 +6,24 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
+import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { useUIStore } from '../../src/stores/uiStore';
+import { useAuthStore } from '../../src/stores/authStore';
+import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
 export default function AppLayout() {
   const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
-  const showUploadStatement = useUIStore((s) => s.showStatementUpload);
-  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
-  const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
+  const showUploadStatement   = useUIStore((s) => s.showStatementUpload);
+  const openStatementUpload   = useUIStore((s) => s.openStatementUpload);
+  const closeStatementUpload  = useUIStore((s) => s.closeStatementUpload);
+  const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
+  const user                  = useAuthStore((s) => s.user);
+  const requireConfirmed      = useRequireConfirmed();
+
+  const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -26,14 +34,14 @@ export default function AppLayout() {
           cancelButtonIndex: 0,
         },
         (idx) => {
-          if (idx === 1) setShowAddTransaction(true);
-          if (idx === 2) openStatementUpload();
+          if (idx === 1) requireConfirmed(() => setShowAddTransaction(true));
+          if (idx === 2) requireConfirmed(() => openStatementUpload());
         },
       );
     } else {
       Alert.alert(t('navigation.fab.options'), '', [
-        { text: t('navigation.fab.newTransaction'), onPress: () => setShowAddTransaction(true) },
-        { text: t('navigation.fab.uploadStatement'), onPress: () => openStatementUpload() },
+        { text: t('navigation.fab.newTransaction'), onPress: () => requireConfirmed(() => setShowAddTransaction(true)) },
+        { text: t('navigation.fab.uploadStatement'), onPress: () => requireConfirmed(() => openStatementUpload()) },
         { text: t('navigation.fab.cancel'), style: 'cancel' },
       ]);
     }
@@ -41,6 +49,7 @@ export default function AppLayout() {
 
   return (
     <>
+      {showBanner && <ConfirmationBanner />}
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -95,7 +104,7 @@ export default function AppLayout() {
                 <TouchableOpacity
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    setShowAddTransaction(true);
+                    requireConfirmed(() => setShowAddTransaction(true));
                   }}
                   onLongPress={handleFabLongPress}
                   style={{
@@ -152,8 +161,8 @@ export default function AppLayout() {
         {/* Hide profile from tab bar (kept as dead code) */}
         <Tabs.Screen name="profile" options={{ href: null }} />
 
-        {/* Hide settings from tab bar */}
-        <Tabs.Screen name="settings" options={{ href: null }} />
+        {/* Hide categories from tab bar */}
+        <Tabs.Screen name="categories" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal

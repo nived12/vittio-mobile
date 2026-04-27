@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   FlatList,
-  Image,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,9 +11,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Plus, Upload } from 'lucide-react-native';
-import i18n from '../../../src/i18n';
-import { useAuthStore } from '../../../src/stores/authStore';
+import { ChevronRight, Plus } from 'lucide-react-native';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useSavings } from '../../../src/hooks/useSavings';
 import { useDebts } from '../../../src/hooks/useDebts';
@@ -25,6 +20,7 @@ import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { AddEditSavingModal } from '../../../src/components/modals/AddEditSavingModal';
 import { AddEditDebtModal } from '../../../src/components/modals/AddEditDebtModal';
 import { AddEditGoalModal } from '../../../src/components/modals/AddEditGoalModal';
+import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
 import type { Saving } from '../../../src/api/savings';
 import type { Debt } from '../../../src/api/debts';
 import type { Goal } from '../../../src/api/goals';
@@ -33,15 +29,6 @@ import type { Goal } from '../../../src/api/goals';
 
 type Segment = 'savings' | 'debts' | 'goals';
 
-function getInitials(fullName: string | null | undefined): string {
-  if (!fullName) return '?';
-  return fullName
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 function formatCurrency(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, {
@@ -511,147 +498,16 @@ function StatusBadge({ status, type }: { status: string; type: 'saving' | 'debt'
   );
 }
 
-// ── ProfileBottomSheet ─────────────────────────────────────────────────────
-
-function ProfileBottomSheet({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation();
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-  const locale = useUIStore((s) => s.locale);
-  const setLocale = useUIStore((s) => s.setLocale);
-  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
-  const insets = useSafeAreaInsets();
-
-  function toggleLanguage(lang: 'en' | 'es') {
-    Haptics.selectionAsync();
-    setLocale(lang);
-    i18n.changeLanguage(lang);
-  }
-
-  function handleLogout() {
-    Alert.alert(
-      t('profile.logoutConfirmTitle'),
-      t('profile.logoutConfirmMessage'),
-      [
-        { text: t('profile.logoutCancel'), style: 'cancel' },
-        {
-          text: t('profile.logoutConfirm'),
-          style: 'destructive',
-          onPress: async () => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            onClose();
-            await logout();
-            router.replace('/(auth)/login');
-          },
-        },
-      ],
-    );
-  }
-
-  function handleUpload() {
-    onClose();
-    setTimeout(() => openStatementUpload(), 300);
-  }
-
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={sheetStyles.backdrop}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-      <View style={[sheetStyles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-        {/* Handle */}
-        <View style={sheetStyles.handle} />
-
-        {/* User info */}
-        <View style={sheetStyles.userRow}>
-          <View style={sheetStyles.avatarLg}>
-            <Text style={sheetStyles.avatarTextLg}>{getInitials(user?.full_name)}</Text>
-          </View>
-          <View style={{ marginLeft: 12, flex: 1 }}>
-            <Text style={sheetStyles.userName}>{user?.full_name ?? '—'}</Text>
-            <Text style={sheetStyles.userEmail}>{user?.email ?? ''}</Text>
-          </View>
-        </View>
-
-        <View style={sheetStyles.divider} />
-
-        {/* Language toggle */}
-        <View style={sheetStyles.row}>
-          <Text style={sheetStyles.rowLabel}>{t('profile.language')}</Text>
-          <View style={{ flexDirection: 'row', gap: 4 }}>
-            {(['en', 'es'] as const).map((lang) => (
-              <TouchableOpacity
-                key={lang}
-                onPress={() => toggleLanguage(lang)}
-                style={[
-                  sheetStyles.langPill,
-                  locale === lang && sheetStyles.langPillActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    sheetStyles.langPillText,
-                    locale === lang && sheetStyles.langPillTextActive,
-                  ]}
-                >
-                  {lang.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={sheetStyles.divider} />
-
-        {/* Upload statement */}
-        <TouchableOpacity style={sheetStyles.row} onPress={handleUpload} activeOpacity={0.7}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Upload size={20} color="#4f46e5" />
-            <Text style={sheetStyles.rowLabel}>{t('profile.statementUpload')}</Text>
-          </View>
-          <ChevronRight size={16} color="#cbd5e1" />
-        </TouchableOpacity>
-
-        <View style={sheetStyles.divider} />
-
-        {/* Log out */}
-        <TouchableOpacity
-          style={sheetStyles.logoutBtn}
-          onPress={handleLogout}
-          accessibilityRole="button"
-          accessibilityLabel={t('profile.logout')}
-        >
-          <Text style={sheetStyles.logoutText}>{t('profile.logout')}</Text>
-        </TouchableOpacity>
-      </View>
-    </Modal>
-  );
-}
-
 // ── Main Screen ────────────────────────────────────────────────────────────
 
 export default function FinancesScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const user = useAuthStore((s) => s.user);
   const [activeSegment, setActiveSegment] = useState<Segment>('savings');
-  const [showProfile, setShowProfile] = useState(false);
   const [showAddSaving, setShowAddSaving] = useState(false);
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const requireConfirmed = useRequireConfirmed();
 
   const segments: { key: Segment; label: string }[] = [
     { key: 'savings', label: t('finances.tabs.savings') },
@@ -667,25 +523,9 @@ export default function FinancesScreen() {
   return (
     <>
       <View style={[styles.screen, { paddingTop: insets.top }]}>
-        {/* Top bar */}
+        {/* Header */}
         <View style={styles.topBar}>
-          <Image
-            source={require('../../../assets/images/vittio_logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessibilityLabel="Vittio"
-            accessibilityRole="image"
-          />
-          <TouchableOpacity
-            onPress={() => setShowProfile(true)}
-            style={styles.avatarBtn}
-            accessibilityRole="button"
-            accessibilityLabel={t('finances.header.profileButton')}
-          >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getInitials(user?.full_name)}</Text>
-            </View>
-          </TouchableOpacity>
+          <Text style={styles.screenTitle}>{t('navigation.finances')}</Text>
         </View>
 
         {/* Segmented control */}
@@ -718,14 +558,13 @@ export default function FinancesScreen() {
           contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {activeSegment === 'savings' && <SavingsList onAdd={() => setShowAddSaving(true)} />}
-          {activeSegment === 'debts'   && <DebtsList   onAdd={() => setShowAddDebt(true)}   />}
-          {activeSegment === 'goals'   && <GoalsList   onAdd={() => setShowAddGoal(true)}   />}
+          {activeSegment === 'savings' && <SavingsList onAdd={() => requireConfirmed(() => setShowAddSaving(true))} />}
+          {activeSegment === 'debts'   && <DebtsList   onAdd={() => requireConfirmed(() => setShowAddDebt(true))}   />}
+          {activeSegment === 'goals'   && <GoalsList   onAdd={() => requireConfirmed(() => setShowAddGoal(true))}   />}
         </ScrollView>
       </View>
 
       {/* Modals */}
-      <ProfileBottomSheet visible={showProfile} onClose={() => setShowProfile(false)} />
       <AddEditSavingModal visible={showAddSaving} onClose={() => setShowAddSaving(false)} />
       <AddEditDebtModal   visible={showAddDebt}   onClose={() => setShowAddDebt(false)}   />
       <AddEditGoalModal   visible={showAddGoal}   onClose={() => setShowAddGoal(false)}   />
@@ -745,25 +584,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#f8fafc',
   },
-  logo: { height: 28, width: 120 },
-  avatarBtn: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#e0e7ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#3730a3',
+  screenTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize:   28,
+    color:      '#0f172a',
   },
   segmentContainer: {
     paddingHorizontal: 16,
@@ -905,97 +729,3 @@ const cardStyles = StyleSheet.create({
   },
 });
 
-const sheetStyles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,23,42,0.4)',
-  },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#e2e8f0',
-    alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    minHeight: 60,
-  },
-  avatarLg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#e0e7ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarTextLg: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: '#3730a3',
-  },
-  userName: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    color: '#0f172a',
-  },
-  userEmail: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  divider: { height: 1, backgroundColor: '#f1f5f9' },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    minHeight: 52,
-  },
-  rowLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    color: '#0f172a',
-  },
-  langPill: {
-    width: 36,
-    height: 28,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  langPillActive: { backgroundColor: '#4f46e5' },
-  langPillText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  langPillTextActive: { color: '#ffffff' },
-  logoutBtn: {
-    minHeight: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 16,
-    marginTop: 4,
-  },
-  logoutText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: '#e11d48',
-  },
-});

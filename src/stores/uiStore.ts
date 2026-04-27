@@ -42,6 +42,11 @@ interface UIState {
   showStatementUpload: boolean;
   openStatementUpload: () => void;
   closeStatementUpload: () => void;
+
+  // Biometric lock setting
+  biometricLock: boolean;
+  setBiometricLock: (enabled: boolean) => Promise<void>;
+  hydrateBiometricLock: () => Promise<void>;
 }
 
 let toastIdCounter = 0;
@@ -104,4 +109,19 @@ export const useUIStore = create<UIState>((set) => ({
   showStatementUpload: false,
   openStatementUpload: () => set({ showStatementUpload: true }),
   closeStatementUpload: () => set({ showStatementUpload: false }),
+
+  // ── Biometric lock ─────────────────────────────────────────────────────────
+  biometricLock: false,
+  setBiometricLock: async (enabled) => {
+    set({ biometricLock: enabled });
+    await tokenStorage.saveBiometricLock(enabled);
+  },
+  hydrateBiometricLock: async () => {
+    try {
+      const stored = await tokenStorage.getBiometricLock();
+      set({ biometricLock: stored });
+    } catch {
+      set({ biometricLock: false });
+    }
+  },
 }));
