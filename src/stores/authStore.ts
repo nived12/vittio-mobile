@@ -36,6 +36,8 @@ interface AuthState {
   _setAuth: (tokens: TokenPayload, user: AuthUser) => Promise<void>;
   /** Internal — clears auth without calling the API */
   _clearAuth: () => Promise<void>;
+  /** Updates the user object in state (e.g. after profile/avatar update) */
+  setUser: (user: AuthUser) => void;
 }
 
 interface SignupFields {
@@ -175,6 +177,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ accessToken: access_token, refreshToken: refresh_token });
     return access_token;
   },
+
+  // ── setUser ───────────────────────────────────────────────────────────────
+  setUser: (user) => set({ user }),
 
   // ── hydrate ───────────────────────────────────────────────────────────────
   // Called once on app startup from the root _layout.tsx.
