@@ -1,7 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Keyboard,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -14,6 +17,26 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+// @react-native-voice/voice requires a native module not included in Expo Go.
+// The JS module loads fine in Expo Go (require doesn't throw), but NativeModules.Voice
+// is undefined, meaning every method call would fail. Check the native backing first.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Voice: any = null;
+type SpeechResultsEvent = { value?: string[] };
+type SpeechErrorEvent = { error?: { message?: string } };
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { NativeModules } = require('react-native');
+  if (NativeModules.Voice || NativeModules.RNVoice) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    Voice = require('@react-native-voice/voice').default;
+  }
+} catch {
+  Voice = null;
+}
+import { Ionicons } from '@expo/vector-icons';
 import { format, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import {
@@ -29,7 +52,8 @@ import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useCategories } from '../../hooks/useCategories';
 import { useMerchantRule, useCreateMerchantRule } from '../../hooks/useMerchantRules';
 import { useUIStore } from '../../stores/uiStore';
-import type { Transaction, TransactionType, CreateTransactionBody } from '../../api/transactions';
+import { parseVoice, parseImage } from '../../api/transactions';
+import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
 import type { Category } from '../../api/categories';
 
@@ -38,11 +62,21 @@ import type { Category } from '../../api/categories';
 type TopLevelType = 'income' | 'expense' | 'transfer';
 type SubType = TransactionType;
 
+interface PrefillData {
+  amount?: number;
+  description?: string;
+  merchant?: string;
+  transaction_type?: TransactionType;
+  category_id?: number;
+}
+
 interface Props {
   visible: boolean;
   onClose: () => void;
   /** If provided, modal opens in Edit mode pre-filled with this transaction */
   transaction?: Transaction;
+  /** Pre-fill fields from AI suggestion (add mode only) */
+  prefill?: PrefillData;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -194,7 +228,7 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
 
-export function AddEditTransactionModal({ visible, onClose, transaction }: Props) {
+export function AddEditTransactionModal({ visible, onClose, transaction, prefill }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
@@ -229,6 +263,13 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
   const [transferToAccount, setTransferToAccount] = useState<BankAccount | null>(null);
   const [showTransferToPicker, setShowTransferToPicker] = useState(false);
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
+
+  // ── AI input state ──
+  type AiState = 'idle' | 'recording' | 'processing' | 'prefilled';
+  const [aiState, setAiState] = useState<AiState>('idle');
+  const [micPermissionDenied, setMicPermissionDenied] = useState(false);
+  const [receiptThumbnail, setReceiptThumbnail] = useState<string | null>(null);
+  const [showReceiptReview, setShowReceiptReview] = useState(false);
 
   // ── Smart categorization — committed merchant name (set on blur) ──
   const [committedMerchant, setCommittedMerchant] = useState('');
@@ -293,21 +334,28 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
       }
     } else {
       // Reset for add mode
-      setAmountStr('');
-      setTopType('expense');
-      setSubType('variable_expense');
-      setDescription('');
+      setAmountStr(prefill?.amount != null ? Math.abs(prefill.amount).toFixed(2) : '');
+      const initialType = prefill?.transaction_type
+        ? toTopLevel(prefill.transaction_type)
+        : 'expense';
+      setTopType(initialType);
+      setSubType(prefill?.transaction_type ?? 'variable_expense');
+      setDescription(prefill?.description ?? '');
       setDate(new Date());
       setSelectedAccount(accounts[0] ?? null);
       setSelectedCategory(null);
       setConcept('');
-      setMerchant('');
+      setMerchant(prefill?.merchant ?? '');
       setReference('');
       setTransferToAccount(null);
     }
     setHasAttemptedSave(false);
     setCommittedMerchant('');
     setRuleApplied(false);
+    setAiState('idle');
+    setMicPermissionDenied(false);
+    setReceiptThumbnail(null);
+    setShowReceiptReview(false);
   }, [visible, transaction]);
 
   // Pre-select first account when accounts load (add mode)
@@ -317,6 +365,20 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
     }
   }, [accounts]);
 
+  // Apply prefill category once categories load
+  useEffect(() => {
+    if (!visible || isEditMode || !prefill?.category_id || categories.length === 0 || selectedCategory !== null) return;
+    const match = categories.find(
+      (c) =>
+        c.id === prefill.category_id ||
+        (c.children ?? []).some((ch) => ch.id === prefill.category_id),
+    );
+    if (match) {
+      const child = (match.children ?? []).find((ch) => ch.id === prefill.category_id);
+      setSelectedCategory(child ?? match);
+    }
+  }, [visible, isEditMode, prefill?.category_id, categories, selectedCategory]);
+
   // ── Type switching ──
   const handleTopTypeChange = (t: TopLevelType) => {
     Haptics.selectionAsync();
@@ -324,6 +386,135 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
     setSubType(defaultSubType(t));
     if (t !== 'transfer') setTransferToAccount(null);
   };
+
+  // ── AI helpers ──
+  const applyAiResult = useCallback((result: AiParseResult) => {
+    setAmountStr(Math.abs(result.amount).toFixed(2));
+    if (result.description) setDescription(result.description);
+    if (result.transaction_type) {
+      const tt = result.transaction_type as TransactionType;
+      const top = toTopLevel(tt);
+      setTopType(top);
+      setSubType(tt);
+    }
+    if (result.date) {
+      try { setDate(parseISO(result.date)); } catch { /* keep today */ }
+    }
+    if (result.category_suggestion) {
+      const match = categories.find(
+        (c) =>
+          c.id === result.category_suggestion!.id ||
+          (c.children ?? []).some((ch) => ch.id === result.category_suggestion!.id),
+      );
+      if (match) {
+        const child = (match.children ?? []).find((ch) => ch.id === result.category_suggestion!.id);
+        setSelectedCategory(child ?? match);
+      }
+    }
+  }, [categories]);
+
+  // ── Voice handlers ──
+  useEffect(() => {
+    if (!Voice) return;
+    Voice.onSpeechResults = async (e: SpeechResultsEvent) => {
+      const transcript = e.value?.[0] ?? '';
+      if (!transcript) { setAiState('idle'); return; }
+      try {
+        const result = await parseVoice(transcript);
+        applyAiResult(result);
+        setAiState('prefilled');
+        setTimeout(() => setAiState('idle'), 2000);
+      } catch {
+        showToast(t('aiInput.voice.error'), 'error');
+        setAiState('idle');
+      }
+    };
+    Voice.onSpeechError = (_e: SpeechErrorEvent) => {
+      showToast(t('aiInput.voice.error'), 'error');
+      setAiState('idle');
+    };
+    return () => {
+      Voice.destroy().then(() => Voice.removeAllListeners());
+    };
+  }, [applyAiResult, showToast, t]);
+
+  const handleMicPress = useCallback(async () => {
+    if (!Voice) {
+      showToast(t('aiInput.voice.requiresDevBuild'), 'warning');
+      return;
+    }
+    if (aiState === 'recording') {
+      try {
+        await Voice.stop();
+        setAiState('processing');
+      } catch {
+        showToast(t('aiInput.voice.error'), 'error');
+        setAiState('idle');
+      }
+      return;
+    }
+    try {
+      const available = await Voice.isAvailable();
+      if (!available) {
+        setMicPermissionDenied(true);
+        return;
+      }
+      setMicPermissionDenied(false);
+      setAiState('recording');
+      await Voice.start('es-MX');
+    } catch {
+      showToast(t('aiInput.voice.error'), 'error');
+      setAiState('idle');
+    }
+  }, [aiState, showToast, t]);
+
+  // ── Camera handler ──
+  const handleCameraPress = useCallback(async () => {
+    Alert.alert(
+      t('aiInput.camera.tap'),
+      undefined,
+      [
+        {
+          text: t('aiInput.camera.takePhoto'),
+          onPress: async () => {
+            const perm = await ImagePicker.requestCameraPermissionsAsync();
+            if (!perm.granted) { showToast(t('aiInput.camera.permissionDenied'), 'error'); return; }
+            const result = await ImagePicker.launchCameraAsync({ mediaTypes: 'images', quality: 0.9 });
+            if (!result.canceled) processImage(result.assets[0].uri);
+          },
+        },
+        {
+          text: t('aiInput.camera.chooseFromLibrary'),
+          onPress: async () => {
+            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', quality: 0.9 });
+            if (!result.canceled) processImage(result.assets[0].uri);
+          },
+        },
+        { text: t('common.cancel'), style: 'cancel' },
+      ],
+    );
+  }, [showToast, t]);
+
+  const processImage = useCallback(async (uri: string) => {
+    setAiState('processing');
+    try {
+      const manipulated = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 1024 } }],
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true },
+      );
+      if (!manipulated.base64) throw new Error('No base64');
+      const result = await parseImage(manipulated.base64, 'image/jpeg');
+      applyAiResult(result);
+      setReceiptThumbnail(uri);
+      setShowReceiptReview(true);
+      setAiState('prefilled');
+      setTimeout(() => setAiState('idle'), 2000);
+    } catch {
+      showToast(t('aiInput.camera.error'), 'error');
+      setAiState('idle');
+    }
+  }, [applyAiResult, showToast, t]);
 
   // ── Amount color ──
   const amountColor = topType === 'income' ? '#10b981' : topType === 'expense' ? '#e11d48' : '#8b5cf6';
@@ -424,26 +615,108 @@ export function AddEditTransactionModal({ visible, onClose, transaction }: Props
             >
               {/* Amount */}
               <View style={styles.amountRow}>
-                <Text style={styles.currencyPrefix}>MX$</Text>
-                <TextInput
-                  style={[styles.amountInput, { color: amountColor }]}
-                  value={amountStr}
-                  onChangeText={(v) => {
-                    const clean = v.replace(/[^0-9.]/g, '');
-                    const parts = clean.split('.');
-                    setAmountStr(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : clean);
-                  }}
-                  onBlur={() => {
-                    const n = parseFloat(amountStr);
-                    if (!isNaN(n) && n > 0) setAmountStr(n.toFixed(2));
-                  }}
-                  keyboardType="decimal-pad"
-                  placeholder="0.00"
-                  placeholderTextColor="#cbd5e1"
-                  accessibilityLabel={t('transactions.amount_label')}
-                  returnKeyType="done"
-                />
+                <TouchableOpacity
+                  onPress={handleMicPress}
+                  style={styles.aiButton}
+                  accessibilityLabel={t('aiInput.voice.tap')}
+                  hitSlop={8}
+                >
+                  {aiState === 'processing' ? (
+                    <ActivityIndicator size="small" color="#4f46e5" />
+                  ) : (
+                    <Ionicons
+                      name={aiState === 'recording' ? 'mic' : 'mic-outline'}
+                      size={22}
+                      color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
+                    />
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.amountInputWrapper}>
+                  <Text style={styles.currencyPrefix}>MX$</Text>
+                  <TextInput
+                    style={[styles.amountInput, { color: amountColor }]}
+                    value={amountStr}
+                    onChangeText={(v) => {
+                      const clean = v.replace(/[^0-9.]/g, '');
+                      const parts = clean.split('.');
+                      setAmountStr(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : clean);
+                    }}
+                    onBlur={() => {
+                      const n = parseFloat(amountStr);
+                      if (!isNaN(n) && n > 0) setAmountStr(n.toFixed(2));
+                    }}
+                    keyboardType="decimal-pad"
+                    placeholder="0.00"
+                    placeholderTextColor="#cbd5e1"
+                    accessibilityLabel={t('transactions.amount_label')}
+                    returnKeyType="done"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleCameraPress}
+                  style={styles.aiButton}
+                  accessibilityLabel={t('aiInput.camera.tap')}
+                  hitSlop={8}
+                >
+                  <Ionicons name="camera-outline" size={22} color="#94a3b8" />
+                </TouchableOpacity>
               </View>
+
+              {/* AI state labels */}
+              {aiState === 'recording' && (
+                <Text style={styles.aiLabel}>{t('aiInput.voice.recording')}</Text>
+              )}
+              {aiState === 'processing' && (
+                <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
+              )}
+              {aiState === 'prefilled' && (
+                <Text style={[styles.aiLabel, { color: '#10b981' }]}>{t('aiInput.voice.prefilled')}</Text>
+              )}
+
+              {/* Mic permission denied */}
+              {micPermissionDenied && (
+                <TouchableOpacity
+                  onPress={() => Linking.openSettings()}
+                  style={styles.permissionRow}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="warning-outline" size={14} color="#f59e0b" />
+                  <Text style={styles.permissionText}>
+                    {t('aiInput.voice.permissionDenied')}
+                    {' — '}
+                    <Text style={styles.permissionLink}>{t('aiInput.voice.openSettings')}</Text>
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Receipt review */}
+              {showReceiptReview && receiptThumbnail && (
+                <View style={styles.receiptReview}>
+                  <Text style={styles.receiptReviewLabel}>{t('aiInput.camera.reviewing')}</Text>
+                  <View style={styles.receiptReviewActions}>
+                    <TouchableOpacity
+                      style={styles.receiptConfirmBtn}
+                      onPress={() => setShowReceiptReview(false)}
+                    >
+                      <Text style={styles.receiptConfirmText}>{t('aiInput.camera.confirmReview')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.receiptClearBtn}
+                      onPress={() => {
+                        setShowReceiptReview(false);
+                        setReceiptThumbnail(null);
+                        setAmountStr('');
+                        setDescription('');
+                        setSelectedCategory(null);
+                      }}
+                    >
+                      <Text style={styles.receiptClearText}>{t('aiInput.camera.clearReview')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
               {/* Type segmented control */}
               <View style={styles.typeControl}>
@@ -962,5 +1235,83 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4f46e5',
     fontWeight: '600',
+  },
+  // AI input
+  aiButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  amountInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiLabel: {
+    fontSize: 12,
+    color: '#4f46e5',
+    textAlign: 'center',
+    marginTop: -12,
+    marginBottom: 8,
+  },
+  permissionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  permissionText: {
+    fontSize: 12,
+    color: '#64748b',
+    flex: 1,
+  },
+  permissionLink: {
+    color: '#4f46e5',
+    fontWeight: '500',
+  },
+  receiptReview: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  receiptReviewLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#15803d',
+    marginBottom: 8,
+  },
+  receiptReviewActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  receiptConfirmBtn: {
+    flex: 1,
+    backgroundColor: '#10b981',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  receiptConfirmText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  receiptClearBtn: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  receiptClearText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#64748b',
   },
 });

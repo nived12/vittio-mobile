@@ -873,5 +873,41 @@
     "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
     "UNKNOWN_ERROR": "Ocurrió un error inesperado",
     "generic": "Algo salió mal. Por favor intenta de nuevo."
+  },
+  "common": {
+    "cancel": "Cancelar"
+  },
+  "aiInput": {
+    "voice": {
+      "tap": "Registrar por voz",
+      "recording": "Escuchando…",
+      "processing": "Procesando…",
+      "prefilled": "Campos llenados",
+      "error": "No pude entender. Intenta de nuevo.",
+      "permissionDenied": "Se necesita permiso de micrófono",
+      "openSettings": "Abrir Configuración",
+      "requiresDevBuild": "La grabación de voz requiere un build de desarrollo"
+    },
+    "camera": {
+      "tap": "Escanear recibo",
+      "takePhoto": "Tomar foto",
+      "chooseFromLibrary": "Elegir de galería",
+      "reviewing": "¿Los datos son correctos?",
+      "confirmReview": "Sí, usar",
+      "clearReview": "Limpiar",
+      "processing": "Leyendo tu recibo…",
+      "error": "No pude leer el recibo. Intenta de nuevo.",
+      "permissionDenied": "Se necesita permiso de cámara"
+    },
+    "recurring": {
+      "bannerTitle": "{{count}} pagos recurrentes detectados",
+      "bannerSubtitle": "Toca para revisarlos",
+      "sheetTitle": "Pagos recurrentes",
+      "sheetSubtitle": "Detectamos estos patrones en tus transacciones. Agrégalos para llevar un mejor control.",
+      "addButton": "Agregar",
+      "frequency": "Cada ~{{days}} días · Último: {{date}}",
+      "emptyTitle": "No hay patrones detectados aún",
+      "emptySubtitle": "Los patrones aparecerán cuando tengas suficientes transacciones similares."
+    }
   }
 }

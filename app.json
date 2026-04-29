@@ -58,7 +58,13 @@
           "resizeMode": "contain"
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Vittio necesita acceso al micrófono para registrar transacciones por voz."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

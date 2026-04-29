@@ -47,6 +47,10 @@ interface UIState {
   biometricLock: boolean;
   setBiometricLock: (enabled: boolean) => Promise<void>;
   hydrateBiometricLock: () => Promise<void>;
+
+  // Recurring suggestions banner (7-day dismiss)
+  recurringBannerDismissedAt: string | null;
+  dismissRecurringBanner: () => void;
 }
 
 let toastIdCounter = 0;
@@ -109,6 +113,10 @@ export const useUIStore = create<UIState>((set) => ({
   showStatementUpload: false,
   openStatementUpload: () => set({ showStatementUpload: true }),
   closeStatementUpload: () => set({ showStatementUpload: false }),
+
+  // ── Recurring suggestions banner ───────────────────────────────────────────
+  recurringBannerDismissedAt: null,
+  dismissRecurringBanner: () => set({ recurringBannerDismissedAt: new Date().toISOString() }),
 
   // ── Biometric lock ─────────────────────────────────────────────────────────
   biometricLock: false,

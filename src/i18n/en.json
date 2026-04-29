@@ -873,5 +873,41 @@
     "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
     "UNKNOWN_ERROR": "An unexpected error occurred",
     "generic": "Something went wrong. Please try again."
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
+  "aiInput": {
+    "voice": {
+      "tap": "Record by voice",
+      "recording": "Listening…",
+      "processing": "Processing…",
+      "prefilled": "Fields filled",
+      "error": "Couldn't understand. Try again.",
+      "permissionDenied": "Microphone permission required",
+      "openSettings": "Open Settings",
+      "requiresDevBuild": "Voice recording requires a development build"
+    },
+    "camera": {
+      "tap": "Scan receipt",
+      "takePhoto": "Take photo",
+      "chooseFromLibrary": "Choose from library",
+      "reviewing": "Does this look correct?",
+      "confirmReview": "Yes, use it",
+      "clearReview": "Clear",
+      "processing": "Reading your receipt…",
+      "error": "Couldn't read the receipt. Try again.",
+      "permissionDenied": "Camera permission required"
+    },
+    "recurring": {
+      "bannerTitle": "{{count}} recurring payments detected",
+      "bannerSubtitle": "Tap to review them",
+      "sheetTitle": "Recurring payments",
+      "sheetSubtitle": "We detected these patterns in your transactions. Add them to stay on top of your finances.",
+      "addButton": "Add",
+      "frequency": "Every ~{{days}} days · Last: {{date}}",
+      "emptyTitle": "No patterns detected yet",
+      "emptySubtitle": "Patterns will appear when you have enough similar transactions."
+    }
   }
 }

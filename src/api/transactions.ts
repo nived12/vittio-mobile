@@ -82,6 +82,23 @@ export type UpdateTransactionBody = Partial<CreateTransactionBody> & {
   category_id?: number | null;
 };
 
+export interface AiParseResult {
+  amount: number;
+  description: string;
+  transaction_type: string;
+  date?: string | null;
+  category_suggestion: { id: number; name: string } | null;
+  confidence: number;
+}
+
+export interface RecurringSuggestion {
+  merchant: string;
+  amount: number;
+  frequency_days: number;
+  last_seen: string;
+  suggested_category_id: number | null;
+}
+
 // ── API calls ─────────────────────────────────────────────────────────────
 
 /** GET /api/v1/transactions */
@@ -141,4 +158,25 @@ export async function updateTransaction(
 /** DELETE /api/v1/transactions/:id */
 export async function deleteTransaction(id: number): Promise<void> {
   await apiClient.delete(`/transactions/${id}`);
+}
+
+/** POST /api/v1/transactions/parse_voice */
+export async function parseVoice(text: string): Promise<AiParseResult> {
+  const response = await apiClient.post<{ data: AiParseResult }>('/transactions/parse_voice', { text });
+  return response.data.data;
+}
+
+/** POST /api/v1/transactions/parse_image */
+export async function parseImage(imageBase64: string, mimeType: string): Promise<AiParseResult> {
+  const response = await apiClient.post<{ data: AiParseResult }>('/transactions/parse_image', {
+    image: imageBase64,
+    mime_type: mimeType,
+  });
+  return response.data.data;
+}
+
+/** GET /api/v1/transactions/recurring_suggestions */
+export async function fetchRecurringSuggestions(): Promise<RecurringSuggestion[]> {
+  const response = await apiClient.get<{ data: RecurringSuggestion[] }>('/transactions/recurring_suggestions');
+  return response.data.data;
 }

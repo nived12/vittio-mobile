@@ -15,8 +15,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import {
   useTransactions,
   useDeleteTransaction,
@@ -27,6 +29,8 @@ import { useUIStore } from '../../../src/stores/uiStore';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
+import { RecurringSuggestionsSheet } from '../../../src/components/modals/RecurringSuggestionsSheet';
+import { fetchRecurringSuggestions } from '../../../src/api/transactions';
 import type { TransactionFilters } from '../../../src/api/transactions';
 import type { Transaction } from '../../../src/api/transactions';
 import type { Category } from '../../../src/api/categories';
@@ -274,6 +278,8 @@ export default function TransactionsScreen() {
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
   const showToast = useUIStore((s) => s.showToast);
+  const recurringBannerDismissedAt = useUIStore((s) => s.recurringBannerDismissedAt);
+  const dismissRecurringBanner = useUIStore((s) => s.dismissRecurringBanner);
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -283,9 +289,21 @@ export default function TransactionsScreen() {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [categorizingId, setCategorizingId] = useState<number | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
+  const [showRecurringSheet, setShowRecurringSheet] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: categoriesData } = useCategories();
+
+  const { data: recurringSuggestions = [] } = useQuery({
+    queryKey: ['transactions', 'recurring-suggestions'],
+    queryFn: fetchRecurringSuggestions,
+    staleTime: 5 * 60_000,
+  });
+
+  const shouldShowRecurringBanner =
+    recurringSuggestions.length > 0 &&
+    (!recurringBannerDismissedAt ||
+      Date.now() - new Date(recurringBannerDismissedAt).getTime() > 7 * 24 * 3600 * 1000);
   const categories = categoriesData ?? [];
 
   const filterBadgeCount = countActiveFilters(activeFilters);
@@ -518,6 +536,31 @@ export default function TransactionsScreen() {
           keyExtractor={(item) => String(item.id)}
           stickySectionHeadersEnabled
           removeClippedSubviews={false}
+          ListHeaderComponent={
+            shouldShowRecurringBanner ? (
+              <TouchableOpacity
+                style={styles.recurringBanner}
+                onPress={() => setShowRecurringSheet(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="repeat-outline" size={20} color="#4f46e5" />
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <Text style={styles.bannerTitle}>
+                    {t('aiInput.recurring.bannerTitle', { count: recurringSuggestions.length })}
+                  </Text>
+                  <Text style={styles.bannerSubtitle}>
+                    {t('aiInput.recurring.bannerSubtitle')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={(e) => { e.stopPropagation(); dismissRecurringBanner(); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close" size={16} color="#94a3b8" />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ) : null
+          }
           renderSectionHeader={({ section }) => (
             <SectionHeader
               dateKey={section.title}
@@ -579,6 +622,13 @@ export default function TransactionsScreen() {
         onClose={() => { setShowCategoryPicker(false); setCategorizingId(null); }}
         onSelect={handleCategorySelect}
         categories={categories}
+      />
+
+      {/* Recurring suggestions sheet */}
+      <RecurringSuggestionsSheet
+        visible={showRecurringSheet}
+        suggestions={recurringSuggestions}
+        onClose={() => setShowRecurringSheet(false)}
       />
     </View>
   );
@@ -747,4 +797,25 @@ const styles = StyleSheet.create({
   categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
   categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
   checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
+  recurringBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 12,
+    backgroundColor: '#eef2ff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+  },
+  bannerTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3730a3',
+  },
+  bannerSubtitle: {
+    fontSize: 12,
+    color: '#6366f1',
+    marginTop: 1,
+  },
 });
