@@ -159,6 +159,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Fire-and-forget — always clear local state even if the API call fails
     }
+    // Deregister push token before clearing auth
+    try {
+      const { deregisterPushNotifications } = await import('../utils/notifications');
+      await deregisterPushNotifications();
+    } catch {
+      // Best-effort — don't block logout
+    }
     await get()._clearAuth();
   },
 

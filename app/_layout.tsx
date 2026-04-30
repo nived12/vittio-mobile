@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -17,7 +18,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
+import { registerForPushNotifications } from '../src/utils/notifications';
 import '../src/i18n'; // Initialize i18next
+
+// Show notifications as banners when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 // ── Splash screen — keep visible until hydration completes ─────────────────
 SplashScreen.preventAutoHideAsync();
@@ -51,6 +64,7 @@ export default function RootLayout() {
   const segments    = useSegments();
   const appState    = useRef<AppStateStatus>(AppState.currentState);
   const [showLock, setShowLock] = useState(false);
+  const pushRegistered = useRef(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
   useEffect(() => {
@@ -82,7 +96,28 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, isHydrated, segments]);
 
-  // ── 3. Biometric lock on app resume from background ───────────────────
+  // ── 3. Register push notifications after first authenticated load ────
+  useEffect(() => {
+    if (!isAuthenticated || !isHydrated || pushRegistered.current) return;
+    pushRegistered.current = true;
+    void registerForPushNotifications();
+  }, [isAuthenticated, isHydrated]);
+
+  // ── 4. Handle notification tap → deep-link navigation ─────────────
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as {
+        screen?: string;
+        params?: Record<string, unknown>;
+      };
+      if (data?.screen) {
+        router.push(data.screen as any);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // ── 5. Biometric lock on app resume from background ───────────────────
   useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',

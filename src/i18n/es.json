@@ -909,5 +909,29 @@
       "emptyTitle": "No hay patrones detectados aún",
       "emptySubtitle": "Los patrones aparecerán cuando tengas suficientes transacciones similares."
     }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "permissionBanner": {
+      "title": "Activa las notificaciones",
+      "subtitle": "para mantenerte al día",
+      "subtitleDenied": "Ve a Configuración para activarlas",
+      "ctaEnable": "Activar",
+      "ctaSettings": "Abrir Configuración"
+    },
+    "sectionLabel": "Cuando recibas una notificación",
+    "statementImports": {
+      "title": "Extractos procesados",
+      "subtitle": "Cuando termine de analizar un extracto"
+    },
+    "goalMilestones": {
+      "title": "Metas completadas",
+      "subtitle": "Al alcanzar una meta de ahorro"
+    },
+    "debtReminders": {
+      "title": "Recordatorios de deuda",
+      "subtitle": "Cuando una deuda esté por vencer"
+    },
+    "footer": "Las notificaciones se envían solo cuando Vittio detecta un evento relevante. Nunca recibirás publicidad."
   }
 }

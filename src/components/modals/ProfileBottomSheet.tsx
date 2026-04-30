@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Camera, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, Camera, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from '../../i18n';
@@ -115,6 +115,11 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   function handleCategories() {
     onClose();
     router.push('/(app)/categories');
+  }
+
+  function handleNotifications() {
+    onClose();
+    router.push('/(app)/notification-preferences');
   }
 
   function handleLogout() {
@@ -224,6 +229,19 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
         >
           <Download size={20} color={colors.text.secondary} />
           <Text style={styles.actionLabel}>{t('profile.downloadReport')}</Text>
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        {/* Notifications */}
+        <TouchableOpacity
+          style={styles.actionRow}
+          onPress={handleNotifications}
+          accessibilityRole="button"
+          accessibilityLabel={t('notifications.title')}
+        >
+          <Bell size={20} color={colors.text.secondary} />
+          <Text style={styles.actionLabel}>{t('notifications.title')}</Text>
         </TouchableOpacity>
 
         <View style={styles.divider} />

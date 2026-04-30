@@ -51,6 +51,14 @@ interface UIState {
   // Recurring suggestions banner (7-day dismiss)
   recurringBannerDismissedAt: string | null;
   dismissRecurringBanner: () => void;
+
+  // Notification preferences (stored locally)
+  notificationPrefs: {
+    statementImports: boolean;
+    goalMilestones: boolean;
+    debtReminders: boolean;
+  };
+  setNotificationPref: (key: 'statementImports' | 'goalMilestones' | 'debtReminders', value: boolean) => void;
 }
 
 let toastIdCounter = 0;
@@ -117,6 +125,17 @@ export const useUIStore = create<UIState>((set) => ({
   // ── Recurring suggestions banner ───────────────────────────────────────────
   recurringBannerDismissedAt: null,
   dismissRecurringBanner: () => set({ recurringBannerDismissedAt: new Date().toISOString() }),
+
+  // ── Notification preferences ────────────────────────────────────────────────
+  notificationPrefs: {
+    statementImports: true,
+    goalMilestones: true,
+    debtReminders: true,
+  },
+  setNotificationPref: (key, value) =>
+    set((state) => ({
+      notificationPrefs: { ...state.notificationPrefs, [key]: value },
+    })),
 
   // ── Biometric lock ─────────────────────────────────────────────────────────
   biometricLock: false,
