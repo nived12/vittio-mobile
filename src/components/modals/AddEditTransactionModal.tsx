@@ -633,7 +633,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 </TouchableOpacity>
 
                 <View style={styles.amountInputWrapper}>
-                  <Text style={styles.currencyPrefix}>MX$</Text>
+                  <Text style={styles.currencyPrefix}>$</Text>
                   <TextInput
                     style={[styles.amountInput, { color: amountColor }]}
                     value={amountStr}
