@@ -57,8 +57,9 @@ export default function RootLayout() {
   const isAuthenticated     = useAuthStore((s) => s.isAuthenticated);
   const isHydrated          = useAuthStore((s) => s.isHydrated);
   const hydrate             = useAuthStore((s) => s.hydrate);
-  const hydrateLocale       = useUIStore((s) => s.hydrateLocale);
-  const hydrateBiometricLock = useUIStore((s) => s.hydrateBiometricLock);
+  const hydrateLocale           = useUIStore((s) => s.hydrateLocale);
+  const hydrateBiometricLock    = useUIStore((s) => s.hydrateBiometricLock);
+  const hydrateNotificationPrefs = useUIStore((s) => s.hydrateNotificationPrefs);
   const biometricLock       = useUIStore((s) => s.biometricLock);
 
   const segments    = useSegments();
@@ -96,12 +97,15 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, isHydrated, segments]);
 
-  // ── 3. Register push notifications after first authenticated load ────
+  // ── 3. Register push + hydrate server-side notification prefs after auth ─
   useEffect(() => {
-    if (!isAuthenticated || !isHydrated || pushRegistered.current) return;
-    pushRegistered.current = true;
-    void registerForPushNotifications();
-  }, [isAuthenticated, isHydrated]);
+    if (!isAuthenticated || !isHydrated) return;
+    void hydrateNotificationPrefs();
+    if (!pushRegistered.current) {
+      pushRegistered.current = true;
+      void registerForPushNotifications();
+    }
+  }, [isAuthenticated, isHydrated, hydrateNotificationPrefs]);
 
   // ── 4. Handle notification tap → deep-link navigation ─────────────
   useEffect(() => {
