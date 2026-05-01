@@ -909,5 +909,29 @@
       "emptyTitle": "No patterns detected yet",
       "emptySubtitle": "Patterns will appear when you have enough similar transactions."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "permissionBanner": {
+      "title": "Enable notifications",
+      "subtitle": "to stay on top of your finances",
+      "subtitleDenied": "Go to Settings to enable them",
+      "ctaEnable": "Enable",
+      "ctaSettings": "Open Settings"
+    },
+    "sectionLabel": "When you receive a notification",
+    "statementImports": {
+      "title": "Statements processed",
+      "subtitle": "When a statement finishes being analyzed"
+    },
+    "goalMilestones": {
+      "title": "Goals completed",
+      "subtitle": "When you reach a savings goal"
+    },
+    "debtReminders": {
+      "title": "Debt reminders",
+      "subtitle": "When a debt payment is due"
+    },
+    "footer": "Notifications are sent only when Vittio detects a relevant event. You will never receive ads."
   }
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import i18n from '../i18n';
 import { tokenStorage } from '../utils/tokenStorage';
+import { fetchNotificationPrefs, updateNotificationPref } from '../api/settings';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
@@ -51,6 +52,15 @@ interface UIState {
   // Recurring suggestions banner (7-day dismiss)
   recurringBannerDismissedAt: string | null;
   dismissRecurringBanner: () => void;
+
+  // Notification preferences (synced to server)
+  notificationPrefs: {
+    statementImports: boolean;
+    goalMilestones: boolean;
+    debtReminders: boolean;
+  };
+  setNotificationPref: (key: 'statementImports' | 'goalMilestones' | 'debtReminders', value: boolean) => void;
+  hydrateNotificationPrefs: () => Promise<void>;
 }
 
 let toastIdCounter = 0;
@@ -117,6 +127,38 @@ export const useUIStore = create<UIState>((set) => ({
   // ── Recurring suggestions banner ───────────────────────────────────────────
   recurringBannerDismissedAt: null,
   dismissRecurringBanner: () => set({ recurringBannerDismissedAt: new Date().toISOString() }),
+
+  // ── Notification preferences ────────────────────────────────────────────────
+  notificationPrefs: {
+    statementImports: true,
+    goalMilestones: true,
+    debtReminders: true,
+  },
+  setNotificationPref: (key, value) => {
+    set((state) => ({
+      notificationPrefs: { ...state.notificationPrefs, [key]: value },
+    }));
+    const serverKey = {
+      statementImports: 'notify_statement_imports',
+      goalMilestones: 'notify_goal_milestones',
+      debtReminders: 'notify_debt_reminders',
+    }[key] as 'notify_statement_imports' | 'notify_goal_milestones' | 'notify_debt_reminders';
+    void updateNotificationPref(serverKey, value).catch(() => {});
+  },
+  hydrateNotificationPrefs: async () => {
+    try {
+      const prefs = await fetchNotificationPrefs();
+      set({
+        notificationPrefs: {
+          statementImports: prefs.notify_statement_imports,
+          goalMilestones: prefs.notify_goal_milestones,
+          debtReminders: prefs.notify_debt_reminders,
+        },
+      });
+    } catch {
+      // offline or unauthenticated — keep defaults
+    }
+  },
 
   // ── Biometric lock ─────────────────────────────────────────────────────────
   biometricLock: false,

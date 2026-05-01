@@ -163,6 +163,9 @@ export default function AppLayout() {
 
         {/* Hide categories from tab bar */}
         <Tabs.Screen name="categories" options={{ href: null }} />
+
+        {/* Hide notification-preferences from tab bar */}
+        <Tabs.Screen name="notification-preferences" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal
