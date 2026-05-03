@@ -382,6 +382,7 @@
     "debit": "Debit",
     "credit": "Credit",
     "cash": "Cash",
+    "unknownAccount": "Account",
     "types": {
       "debit": "Debit",
       "credit": "Credit",

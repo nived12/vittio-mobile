@@ -32,12 +32,12 @@ interface PrefillData {
 
 export function RecurringSuggestionsSheet({ visible, suggestions, onClose }: Props) {
   const { theme, isDark } = useTheme();
-  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
-  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
-  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
-  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
+  const sheetBg = isDark ? (theme as any).surface : '#ffffff';
+  const inputBg = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale } = useUIStore();
@@ -102,7 +102,7 @@ export function RecurringSuggestionsSheet({ visible, suggestions, onClose }: Pro
         </View>
 
         <TouchableOpacity
-          style={[styles.addBtn, added && styles.addBtnDone]}
+          style={[styles.addBtn, added && styles.addBtnDone, added && { backgroundColor: isDark ? 'rgba(16,185,129,0.15)' : '#f0fdf4' }]}
           onPress={() => !added && handleAdd(item)}
           disabled={added}
           accessibilityLabel={t('aiInput.recurring.addButton')}

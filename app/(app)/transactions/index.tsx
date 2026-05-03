@@ -108,6 +108,10 @@ interface CategoryPickerProps {
 
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
   return (
     <Modal
       visible={visible}
@@ -115,31 +119,28 @@ function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedI
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHandle} />
-        <Text style={styles.sheetTitle}>Categoría</Text>
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-              onPress={() => {
-                onSelect(item);
-                onClose();
-              }}
-            >
-              <Text style={[styles.categoryRowText, item.id === selectedId && styles.categoryRowTextActive]}>
-                {item.name}
-              </Text>
-              {item.id === selectedId && (
-                <View style={styles.checkDot} />
-              )}
-            </TouchableOpacity>
-          )}
-          style={{ maxHeight: 360 }}
-        />
+      <View style={styles.modalContainer}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
+          <FlatList
+            data={categories}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
+                onPress={() => { onSelect(item); onClose(); }}
+              >
+                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
+                  {item.name}
+                </Text>
+                {item.id === selectedId && <View style={styles.checkDot} />}
+              </TouchableOpacity>
+            )}
+            style={{ maxHeight: 360 }}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -157,6 +158,13 @@ interface FilterSheetProps {
 
 function FilterSheet({ visible, current, categories, onApply, onClose }: FilterSheetProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const surfaceEl = isDark ? (theme as any).surfaceElevated : '#f8fafc';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+
   const [period, setPeriod] = useState<ActiveFilters['period']>(current.period);
   const [categoryId, setCategoryId] = useState<number | undefined>(current.categoryId);
   const [txType, setTxType] = useState<ActiveFilters['txType']>(current.txType);
@@ -182,83 +190,85 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.filterSheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHandle} />
-        <View style={styles.filterHeader}>
-          <Text style={styles.sheetTitle}>Filtros</Text>
-          <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
-            <Text style={styles.resetLabel}>Limpiar</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Period */}
-        <Text style={styles.filterSectionLabel}>PERÍODO</Text>
-        <View style={styles.pillRow}>
-          {(['current', 'last', 'three_months'] as const).map((p) => {
-            const labels = { current: 'Este mes', last: 'Mes pasado', three_months: 'Últimos 3 meses' };
-            return (
-              <TouchableOpacity
-                key={p}
-                style={[styles.pill, period === p && styles.pillActive]}
-                onPress={() => setPeriod(period === p ? undefined : p)}
-              >
-                <Text style={[styles.pillText, period === p && styles.pillTextActive]}>
-                  {labels[p]}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Category */}
-        <Text style={styles.filterSectionLabel}>CATEGORÍA</Text>
-        <TouchableOpacity
-          style={styles.categorySelector}
-          onPress={() => setShowCategoryPicker(true)}
-        >
-          <Text style={[styles.categorySelectorText, !!categoryId && styles.categorySelectorTextActive]}>
-            {selectedCategory ? selectedCategory.name : 'Todas las categorías'}
-          </Text>
-          {categoryId && (
-            <TouchableOpacity
-              onPress={(e) => { e.stopPropagation?.(); setCategoryId(undefined); }}
-              style={styles.clearCategoryBtn}
-            >
-              <X size={14} color="#64748b" />
+      <View style={styles.modalContainer}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.filterSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+          <View style={styles.filterHeader}>
+            <Text style={[styles.sheetTitle, { color: textPrimary }]}>Filtros</Text>
+            <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
+              <Text style={styles.resetLabel}>Limpiar</Text>
             </TouchableOpacity>
-          )}
-        </TouchableOpacity>
+          </View>
 
-        {/* Type */}
-        <Text style={styles.filterSectionLabel}>TIPO</Text>
-        <View style={styles.pillRow}>
-          {(['income', 'expense'] as const).map((type) => {
-            const labels = { income: 'Ingresos', expense: 'Gastos' };
+          {/* Period */}
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>PERÍODO</Text>
+          <View style={styles.pillRow}>
+            {(['current', 'last', 'three_months'] as const).map((p) => {
+              const labels = { current: 'Este mes', last: 'Mes pasado', three_months: 'Últimos 3 meses' };
               return (
-              <TouchableOpacity
-                key={type}
-                style={[styles.pill, txType === type && styles.pillActive]}
-                onPress={() => setTxType(txType === type ? undefined : type)}
-              >
-                <Text style={[styles.pillText, txType === type && styles.pillTextActive]}>
-                  {labels[type]}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                <TouchableOpacity
+                  key={p}
+                  style={[styles.pill, { backgroundColor: surface, borderColor: borderCol }, period === p && styles.pillActive]}
+                  onPress={() => setPeriod(period === p ? undefined : p)}
+                >
+                  <Text style={[styles.pillText, { color: textPrimary }, period === p && styles.pillTextActive]}>
+                    {labels[p]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Category */}
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>CATEGORÍA</Text>
           <TouchableOpacity
-            style={[styles.pill, !txType && styles.pillActive]}
-            onPress={() => setTxType(undefined)}
+            style={[styles.categorySelector, { backgroundColor: surfaceEl, borderColor: borderCol }]}
+            onPress={() => setShowCategoryPicker(true)}
           >
-            <Text style={[styles.pillText, !txType && styles.pillTextActive]}>Todos</Text>
+            <Text style={[styles.categorySelectorText, !!categoryId && { color: textPrimary }]}>
+              {selectedCategory ? selectedCategory.name : 'Todas las categorías'}
+            </Text>
+            {categoryId && (
+              <TouchableOpacity
+                onPress={(e) => { e.stopPropagation?.(); setCategoryId(undefined); }}
+                style={styles.clearCategoryBtn}
+              >
+                <X size={14} color={textSecondary} />
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+
+          {/* Type */}
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>TIPO</Text>
+          <View style={styles.pillRow}>
+            {(['income', 'expense'] as const).map((type) => {
+              const labels = { income: 'Ingresos', expense: 'Gastos' };
+              return (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.pill, { backgroundColor: surface, borderColor: borderCol }, txType === type && styles.pillActive]}
+                  onPress={() => setTxType(txType === type ? undefined : type)}
+                >
+                  <Text style={[styles.pillText, { color: textPrimary }, txType === type && styles.pillTextActive]}>
+                    {labels[type]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            <TouchableOpacity
+              style={[styles.pill, { backgroundColor: surface, borderColor: borderCol }, !txType && styles.pillActive]}
+              onPress={() => setTxType(undefined)}
+            >
+              <Text style={[styles.pillText, { color: textPrimary }, !txType && styles.pillTextActive]}>Todos</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Apply */}
+          <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+            <Text style={styles.applyBtnText}>Aplicar</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Apply */}
-        <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-          <Text style={styles.applyBtnText}>Aplicar</Text>
-        </TouchableOpacity>
       </View>
 
       <CategoryPickerModal
@@ -357,11 +367,11 @@ export default function TransactionsScreen() {
   }
 
   const handleRefresh = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     setIsRefreshing(true);
     try {
       await refetch();
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } finally {
       setIsRefreshing(false);
     }
@@ -377,7 +387,7 @@ export default function TransactionsScreen() {
           text: t('transactions.delete.confirm'),
           style: 'destructive',
           onPress: async () => {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => { });
             setDeletingId(id);
             try {
               await deleteMutation.mutateAsync(id);
@@ -417,11 +427,12 @@ export default function TransactionsScreen() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const bg = isDark ? (theme as any).background : '#f8fafc';
   const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
-  const inputBg     = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
+  const inputBg = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
 
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const fmtAmount = (n: number) =>
@@ -445,7 +456,7 @@ export default function TransactionsScreen() {
           onPress={() => setShowFilterSheet(true)}
           accessibilityLabel={t('transactions.filters.title')}
         >
-          <SlidersHorizontal size={24} color={filterBadgeCount > 0 ? '#4f46e5' : '#475569'} />
+          <SlidersHorizontal size={24} color={filterBadgeCount > 0 ? '#4f46e5' : textSecondary} />
           {filterBadgeCount > 0 && (
             <View style={styles.filterBadge}>
               <Text style={styles.filterBadgeText}>{filterBadgeCount}</Text>
@@ -487,13 +498,13 @@ export default function TransactionsScreen() {
           <Text style={styles.summaryValue} accessibilityLabel={undefined}>
             {summaryData ? fmtAmount(summaryData.total_income) : '—'}
           </Text>
-          <Text style={styles.summaryLabel}>{t('transactions.summary.income')}</Text>
+          <Text style={[styles.summaryLabel, { color: textSecondary }]}>{t('transactions.summary.income')}</Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={[styles.summaryValue, { color: '#e11d48' }]}>
             {summaryData ? fmtAmount(summaryData.total_expenses) : '—'}
           </Text>
-          <Text style={styles.summaryLabel}>{t('transactions.summary.expenses')}</Text>
+          <Text style={[styles.summaryLabel, { color: textSecondary }]}>{t('transactions.summary.expenses')}</Text>
         </View>
       </View>
 
@@ -619,7 +630,7 @@ export default function TransactionsScreen() {
         categories={categories}
         onApply={(f) => {
           setActiveFilters(f);
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
         }}
         onClose={() => setShowFilterSheet(false)}
       />
@@ -709,18 +720,16 @@ const styles = StyleSheet.create({
   footer: { height: 40, alignItems: 'center', justifyContent: 'center' },
   allCaughtUp: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#94a3b8' },
   // ── Modal / Sheet ──────────────────────────────────────────────────────────
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
+  modalContainer: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.4)' },
   sheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 16,
     maxHeight: 480,
   },
   filterSheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 16,
   },
   sheetHandle: {
@@ -817,12 +826,15 @@ const styles = StyleSheet.create({
     borderColor: '#e0e7ff',
   },
   bannerTitle: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
-    fontWeight: '600',
+    lineHeight: 18,
     color: '#3730a3',
   },
   bannerSubtitle: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 12,
+    lineHeight: 16,
     color: '#6366f1',
     marginTop: 1,
   },

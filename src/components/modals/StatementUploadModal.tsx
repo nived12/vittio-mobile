@@ -23,6 +23,7 @@ import { es as dateFnsEs } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
 import { X, FileText, CheckCircle, AlertTriangle, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { resolveBankAccountName } from '../../utils/displayNames';
 import { useTheme } from '../../theme/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -133,11 +134,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
   // ── Dark mode ──
   const { theme, isDark } = useTheme();
-  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
-  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
-  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
+  const sheetBg = isDark ? (theme as any).surface : '#ffffff';
+  const inputBg = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useBankAccounts();
   const confettiRef = useRef<ConfettiCannon>(null);
@@ -419,7 +420,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                           <View style={[styles.radio, selected && styles.radioSelected]} />
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.accountName, selected && { color: '#4f46e5' }]}>
-                              {item.custom_name ?? item.name}
+                              {resolveBankAccountName(item, t)}
                             </Text>
                             <Text style={styles.accountMeta}>{item.account_type} · {item.currency}</Text>
                           </View>
@@ -437,7 +438,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   <View style={[styles.accountRow, styles.accountRowSelected]}>
                     <View style={[styles.radio, styles.radioSelected]} />
                     <Text style={[styles.accountName, { color: '#4f46e5' }]}>
-                      {preselectedAccount.custom_name ?? preselectedAccount.name}
+                      {resolveBankAccountName(preselectedAccount, t)}
                     </Text>
                   </View>
                 </>

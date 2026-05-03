@@ -55,6 +55,7 @@ import {
   ArrowLeftRight,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { resolveBankAccountName } from '../../utils/displayNames';
 import { useCreateTransaction, useUpdateTransaction } from '../../hooks/useTransactions';
 import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useCategories } from '../../hooks/useCategories';
@@ -123,6 +124,12 @@ interface AccountPickerProps {
 function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSelect, onClose }: AccountPickerProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const typeLabel = (type: BankAccount['account_type']) => {
     if (type === 'debit') return t('accounts.types.debit');
@@ -134,40 +141,40 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, styles.accountSheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.handle} />
-          <Text style={styles.sheetTitle}>{title ?? t('transactions.select_account_title')}</Text>
+        <View style={[styles.sheet, styles.accountSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.handle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{title ?? t('transactions.select_account_title')}</Text>
 
           <FlatList
             data={accounts}
-          keyExtractor={(a) => String(a.id)}
-          renderItem={({ item }) => {
-            const selected = item.id === selectedId;
-            const fmtBal = new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', {
-              style: 'currency', currency: item.currency,
-            }).format(item.balance);
+            keyExtractor={(a) => String(a.id)}
+            renderItem={({ item }) => {
+              const selected = item.id === selectedId;
+              const fmtBal = new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', {
+                style: 'currency', currency: item.currency,
+              }).format(item.balance);
 
-            return (
-              <TouchableOpacity
-                style={[styles.accountPickerRow, selected && styles.accountPickerRowSelected]}
-                onPress={() => { onSelect(item); onClose(); }}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected }}
-              >
-                <View style={[styles.radioCircle, selected && styles.radioCircleSelected]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.accountPickerName, selected && { color: '#4f46e5' }]}>
-                    {item.custom_name ?? item.name}
-                  </Text>
-                  <Text style={styles.accountPickerMeta}>{typeLabel(item.account_type)} · {fmtBal}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          }}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>{t('transactions.no_account_warning')}</Text>
-          }
-        />
+              return (
+                <TouchableOpacity
+                  style={[styles.accountPickerRow, { borderBottomColor: dividerCol }, selected && styles.accountPickerRowSelected, selected && { backgroundColor: isDark ? 'rgba(99,102,241,0.1)' : '#f5f3ff' }]}
+                  onPress={() => { onSelect(item); onClose(); }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: selected }}
+                >
+                  <View style={[styles.radioCircle, { borderColor: isDark ? 'rgba(255,255,255,0.2)' : '#cbd5e1' }, selected && styles.radioCircleSelected]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.accountPickerName, { color: textPrimary }, selected && { color: '#4f46e5' }]}>
+                      {resolveBankAccountName(item, t)}
+                    </Text>
+                    <Text style={[styles.accountPickerMeta, { color: textSecondary }]}>{typeLabel(item.account_type)} · {fmtBal}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>{t('transactions.no_account_warning')}</Text>
+            }
+          />
         </View>
       </View>
     </Modal>
@@ -187,6 +194,11 @@ interface CategoryPickerProps {
 function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClose }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   // Flatten tree: parents first, children indented
   const flat = useMemo(() => {
@@ -204,15 +216,15 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.handle} />
-          <Text style={styles.sheetTitle}>{t('transactions.category_label')}</Text>
+        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.handle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
 
           <TouchableOpacity
-            style={styles.categoryRow}
+            style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
             onPress={() => { onSelect(null); onClose(); }}
           >
-            <Text style={styles.categoryRowText}>{t('transactionDetail.fields.uncategorized')}</Text>
+            <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
             {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
           </TouchableOpacity>
 
@@ -221,10 +233,10 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
             keyExtractor={(item) => String(item.cat.id)}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20 }]}
+                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
                 onPress={() => { onSelect(item.cat); onClose(); }}
               >
-                <Text style={styles.categoryRowText}>{item.cat.name}</Text>
+                <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
                 {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
               </TouchableOpacity>
             )}
@@ -245,12 +257,12 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
   // ── Dark mode ──
   const { theme, isDark } = useTheme();
-  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
-  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
-  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
-  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
+  const sheetBg = isDark ? (theme as any).surface : '#ffffff';
+  const inputBg = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   // ── Queries ──
   const { data: accounts = [] } = useBankAccounts();
@@ -636,356 +648,356 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
         />
 
         <Animated.View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }, animatedSheetStyle]}>
-            <View style={[styles.handle, { backgroundColor: borderCol }]} />
+          <View style={[styles.handle, { backgroundColor: borderCol }]} />
 
-            {/* Header */}
-            <View style={[styles.header, { borderBottomColor: dividerCol }]}>
-              <TouchableOpacity onPress={handleClose} disabled={isSaving} hitSlop={12}>
-                <X size={22} color={textSecondary} />
+          {/* Header */}
+          <View style={[styles.header, { borderBottomColor: dividerCol }]}>
+            <TouchableOpacity onPress={handleClose} disabled={isSaving} hitSlop={12}>
+              <X size={22} color={textSecondary} />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: textPrimary }]}>
+              {isEditMode ? t('transactions.edit_title') : t('transactions.add_title')}
+            </Text>
+            <View style={{ width: 22 }} />
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
+            automaticallyAdjustKeyboardInsets
+          >
+            {/* Amount */}
+            <View style={styles.amountRow}>
+              <TouchableOpacity
+                onPress={handleMicPress}
+                style={styles.aiButton}
+                accessibilityLabel={t('aiInput.voice.tap')}
+                hitSlop={8}
+              >
+                {aiState === 'processing' ? (
+                  <ActivityIndicator size="small" color="#4f46e5" />
+                ) : (
+                  <Ionicons
+                    name={aiState === 'recording' ? 'mic' : 'mic-outline'}
+                    size={22}
+                    color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
+                  />
+                )}
               </TouchableOpacity>
-              <Text style={[styles.headerTitle, { color: textPrimary }]}>
-                {isEditMode ? t('transactions.edit_title') : t('transactions.add_title')}
-              </Text>
-              <View style={{ width: 22 }} />
+
+              <View style={styles.amountInputWrapper}>
+                <Text style={[styles.currencyPrefix, { color: textSecondary }]}>$</Text>
+                <TextInput
+                  style={[styles.amountInput, { color: amountColor }]}
+                  value={amountStr}
+                  onChangeText={(v) => {
+                    const clean = v.replace(/[^0-9.]/g, '');
+                    const parts = clean.split('.');
+                    setAmountStr(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : clean);
+                  }}
+                  onBlur={() => {
+                    const n = parseFloat(amountStr);
+                    if (!isNaN(n) && n > 0) setAmountStr(n.toFixed(2));
+                  }}
+                  keyboardType="decimal-pad"
+                  placeholder="0.00"
+                  placeholderTextColor="#cbd5e1"
+                  accessibilityLabel={t('transactions.amount_label')}
+                  returnKeyType="done"
+                />
+              </View>
+
+              <TouchableOpacity
+                onPress={handleCameraPress}
+                style={styles.aiButton}
+                accessibilityLabel={t('aiInput.camera.tap')}
+                hitSlop={8}
+              >
+                <Ionicons name="camera-outline" size={22} color="#94a3b8" />
+              </TouchableOpacity>
             </View>
 
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={styles.scrollContent}
-              automaticallyAdjustKeyboardInsets
-            >
-              {/* Amount */}
-              <View style={styles.amountRow}>
-                <TouchableOpacity
-                  onPress={handleMicPress}
-                  style={styles.aiButton}
-                  accessibilityLabel={t('aiInput.voice.tap')}
-                  hitSlop={8}
-                >
-                  {aiState === 'processing' ? (
-                    <ActivityIndicator size="small" color="#4f46e5" />
-                  ) : (
-                    <Ionicons
-                      name={aiState === 'recording' ? 'mic' : 'mic-outline'}
-                      size={22}
-                      color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
-                    />
-                  )}
-                </TouchableOpacity>
+            {/* AI state labels */}
+            {aiState === 'recording' && (
+              <Text style={styles.aiLabel}>{t('aiInput.voice.recording')}</Text>
+            )}
+            {aiState === 'processing' && (
+              <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
+            )}
+            {aiState === 'prefilled' && (
+              <Text style={[styles.aiLabel, { color: '#10b981' }]}>{t('aiInput.voice.prefilled')}</Text>
+            )}
 
-                <View style={styles.amountInputWrapper}>
-                  <Text style={styles.currencyPrefix}>$</Text>
-                  <TextInput
-                    style={[styles.amountInput, { color: amountColor }]}
-                    value={amountStr}
-                    onChangeText={(v) => {
-                      const clean = v.replace(/[^0-9.]/g, '');
-                      const parts = clean.split('.');
-                      setAmountStr(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : clean);
+            {/* Mic permission denied */}
+            {micPermissionDenied && (
+              <TouchableOpacity
+                onPress={() => Linking.openSettings()}
+                style={styles.permissionRow}
+                accessibilityRole="button"
+              >
+                <Ionicons name="warning-outline" size={14} color="#f59e0b" />
+                <Text style={[styles.permissionText, { color: textSecondary }]}>
+                  {t('aiInput.voice.permissionDenied')}
+                  {' — '}
+                  <Text style={styles.permissionLink}>{t('aiInput.voice.openSettings')}</Text>
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Receipt review */}
+            {showReceiptReview && receiptThumbnail && (
+              <View style={styles.receiptReview}>
+                <Text style={styles.receiptReviewLabel}>{t('aiInput.camera.reviewing')}</Text>
+                <View style={styles.receiptReviewActions}>
+                  <TouchableOpacity
+                    style={styles.receiptConfirmBtn}
+                    onPress={() => setShowReceiptReview(false)}
+                  >
+                    <Text style={styles.receiptConfirmText}>{t('aiInput.camera.confirmReview')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.receiptClearBtn}
+                    onPress={() => {
+                      setShowReceiptReview(false);
+                      setReceiptThumbnail(null);
+                      setAmountStr('');
+                      setDescription('');
+                      setSelectedCategory(null);
                     }}
-                    onBlur={() => {
-                      const n = parseFloat(amountStr);
-                      if (!isNaN(n) && n > 0) setAmountStr(n.toFixed(2));
-                    }}
-                    keyboardType="decimal-pad"
-                    placeholder="0.00"
-                    placeholderTextColor="#cbd5e1"
-                    accessibilityLabel={t('transactions.amount_label')}
-                    returnKeyType="done"
-                  />
+                  >
+                    <Text style={styles.receiptClearText}>{t('aiInput.camera.clearReview')}</Text>
+                  </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  onPress={handleCameraPress}
-                  style={styles.aiButton}
-                  accessibilityLabel={t('aiInput.camera.tap')}
-                  hitSlop={8}
-                >
-                  <Ionicons name="camera-outline" size={22} color="#94a3b8" />
-                </TouchableOpacity>
               </View>
+            )}
 
-              {/* AI state labels */}
-              {aiState === 'recording' && (
-                <Text style={styles.aiLabel}>{t('aiInput.voice.recording')}</Text>
-              )}
-              {aiState === 'processing' && (
-                <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
-              )}
-              {aiState === 'prefilled' && (
-                <Text style={[styles.aiLabel, { color: '#10b981' }]}>{t('aiInput.voice.prefilled')}</Text>
-              )}
+            {/* Type segmented control */}
+            <View style={styles.typeControl}>
+              {([
+                { key: 'income' as TopLevelType, label: t('transactions.type_income'), Icon: TrendingUp, color: '#10b981' },
+                { key: 'expense' as TopLevelType, label: t('transactions.type_expense'), Icon: TrendingDown, color: '#e11d48' },
+                { key: 'transfer' as TopLevelType, label: t('transactions.type_transfer'), Icon: ArrowLeftRight, color: '#8b5cf6' },
+              ] as const).map(({ key, label, Icon, color }) => {
+                const active = topType === key;
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={[styles.typeBtn, { backgroundColor: inputBg, borderColor: borderCol }, active && { backgroundColor: color, borderColor: color }]}
+                    onPress={() => handleTopTypeChange(key)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Icon size={14} color={active ? '#fff' : textSecondary} />
+                    <Text style={[styles.typeBtnLabel, active && { color: '#fff' }]}>{label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-              {/* Mic permission denied */}
-              {micPermissionDenied && (
-                <TouchableOpacity
-                  onPress={() => Linking.openSettings()}
-                  style={styles.permissionRow}
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="warning-outline" size={14} color="#f59e0b" />
-                  <Text style={styles.permissionText}>
-                    {t('aiInput.voice.permissionDenied')}
-                    {' — '}
-                    <Text style={styles.permissionLink}>{t('aiInput.voice.openSettings')}</Text>
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Receipt review */}
-              {showReceiptReview && receiptThumbnail && (
-                <View style={styles.receiptReview}>
-                  <Text style={styles.receiptReviewLabel}>{t('aiInput.camera.reviewing')}</Text>
-                  <View style={styles.receiptReviewActions}>
-                    <TouchableOpacity
-                      style={styles.receiptConfirmBtn}
-                      onPress={() => setShowReceiptReview(false)}
-                    >
-                      <Text style={styles.receiptConfirmText}>{t('aiInput.camera.confirmReview')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.receiptClearBtn}
-                      onPress={() => {
-                        setShowReceiptReview(false);
-                        setReceiptThumbnail(null);
-                        setAmountStr('');
-                        setDescription('');
-                        setSelectedCategory(null);
-                      }}
-                    >
-                      <Text style={styles.receiptClearText}>{t('aiInput.camera.clearReview')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-
-              {/* Type segmented control */}
-              <View style={styles.typeControl}>
+            {/* Expense sub-type */}
+            {topType === 'expense' && (
+              <View style={styles.subTypeRow}>
                 {([
-                  { key: 'income' as TopLevelType, label: t('transactions.type_income'), Icon: TrendingUp, color: '#10b981' },
-                  { key: 'expense' as TopLevelType, label: t('transactions.type_expense'), Icon: TrendingDown, color: '#e11d48' },
-                  { key: 'transfer' as TopLevelType, label: t('transactions.type_transfer'), Icon: ArrowLeftRight, color: '#8b5cf6' },
-                ] as const).map(({ key, label, Icon, color }) => {
-                  const active = topType === key;
-                  return (
-                    <TouchableOpacity
-                      key={key}
-                      style={[styles.typeBtn, active && { backgroundColor: color, borderColor: color }]}
-                      onPress={() => handleTopTypeChange(key)}
-                      accessibilityRole="radio"
-                      accessibilityState={{ selected: active }}
-                    >
-                      <Icon size={14} color={active ? '#fff' : '#64748b'} />
-                      <Text style={[styles.typeBtnLabel, active && { color: '#fff' }]}>{label}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                  { value: 'variable_expense' as SubType, label: t('transactions.type_variable_expense') },
+                  { value: 'fixed_expense' as SubType, label: t('transactions.type_fixed_expense') },
+                ] as const).map(({ value, label }) => (
+                  <TouchableOpacity
+                    key={value}
+                    style={[styles.subTypeBtn, { backgroundColor: inputBg, borderColor: borderCol }, subType === value && styles.subTypeBtnActive, subType === value && { backgroundColor: isDark ? 'rgba(79,70,229,0.12)' : '#eef2ff' }]}
+                    onPress={() => { Haptics.selectionAsync(); setSubType(value); }}
+                  >
+                    <Text style={[styles.subTypeBtnLabel, { color: textSecondary }, subType === value && { color: '#4f46e5' }]}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
+            )}
 
-              {/* Expense sub-type */}
-              {topType === 'expense' && (
-                <View style={styles.subTypeRow}>
-                  {([
-                    { value: 'variable_expense' as SubType, label: t('transactions.type_variable_expense') },
-                    { value: 'fixed_expense' as SubType, label: t('transactions.type_fixed_expense') },
-                  ] as const).map(({ value, label }) => (
-                    <TouchableOpacity
-                      key={value}
-                      style={[styles.subTypeBtn, subType === value && styles.subTypeBtnActive]}
-                      onPress={() => { Haptics.selectionAsync(); setSubType(value); }}
-                    >
-                      <Text style={[styles.subTypeBtnLabel, subType === value && { color: '#4f46e5' }]}>
-                        {label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {/* Transfer sub-type */}
-              {topType === 'transfer' && (
-                <View style={styles.subTypeRow}>
-                  {([
-                    { value: 'transfer_out' as SubType, label: t('transactions.type_transfer_out') },
-                    { value: 'transfer_in' as SubType, label: t('transactions.type_transfer_in') },
-                  ] as const).map(({ value, label }) => (
-                    <TouchableOpacity
-                      key={value}
-                      style={[styles.subTypeBtn, subType === value && styles.subTypeBtnActive]}
-                      onPress={() => { Haptics.selectionAsync(); setSubType(value); }}
-                    >
-                      <Text style={[styles.subTypeBtnLabel, subType === value && { color: '#4f46e5' }]}>
-                        {label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {/* Fields */}
-              <Text style={[styles.sectionLabel, { color: textSecondary }]}>DETALLES</Text>
-
-              {/* Description */}
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.description_label')} *</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder={t('transactions.description_placeholder')}
-                  placeholderTextColor="#94a3b8"
-                  returnKeyType="next"
-                  maxLength={255}
-                />
+            {/* Transfer sub-type */}
+            {topType === 'transfer' && (
+              <View style={styles.subTypeRow}>
+                {([
+                  { value: 'transfer_out' as SubType, label: t('transactions.type_transfer_out') },
+                  { value: 'transfer_in' as SubType, label: t('transactions.type_transfer_in') },
+                ] as const).map(({ value, label }) => (
+                  <TouchableOpacity
+                    key={value}
+                    style={[styles.subTypeBtn, subType === value && styles.subTypeBtnActive]}
+                    onPress={() => { Haptics.selectionAsync(); setSubType(value); }}
+                  >
+                    <Text style={[styles.subTypeBtnLabel, subType === value && { color: '#4f46e5' }]}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
+            )}
 
-              {/* Date */}
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.date_label')} *</Text>
-                <TouchableOpacity
-                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                  onPress={() => setShowDatePicker(true)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${t('transactions.date_label')}: ${dateDisplay}`}
-                >
-                  <Text style={[styles.fieldRowText, { color: textPrimary }]}>{dateDisplay}</Text>
-                  <ChevronRight size={16} color="#94a3b8" />
-                </TouchableOpacity>
-              </View>
+            {/* Fields */}
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>DETALLES</Text>
 
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                  maximumDate={new Date()}
-                  onChange={(_event, selected) => {
-                    if (selected) setDate(selected);
-                  }}
-                />
+            {/* Description */}
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.description_label')} *</Text>
+              <TextInput
+                style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={t('transactions.description_placeholder')}
+                placeholderTextColor="#94a3b8"
+                returnKeyType="next"
+                maxLength={255}
+              />
+            </View>
+
+            {/* Date */}
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.date_label')} *</Text>
+              <TouchableOpacity
+                style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
+                onPress={() => setShowDatePicker(true)}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('transactions.date_label')}: ${dateDisplay}`}
+              >
+                <Text style={[styles.fieldRowText, { color: textPrimary }]}>{dateDisplay}</Text>
+                <ChevronRight size={16} color="#94a3b8" />
+              </TouchableOpacity>
+            </View>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                maximumDate={new Date()}
+                onChange={(_event, selected) => {
+                  if (selected) setDate(selected);
+                }}
+              />
+            )}
+            {showDatePicker && Platform.OS === 'ios' && (
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(false)}
+                style={styles.datePickerDoneBtn}
+                accessibilityRole="button"
+              >
+                <Text style={styles.datePickerDoneBtnText}>{t('common.done')}</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Account */}
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.account_label')} *</Text>
+              <TouchableOpacity
+                style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
+                onPress={() => setShowAccountPicker(true)}
+                accessibilityRole="button"
+              >
+                <Text style={selectedAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
+                  {selectedAccount ? resolveBankAccountName(selectedAccount, t) : t('transactions.no_account_warning')}
+                </Text>
+                <ChevronRight size={16} color="#94a3b8" />
+              </TouchableOpacity>
+              {hasAttemptedSave && !selectedAccount && (
+                <Text style={styles.fieldError}>{t('transactions.no_account_warning')}</Text>
               )}
-              {showDatePicker && Platform.OS === 'ios' && (
-                <TouchableOpacity
-                  onPress={() => setShowDatePicker(false)}
-                  style={styles.datePickerDoneBtn}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.datePickerDoneBtnText}>{t('common.done')}</Text>
-                </TouchableOpacity>
-              )}
+            </View>
 
-              {/* Account */}
+            {/* Transfer destination account */}
+            {topType === 'transfer' && (
               <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.account_label')} *</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.transfer_to_label')} *</Text>
                 <TouchableOpacity
-                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                  onPress={() => setShowAccountPicker(true)}
+                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
+                  onPress={() => setShowTransferToPicker(true)}
                   accessibilityRole="button"
                 >
-                  <Text style={selectedAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
-                    {selectedAccount ? (selectedAccount.custom_name ?? selectedAccount.name) : t('transactions.no_account_warning')}
+                  <Text style={transferToAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
+                    {transferToAccount
+                      ? resolveBankAccountName(transferToAccount, t)
+                      : t('transactions.select_transfer_account_title')}
                   </Text>
                   <ChevronRight size={16} color="#94a3b8" />
                 </TouchableOpacity>
-                {hasAttemptedSave && !selectedAccount && (
+                {hasAttemptedSave && !transferToAccount && (
                   <Text style={styles.fieldError}>{t('transactions.no_account_warning')}</Text>
                 )}
               </View>
+            )}
 
-              {/* Transfer destination account */}
-              {topType === 'transfer' && (
-                <View style={styles.fieldBlock}>
-                  <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.transfer_to_label')} *</Text>
-                  <TouchableOpacity
-                    style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
-                    onPress={() => setShowTransferToPicker(true)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={transferToAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
-                      {transferToAccount
-                        ? (transferToAccount.custom_name ?? transferToAccount.name)
-                        : t('transactions.select_transfer_account_title')}
-                    </Text>
-                    <ChevronRight size={16} color="#94a3b8" />
-                  </TouchableOpacity>
-                  {hasAttemptedSave && !transferToAccount && (
-                    <Text style={styles.fieldError}>{t('transactions.no_account_warning')}</Text>
-                  )}
-                </View>
-              )}
-
-              {/* Category */}
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.category_label')}</Text>
-                <TouchableOpacity
-                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                  onPress={() => setShowCategoryPicker(true)}
-                  accessibilityRole="button"
-                >
-                  <Text style={[styles.fieldRowText, { color: textPrimary }]}>{categoryDisplay}</Text>
-                  <ChevronRight size={16} color="#94a3b8" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Optional fields */}
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.concept_label')}</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-                  value={concept}
-                  onChangeText={setConcept}
-                  placeholder="Más detalles..."
-                  placeholderTextColor="#94a3b8"
-                  returnKeyType="next"
-                />
-              </View>
-
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.merchant_label')}</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-                  value={merchant}
-                  onChangeText={setMerchant}
-                  onBlur={() => {
-                    const trimmed = merchant.trim();
-                    if (trimmed) setCommittedMerchant(trimmed);
-                  }}
-                  placeholder="Walmart, Cinépolis..."
-                  placeholderTextColor="#94a3b8"
-                  returnKeyType="next"
-                />
-              </View>
-
-              <View style={styles.fieldBlock}>
-                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.reference_label')}</Text>
-                <TextInput
-                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-                  value={reference}
-                  onChangeText={setReference}
-                  placeholder="Folio, número de orden..."
-                  placeholderTextColor="#94a3b8"
-                  returnKeyType="done"
-                  onSubmitEditing={handleSave}
-                />
-              </View>
-
-              {/* Save button */}
+            {/* Category */}
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.category_label')}</Text>
               <TouchableOpacity
-                style={[styles.saveBtn, (!canSave || isSaving) && styles.saveBtnDisabled]}
-                onPress={handleSave}
-                disabled={!canSave || isSaving}
-                accessibilityState={{ disabled: !canSave || isSaving }}
+                style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
+                onPress={() => setShowCategoryPicker(true)}
+                accessibilityRole="button"
               >
-                <Text style={styles.saveBtnLabel}>
-                  {isSaving
-                    ? '...'
-                    : isEditMode
-                      ? t('transactions.save_changes_button')
-                      : t('transactions.save_button')}
-                </Text>
+                <Text style={[styles.fieldRowText, { color: textPrimary }]}>{categoryDisplay}</Text>
+                <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
-            </ScrollView>
+            </View>
+
+            {/* Optional fields */}
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.concept_label')}</Text>
+              <TextInput
+                style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                value={concept}
+                onChangeText={setConcept}
+                placeholder="Más detalles..."
+                placeholderTextColor="#94a3b8"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.merchant_label')}</Text>
+              <TextInput
+                style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                value={merchant}
+                onChangeText={setMerchant}
+                onBlur={() => {
+                  const trimmed = merchant.trim();
+                  if (trimmed) setCommittedMerchant(trimmed);
+                }}
+                placeholder="Walmart, Cinépolis..."
+                placeholderTextColor="#94a3b8"
+                returnKeyType="next"
+              />
+            </View>
+
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.reference_label')}</Text>
+              <TextInput
+                style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                value={reference}
+                onChangeText={setReference}
+                placeholder="Folio, número de orden..."
+                placeholderTextColor="#94a3b8"
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
+              />
+            </View>
+
+            {/* Save button */}
+            <TouchableOpacity
+              style={[styles.saveBtn, (!canSave || isSaving) && styles.saveBtnDisabled]}
+              onPress={handleSave}
+              disabled={!canSave || isSaving}
+              accessibilityState={{ disabled: !canSave || isSaving }}
+            >
+              <Text style={styles.saveBtnLabel}>
+                {isSaving
+                  ? '...'
+                  : isEditMode
+                    ? t('transactions.save_changes_button')
+                    : t('transactions.save_button')}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
         </Animated.View>
       </View>
 
@@ -1107,7 +1119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 4,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
     backgroundColor: '#f8fafc',

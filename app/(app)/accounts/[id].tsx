@@ -23,6 +23,7 @@ import { useBankAccount, useDeleteBankAccount } from '../../../src/hooks/useBank
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
+import { resolveBankAccountName } from '../../../src/utils/displayNames';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
@@ -46,6 +47,10 @@ interface CategoryPickerProps {
 
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
   return (
     <Modal
       visible={visible}
@@ -53,26 +58,28 @@ function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedI
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHandle} />
-        <Text style={styles.sheetTitle}>Categoría</Text>
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-              onPress={() => { onSelect(item); onClose(); }}
-            >
-              <Text style={[styles.categoryRowText, item.id === selectedId && styles.categoryRowTextActive]}>
-                {item.name}
-              </Text>
-              {item.id === selectedId && <View style={styles.checkDot} />}
-            </TouchableOpacity>
-          )}
-          style={{ maxHeight: 360 }}
-        />
+      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
+          <FlatList
+            data={categories}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
+                onPress={() => { onSelect(item); onClose(); }}
+              >
+                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
+                  {item.name}
+                </Text>
+                {item.id === selectedId && <View style={styles.checkDot} />}
+              </TouchableOpacity>
+            )}
+            style={{ maxHeight: 360 }}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -108,11 +115,12 @@ export default function AccountDetailScreen() {
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? (theme as any).background  : '#f8fafc';
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const bg = isDark ? (theme as any).background : '#f8fafc';
+  const surface = isDark ? (theme as any).surface : '#ffffff';
   const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -147,11 +155,11 @@ export default function AccountDetailScreen() {
   const sections = useMemo(() => groupByDate(transactions), [transactions]);
 
   const handleRefresh = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     setIsRefreshing(true);
     try {
       await Promise.all([refetchAccount(), refetchTx()]);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } finally {
       setIsRefreshing(false);
     }
@@ -184,7 +192,7 @@ export default function AccountDetailScreen() {
       await updateTransaction(txId, { category_id: category.id });
       refetchTx();
       showToast('Categoría actualizada', 'success');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } catch {
       showToast('Error al actualizar categoría', 'error');
     }
@@ -203,7 +211,7 @@ export default function AccountDetailScreen() {
           text: t('accountDetail.deleteConfirm.confirm'),
           style: 'destructive',
           onPress: async () => {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => { });
             setIsDeletingAccount(true);
             try {
               await deleteAccountMutation.mutateAsync(accountId);
@@ -221,7 +229,7 @@ export default function AccountDetailScreen() {
   }
 
   function handleMoreOptions() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -252,9 +260,9 @@ export default function AccountDetailScreen() {
 
   // ── Account type config ────────────────────────────────────────────────
   const typeConfig = {
-    debit:  { bg: '#dbeafe', iconColor: '#1e40af', Icon: CreditCard, label: t('accounts.types.debit') },
+    debit: { bg: '#dbeafe', iconColor: '#1e40af', Icon: CreditCard, label: t('accounts.types.debit') },
     credit: { bg: '#ede9fe', iconColor: '#5b21b6', Icon: CreditCard, label: t('accounts.types.credit') },
-    cash:   { bg: '#d1fae5', iconColor: '#065f46', Icon: Banknote,   label: t('accounts.types.cash') },
+    cash: { bg: '#d1fae5', iconColor: '#065f46', Icon: Banknote, label: t('accounts.types.cash') },
   } as const;
 
   // ── Error ────────────────────────────────────────────────────────────────
@@ -285,10 +293,10 @@ export default function AccountDetailScreen() {
 
   const fmtBalance = account
     ? new Intl.NumberFormat(resolvedLocale, {
-        style: 'currency',
-        currency: account.currency,
-        minimumFractionDigits: 2,
-      }).format(account.balance)
+      style: 'currency',
+      currency: account.currency,
+      minimumFractionDigits: 2,
+    }).format(account.balance)
     : '';
 
   return (
@@ -311,7 +319,7 @@ export default function AccountDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Más opciones"
           >
-            <DotsThreeOutline size={22} color="#475569" weight="regular" />
+            <DotsThreeOutline size={22} color={textSecondary} weight="regular" />
           </TouchableOpacity>
         )}
         {isDeletingAccount && (
@@ -343,7 +351,7 @@ export default function AccountDetailScreen() {
               <View
                 style={[styles.accountCard, { backgroundColor: surface, borderColor: borderCol }]}
                 accessibilityRole="none"
-                accessibilityLabel={`${account.custom_name ?? account.name}, ${cfg.label} account, balance ${fmtBalance}, ${account.transactions_count} transactions`}
+                accessibilityLabel={`${resolveBankAccountName(account, t)}, ${cfg.label} account, balance ${fmtBalance}, ${account.transactions_count} transactions`}
               >
                 {/* Account type badge */}
                 <View style={[styles.typeBadge, { backgroundColor: cfg.bg, alignSelf: 'flex-end', position: 'absolute', top: 16, right: 16 }]}>
@@ -368,21 +376,22 @@ export default function AccountDetailScreen() {
                   })()}
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={[styles.accountName, { color: textPrimary }]} numberOfLines={2}>
-                      {account.custom_name ?? account.name}
+                      {resolveBankAccountName(account, t)}
                     </Text>
-                    <Text style={styles.bankName}>{account.bank_name}</Text>
+                    <Text style={[styles.bankName, { color: textSecondary }]}>{account.bank_name}</Text>
                   </View>
                 </View>
                 {/* Balance */}
                 <Text
                   style={[
                     styles.balanceText,
+                    { color: textPrimary },
                     account.balance < 0 && { color: '#e11d48' },
                   ]}
                 >
                   {fmtBalance}
                 </Text>
-                <Text style={styles.metaText}>
+                <Text style={[styles.metaText, { color: textSecondary }]}>
                   {account.currency} · {cfg.label} · {account.transactions_count} {t('accountDetail.sections.transactions').toLowerCase()}
                 </Text>
               </View>
@@ -390,7 +399,7 @@ export default function AccountDetailScreen() {
 
             {/* Transactions section header */}
             <View style={styles.txSectionRow}>
-              <Text style={[styles.txSectionLabel, { color: textPrimary }]}>
+              <Text style={[styles.txSectionLabel, { color: textSecondary }]}>
                 {t('accountDetail.sections.transactions').toUpperCase()}
               </Text>
             </View>
@@ -549,6 +558,7 @@ const styles = StyleSheet.create({
   footer: { height: 40, alignItems: 'center', justifyContent: 'center' },
   allCaughtUp: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#94a3b8' },
   // ── Category picker ───────────────────────────────────────────────────────
+  modalContainer: { flex: 1, justifyContent: 'flex-end' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
   categorySheet: {
     backgroundColor: '#ffffff',

@@ -42,15 +42,15 @@ function getIcon(name: string): React.ComponentType<{ size: number; color: strin
 
 interface BadgeConfig { bg: string; text: string; label: string }
 
-function getTypeBadge(type: string, t: (k: string) => string): BadgeConfig {
+function getTypeBadge(type: string, isDark: boolean, t: (k: string) => string): BadgeConfig {
   const map: Record<string, BadgeConfig> = {
-    income:           { bg: '#d1fae5', text: '#065f46', label: t('transactionDetail.types.income') },
-    fixed_expense:    { bg: '#fee2e2', text: '#991b1b', label: t('transactionDetail.types.fixed_expense') },
-    variable_expense: { bg: '#fee2e2', text: '#991b1b', label: t('transactionDetail.types.variable_expense') },
-    transfer_in:      { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_in') },
-    transfer_out:     { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_out') },
+    income: isDark ? { bg: 'rgba(16,185,129,0.15)', text: '#10b981', label: t('transactionDetail.types.income') } : { bg: '#d1fae5', text: '#065f46', label: t('transactionDetail.types.income') },
+    fixed_expense: isDark ? { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: t('transactionDetail.types.fixed_expense') } : { bg: '#fee2e2', text: '#991b1b', label: t('transactionDetail.types.fixed_expense') },
+    variable_expense: isDark ? { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: t('transactionDetail.types.variable_expense') } : { bg: '#fee2e2', text: '#991b1b', label: t('transactionDetail.types.variable_expense') },
+    transfer_in: isDark ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionDetail.types.transfer_in') } : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_in') },
+    transfer_out: isDark ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionDetail.types.transfer_out') } : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_out') },
   };
-  return map[type] ?? { bg: '#f1f5f9', text: '#334155', label: type };
+  return map[type] ?? (isDark ? { bg: 'rgba(255,255,255,0.06)', text: '#94a3b8', label: type } : { bg: '#f1f5f9', text: '#334155', label: type });
 }
 
 // ── Category Picker Modal ─────────────────────────────────────────────────
@@ -65,6 +65,10 @@ interface CategoryPickerProps {
 
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
   return (
     <Modal
       visible={visible}
@@ -72,29 +76,31 @@ function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedI
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.sheetHandle} />
-        <Text style={styles.sheetTitle}>Categoría</Text>
-        <FlatList
-          data={categories}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-              onPress={() => {
-                onSelect(item);
-                onClose();
-              }}
-            >
-              <Text style={[styles.categoryRowText, item.id === selectedId && styles.categoryRowTextActive]}>
-                {item.name}
-              </Text>
-              {item.id === selectedId && <View style={styles.checkDot} />}
-            </TouchableOpacity>
-          )}
-          style={{ maxHeight: 360 }}
-        />
+      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
+          <FlatList
+            data={categories}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
+                onPress={() => {
+                  onSelect(item);
+                  onClose();
+                }}
+              >
+                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
+                  {item.name}
+                </Text>
+                {item.id === selectedId && <View style={styles.checkDot} />}
+              </TouchableOpacity>
+            )}
+            style={{ maxHeight: 360 }}
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -114,11 +120,12 @@ export default function TransactionDetailScreen() {
   const [showEditModal, setShowEditModal] = useState(false);
 
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? (theme as any).background  : '#f8fafc';
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const bg = isDark ? (theme as any).background : '#f8fafc';
+  const surface = isDark ? (theme as any).surface : '#ffffff';
   const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const { data: tx, isLoading, isError } = useTransaction(txId);
   const deleteMutation = useDeleteTransaction();
@@ -142,7 +149,7 @@ export default function TransactionDetailScreen() {
 
   function handleMoreOptions() {
     const txIsManual = tx?.source === 'manual';
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     if (Platform.OS === 'ios') {
       const options = txIsManual
         ? ['Editar', 'Eliminar', 'Cancelar']
@@ -176,7 +183,7 @@ export default function TransactionDetailScreen() {
   }
 
   function handleDelete() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => { });
     Alert.alert(
       t('transactionDetail.deleteConfirm.title'),
       t('transactionDetail.deleteConfirm.message'),
@@ -189,7 +196,7 @@ export default function TransactionDetailScreen() {
             setIsDeleting(true);
             try {
               await deleteMutation.mutateAsync(txId);
-              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => { });
               showToast(t('transactionDetail.deleteSuccess'), 'success');
               router.back();
             } catch {
@@ -208,7 +215,7 @@ export default function TransactionDetailScreen() {
     // Optimistic update not needed — react-query setQueryData after success is sufficient
     try {
       await updateMutation.mutateAsync({ category_id: category.id });
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
       showToast('Categoría actualizada', 'success');
     } catch {
       showToast('Error al actualizar categoría', 'error');
@@ -277,16 +284,16 @@ export default function TransactionDetailScreen() {
 
   const isManual = tx.source === 'manual';
   const iconName = tx.is_transfer ? 'arrow-left-right' : (tx.category?.icon ?? 'tag');
-  const iconBg = tx.is_transfer ? '#ede9fe' : (tx.category ? getCategoryColor(tx.category.icon) : '#f1f5f9');
+  const iconBg = tx.is_transfer ? (isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe') : (tx.category ? getCategoryColor(tx.category.icon) : '#f1f5f9');
   const iconColor = tx.is_transfer ? '#7c3aed' : (tx.category ? '#ffffff' : '#94a3b8');
   const IconComponent = getIcon(iconName);
 
   const amountColor =
     tx.amount > 0 ? '#059669' :
-    tx.amount < 0 ? '#e11d48' :   // rose-600 per design spec
-    '#94a3b8';
+      tx.amount < 0 ? '#e11d48' :   // rose-600 per design spec
+        '#94a3b8';
 
-  const typeBadge = getTypeBadge(tx.transaction_type, t);
+  const typeBadge = getTypeBadge(tx.transaction_type, isDark, t);
   const formattedDate = format(parseISO(tx.date), 'MMMM d, yyyy');
 
   return (
@@ -322,11 +329,10 @@ export default function TransactionDetailScreen() {
             <IconComponent size={28} color={iconColor} />
           </View>
           <Text style={[styles.heroTitle, { color: textPrimary }]} numberOfLines={2}>
-            {tx.merchant ?? tx.description}
+            {tx.concept ?? tx.merchant ?? tx.description}
           </Text>
-          {tx.concept ? <Text style={styles.heroConcept}>{tx.concept}</Text> : null}
           <Text style={[styles.heroAmount, { color: amountColor }]}>{fmtAmount(tx.amount)}</Text>
-          <Text style={styles.heroDate}>{formattedDate}</Text>
+          <Text style={[styles.heroDate, { color: textSecondary }]}>{formattedDate}</Text>
           {/* Type badge */}
           <View style={[styles.typeBadge, { backgroundColor: typeBadge.bg }]}>
             <Text style={[styles.typeBadgeText, { color: typeBadge.text }]}>{typeBadge.label}</Text>
@@ -339,15 +345,15 @@ export default function TransactionDetailScreen() {
           <TouchableOpacity
             style={styles.detailRow}
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
               setShowCategoryPicker(true);
             }}
             accessibilityRole="button"
             accessibilityLabel={`${t('transactionDetail.fields.category')}: ${tx.category?.name ?? t('transactionDetail.fields.uncategorized')}. Toca para cambiar`}
           >
-            <Text style={styles.detailLabel}>{t('transactionDetail.fields.category')}</Text>
+            <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.category')}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={styles.detailValue}>
+              <Text style={[styles.detailValue, { color: textPrimary }]}>
                 {tx.category?.name ?? t('transactionDetail.fields.uncategorized')}
               </Text>
               <ChevronRight size={16} color="#cbd5e1" />
@@ -361,7 +367,7 @@ export default function TransactionDetailScreen() {
             onPress={() => router.push(`/(app)/accounts/${tx.bank_account.id}` as `/(app)/accounts/${string}`)}
             accessibilityRole="button"
           >
-            <Text style={styles.detailLabel}>{t('transactionDetail.fields.account')}</Text>
+            <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.account')}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={styles.detailValue}>{tx.bank_account.name}</Text>
               <ChevronRight size={16} color="#cbd5e1" />
@@ -371,7 +377,7 @@ export default function TransactionDetailScreen() {
 
           {/* Type */}
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('transactionDetail.fields.type')}</Text>
+            <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.type')}</Text>
             <View style={[styles.typeBadge, { backgroundColor: typeBadge.bg }]}>
               <Text style={[styles.typeBadgeText, { color: typeBadge.text }]}>{typeBadge.label}</Text>
             </View>
@@ -380,8 +386,8 @@ export default function TransactionDetailScreen() {
 
           {/* Source */}
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('transactionDetail.fields.source')}</Text>
-            <Text style={styles.detailValue}>
+            <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.source')}</Text>
+            <Text style={[styles.detailValue, { color: textPrimary }]}>
               {isManual ? t('transactionDetail.fields.manual') : t('transactionDetail.fields.statement')}
             </Text>
           </View>
@@ -391,8 +397,8 @@ export default function TransactionDetailScreen() {
             <>
               <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{t('transactionDetail.fields.merchant')}</Text>
-                <Text style={styles.detailValue}>{tx.merchant}</Text>
+                <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.merchant')}</Text>
+                <Text style={[styles.detailValue, { color: textPrimary }]}>{tx.merchant}</Text>
               </View>
             </>
           ) : null}
@@ -402,8 +408,8 @@ export default function TransactionDetailScreen() {
             <>
               <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{t('transactionDetail.fields.reference')}</Text>
-                <Text style={styles.detailValue}>{tx.reference}</Text>
+                <Text style={[styles.detailLabel, { color: textSecondary }]}>{t('transactionDetail.fields.reference')}</Text>
+                <Text style={[styles.detailValue, { color: textPrimary }]}>{tx.reference}</Text>
               </View>
             </>
           ) : null}
@@ -462,7 +468,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 8,
   },
-  backLabel: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#475569', marginLeft: 2 },
+  backLabel: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#475569', marginLeft: 2 }, // overridden inline with textSecondary
   moreBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { padding: 16, gap: 16 },
   heroCard: {
@@ -519,6 +525,7 @@ const styles = StyleSheet.create({
   },
   deleteBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 20, color: '#ffffff' },
   // ── Category picker ─────────────────────────────────────────────────────
+  modalContainer: { flex: 1, justifyContent: 'flex-end' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
   categorySheet: {
     backgroundColor: '#ffffff',

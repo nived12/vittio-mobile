@@ -83,7 +83,7 @@ export function SectionHeader({
           locale={resolvedLocale}
         />
       ) : transactionCount !== undefined ? (
-        <Text style={styles.count}>
+        <Text style={[styles.count, { color: isDark ? '#94a3b8' : '#94a3b8' }]}>
           {t('sectionHeader.count', { count: transactionCount })}
         </Text>
       ) : null}

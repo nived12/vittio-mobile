@@ -382,6 +382,7 @@
     "debit": "Débito",
     "credit": "Crédito",
     "cash": "Efectivo",
+    "unknownAccount": "Cuenta",
     "types": {
       "debit": "Débito",
       "credit": "Crédito",

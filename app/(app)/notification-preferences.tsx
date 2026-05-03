@@ -95,7 +95,7 @@ export default function NotificationPreferencesScreen() {
           style={styles.backButton}
           accessibilityLabel={t('common.back')}
         >
-          <CaretLeft size={24} color={colors.text.primary} weight="regular" />
+          <CaretLeft size={24} color={textPrimary} weight="regular" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('notifications.title')}</Text>
         <View style={styles.headerSpacer} />

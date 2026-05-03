@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text, StyleProp, TextStyle } from 'react-native';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -27,12 +28,20 @@ const sizeStyles: Record<AmountSize, TextStyle> = {
   sm: { fontSize: 15, fontWeight: '500', lineHeight: 20 },
 };
 
-const colorMap = {
-  positive: '#059669', // emerald-600
-  negative: '#e11d48', // rose-600
-  zero:     '#94a3b8', // slate-400
+const lightColorMap = {
+  positive: '#059669',
+  negative: '#e11d48',
+  zero:     '#94a3b8',
   hero:     '#ffffff',
-  neutral:  '#0f172a', // slate-900
+  neutral:  '#0f172a',
+} as const;
+
+const darkColorMap = {
+  positive: '#10b981',
+  negative: '#e11d48',
+  zero:     '#94a3b8',
+  hero:     '#ffffff',
+  neutral:  '#f1f5f9',
 } as const;
 
 // ── Formatting ─────────────────────────────────────────────────────────────
@@ -92,6 +101,8 @@ export function AmountDisplay({
   style,
 }: AmountDisplayProps) {
   const storeLocale = useUIStore((s) => s.locale);
+  const { isDark } = useTheme();
+  const colorMap = isDark ? darkColorMap : lightColorMap;
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
 
   const formatted = useMemo(() => {
@@ -107,7 +118,7 @@ export function AmountDisplay({
     if (amount > 0) return colorMap.positive;
     if (amount < 0) return colorMap.negative;
     return colorMap.zero;
-  }, [amount, colorize, variant]);
+  }, [amount, colorize, variant, colorMap]);
 
   const display =
     showCurrencyCode && formatted !== '\u2014'

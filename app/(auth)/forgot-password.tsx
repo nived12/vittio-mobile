@@ -31,10 +31,10 @@ const forgotSchema = z.object({
 type ForgotFormValues = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordScreen() {
-  const { t }      = useTranslation();
-  const [isLoading,  setIsLoading]  = useState(false);
-  const [sent,       setSent]       = useState(false);
-  const [errorCode,  setErrorCode]  = useState<string | null>(null);
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const {
     control,
@@ -47,7 +47,7 @@ export default function ForgotPasswordScreen() {
   });
 
   const emailValue = watch('email');
-  const canSubmit  = emailValue.length > 0;
+  const canSubmit = emailValue.length > 0;
 
   const onSubmit = async (values: ForgotFormValues) => {
     if (isLoading) return;
@@ -184,68 +184,68 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   scrollContent: {
-    flexGrow:          1,
-    backgroundColor:   colors.bg.screen,
+    flexGrow: 1,
+    backgroundColor: colors.bg.screen,
     paddingHorizontal: spacing.screenPaddingH,
-    paddingBottom:     spacing.xl,
+    paddingBottom: spacing.xl,
   },
   backButton: {
-    marginTop:      spacing.md,
+    marginTop: spacing.md,
     paddingVertical: 8,
-    paddingRight:   16,
-    alignSelf:      'flex-start',
+    paddingRight: 16,
+    alignSelf: 'flex-start',
   },
   heading: {
     ...textStyles.displayLg,
-    color:        colors.text.primary,
-    marginTop:    spacing.lg,
+    color: colors.text.primary,
+    marginTop: spacing.lg,
     marginBottom: 8,
   },
   subtitle: {
     ...textStyles.bodyMd,
-    color:        colors.text.secondary,
+    color: colors.text.secondary,
     marginBottom: spacing.xl,
   },
   fieldGroup: { marginBottom: spacing.formFieldGap },
   fieldLabel: { ...components.input.label, marginBottom: 6 },
   fieldError: { ...components.input.errorText },
   input: {
-    height:           components.input.height,
-    borderRadius:     components.input.borderRadius,
-    borderWidth:      1,
-    borderColor:      components.input.resting.borderColor,
-    backgroundColor:  components.input.resting.backgroundColor,
+    height: components.input.height,
+    borderRadius: components.input.borderRadius,
+    borderWidth: 1,
+    borderColor: components.input.resting.borderColor,
+    backgroundColor: components.input.resting.backgroundColor,
     paddingHorizontal: components.input.paddingH,
-    fontFamily:       components.input.fontFamily,
-    fontSize:         components.input.fontSize,
-    color:            components.input.resting.color,
+    fontFamily: components.input.fontFamily,
+    fontSize: components.input.fontSize,
+    color: components.input.resting.color,
   },
   inputError: {
-    borderColor:     components.input.error.borderColor,
+    borderColor: components.input.error.borderColor,
     backgroundColor: components.input.error.backgroundColor,
   },
   errorBanner: {
-    flexDirection:    'row',
-    alignItems:       'flex-start',
-    backgroundColor:  '#fef2f2',
-    borderWidth:      1,
-    borderColor:      '#fecaca',
-    borderRadius:     10,
-    padding:          12,
-    marginBottom:     spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: spacing.md,
   },
   errorBannerText: {
     ...textStyles.bodySm,
-    color:  colors.expense,
-    flex:   1,
+    color: colors.expense,
+    flex: 1,
   },
   submitButton: {
-    height:          components.button.heightLg,
-    borderRadius:    components.button.borderRadius,
+    height: components.button.heightLg,
+    borderRadius: components.button.borderRadius,
     backgroundColor: colors.brand.primary,
-    alignItems:      'center',
-    justifyContent:  'center',
-    marginTop:       spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.lg,
   },
   submitButtonDisabled: {
     backgroundColor: components.button.primary.disabledBg,
@@ -253,35 +253,35 @@ const styles = StyleSheet.create({
   submitButtonText: {
     ...textStyles.bodyLg,
     fontFamily: 'Inter_600SemiBold',
-    color:      '#ffffff',
+    color: '#ffffff',
   },
   submitButtonTextDisabled: {
     color: components.button.primary.disabledColor,
   },
   // Success state
   successContainer: {
-    flex:            1,
-    alignItems:      'center',
-    justifyContent:  'center',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.bg.screen,
     paddingHorizontal: spacing.screenPaddingH,
   },
   successIcon: {
-    width:           72,
-    height:          72,
-    borderRadius:    36,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.brand.primaryLight,
-    alignItems:      'center',
-    justifyContent:  'center',
-    marginBottom:    spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
   },
   successTitle: {
     ...textStyles.headingLg,
-    color:     colors.text.primary,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   backLink: {
-    marginTop:      spacing.xl,
+    marginTop: spacing.xl,
     paddingVertical: 12,
   },
   backLinkText: {

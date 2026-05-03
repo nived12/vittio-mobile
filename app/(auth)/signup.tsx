@@ -37,15 +37,15 @@ import {
 
 const signupSchema = z
   .object({
-    first_name:            z.string().min(1, 'First name is required'),
-    last_name:             z.string().min(1, 'Last name is required'),
-    email:                 z.string().email('Enter a valid email address').toLowerCase().trim(),
-    password:              z.string().min(8, 'Password must be at least 8 characters'),
+    first_name: z.string().min(1, 'First name is required'),
+    last_name: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Enter a valid email address').toLowerCase().trim(),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
     password_confirmation: z.string(),
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: 'Passwords do not match',
-    path:    ['password_confirmation'],
+    path: ['password_confirmation'],
   });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -53,21 +53,21 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function SignupScreen() {
-  const { t }            = useTranslation();
-  const signup           = useAuthStore((s) => s.signup);
-  const loginWithGoogle  = useAuthStore((s) => s.loginWithGoogle);
-  const isLoading        = useAuthStore((s) => s.isLoading);
+  const { t } = useTranslation();
+  const signup = useAuthStore((s) => s.signup);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
-  const [showPassword,         setShowPassword]         = useState(false);
-  const [showConfirmPassword,  setShowConfirmPassword]  = useState(false);
-  const [passwordStrength,     setPasswordStrength]     = useState<0|1|2|3|4>(0);
-  const [isGoogleLoading,      setIsGoogleLoading]      = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
-  const scrollViewRef      = useRef<ScrollView>(null);
-  const lastNameRef        = useRef<TextInput>(null);
-  const emailRef           = useRef<TextInput>(null);
-  const passwordRef        = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
 
   // ── Form ─────────────────────────────────────────────────────────────────
@@ -80,10 +80,10 @@ export default function SignupScreen() {
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      first_name:            '',
-      last_name:             '',
-      email:                 '',
-      password:              '',
+      first_name: '',
+      last_name: '',
+      email: '',
+      password: '',
       password_confirmation: '',
     },
   });
@@ -112,7 +112,7 @@ export default function SignupScreen() {
       router.replace('/(app)');
     } catch (err) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      const code    = getApiErrorCode(err);
+      const code = getApiErrorCode(err);
       const details = getApiErrorDetails(err);
 
       if (code === 'VALIDATION_ERROR' && details.length > 0) {
@@ -162,10 +162,10 @@ export default function SignupScreen() {
       if (result.type !== 'success') return;
 
       const parsed = ExpoLinking.parse(result.url);
-      const access_token  = parsed.queryParams?.['access_token'] as string | undefined;
+      const access_token = parsed.queryParams?.['access_token'] as string | undefined;
       const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
-      const expires_in    = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
-      const error         = parsed.queryParams?.['error'] as string | undefined;
+      const expires_in = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
+      const error = parsed.queryParams?.['error'] as string | undefined;
 
       if (error != null) {
         setGoogleError(t('auth.oauth.error'));
@@ -507,35 +507,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow:          1,
-    backgroundColor:   colors.bg.screen,
+    flexGrow: 1,
+    backgroundColor: colors.bg.screen,
     paddingHorizontal: spacing.screenPaddingH,
-    paddingBottom:     spacing.xl,
+    paddingBottom: spacing.xl,
   },
 
   backButton: {
-    marginTop:      spacing.md,
+    marginTop: spacing.md,
     paddingVertical: 8,
-    paddingRight:   16,
-    alignSelf:      'flex-start',
+    paddingRight: 16,
+    alignSelf: 'flex-start',
   },
   heading: {
     ...textStyles.displayLg,
-    color:        colors.text.primary,
-    marginTop:    spacing.lg,
+    color: colors.text.primary,
+    marginTop: spacing.lg,
     marginBottom: 8,
   },
   subtitle: {
     ...textStyles.bodyMd,
-    color:        colors.text.secondary,
+    color: colors.text.secondary,
     marginBottom: spacing.xl,
   },
 
   // Name row
   nameRow: {
-    flexDirection:  'row',
-    gap:             8,
-    marginBottom:   spacing.formFieldGap,
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: spacing.formFieldGap,
   },
   nameField: {
     flex: 1,
@@ -555,46 +555,46 @@ const styles = StyleSheet.create({
 
   // Input
   input: {
-    height:           components.input.height,
-    borderRadius:     components.input.borderRadius,
-    borderWidth:      1,
-    borderColor:      components.input.resting.borderColor,
-    backgroundColor:  components.input.resting.backgroundColor,
+    height: components.input.height,
+    borderRadius: components.input.borderRadius,
+    borderWidth: 1,
+    borderColor: components.input.resting.borderColor,
+    backgroundColor: components.input.resting.backgroundColor,
     paddingHorizontal: components.input.paddingH,
-    fontFamily:       components.input.fontFamily,
-    fontSize:         components.input.fontSize,
-    color:            components.input.resting.color,
+    fontFamily: components.input.fontFamily,
+    fontSize: components.input.fontSize,
+    color: components.input.resting.color,
   },
   inputError: {
-    borderColor:     components.input.error.borderColor,
+    borderColor: components.input.error.borderColor,
     backgroundColor: components.input.error.backgroundColor,
   },
   inputWrapper: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    height:          components.input.height,
-    borderRadius:    components.input.borderRadius,
-    borderWidth:     1,
-    borderColor:     components.input.resting.borderColor,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: components.input.height,
+    borderRadius: components.input.borderRadius,
+    borderWidth: 1,
+    borderColor: components.input.resting.borderColor,
     backgroundColor: components.input.resting.backgroundColor,
-    paddingLeft:     components.input.paddingH,
-    paddingRight:    8,
-    overflow:        'hidden',
+    paddingLeft: components.input.paddingH,
+    paddingRight: 8,
+    overflow: 'hidden',
   },
   inputWrapperError: {
-    borderColor:     components.input.error.borderColor,
+    borderColor: components.input.error.borderColor,
     backgroundColor: components.input.error.backgroundColor,
   },
   inputInner: {
-    flex:              1,
-    fontFamily:        components.input.fontFamily,
-    fontSize:          components.input.fontSize,
-    color:             components.input.resting.color,
+    flex: 1,
+    fontFamily: components.input.fontFamily,
+    fontSize: components.input.fontSize,
+    color: components.input.resting.color,
     paddingHorizontal: components.input.paddingH,
   },
   eyeButton: {
-    padding:        8,
-    alignItems:     'center',
+    padding: 8,
+    alignItems: 'center',
     justifyContent: 'center',
   },
 
@@ -603,11 +603,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   submitButton: {
-    height:          components.button.heightLg,
-    borderRadius:    components.button.borderRadius,
+    height: components.button.heightLg,
+    borderRadius: components.button.borderRadius,
     backgroundColor: colors.brand.primary,
-    alignItems:      'center',
-    justifyContent:  'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButtonDisabled: {
     backgroundColor: components.button.primary.disabledBg,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     ...textStyles.bodyLg,
     fontFamily: 'Inter_600SemiBold',
-    color:      '#ffffff',
+    color: '#ffffff',
   },
   submitButtonTextDisabled: {
     color: components.button.primary.disabledColor,
@@ -623,57 +623,57 @@ const styles = StyleSheet.create({
 
   // Divider
   divider: {
-    flexDirection:  'row',
-    alignItems:     'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: spacing.md,
   },
   dividerLine: {
-    flex:            1,
-    height:          1,
+    flex: 1,
+    height: 1,
     backgroundColor: colors.border.default,
   },
   dividerText: {
     ...textStyles.bodySm,
-    color:           colors.neutral[400],
+    color: colors.neutral[400],
     marginHorizontal: 12,
   },
 
   // Google Sign-In
   googleButton: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    justifyContent:  'center',
-    height:          components.button.heightLg,
-    borderRadius:    components.button.borderRadius,
-    borderWidth:     1,
-    borderColor:     colors.border.default,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: components.button.heightLg,
+    borderRadius: components.button.borderRadius,
+    borderWidth: 1,
+    borderColor: colors.border.default,
     backgroundColor: '#ffffff',
-    gap:             10,
-    marginBottom:    spacing.lg,
+    gap: 10,
+    marginBottom: spacing.lg,
   },
   googleButtonDisabled: {
     opacity: 0.6,
   },
   googleError: {
     ...textStyles.bodySm,
-    color:        colors.error.icon,
-    textAlign:    'center',
+    color: colors.error.icon,
+    textAlign: 'center',
     marginBottom: spacing.sm,
   },
   googleButtonText: {
     ...textStyles.bodyMd,
     fontFamily: 'Inter_600SemiBold',
-    color:      colors.text.primary,
+    color: colors.text.primary,
   },
 
   // Terms
   termsText: {
     ...textStyles.caption,
-    color:       colors.neutral[400],
-    textAlign:   'center',
-    marginTop:   spacing.md,
+    color: colors.neutral[400],
+    textAlign: 'center',
+    marginTop: spacing.md,
     marginBottom: spacing.lg,
-    lineHeight:  18,
+    lineHeight: 18,
   },
   termsLink: {
     color: colors.brand.primary,

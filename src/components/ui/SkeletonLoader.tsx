@@ -97,8 +97,8 @@ export function BalanceCardSkeleton({ width }: { width: number }) {
     <View
       style={{
         width,
-        height: 160,
-        borderRadius: 20,
+        height: 190,
+        borderRadius: 24,
         backgroundColor: '#4f46e5',
         padding: 20,
         justifyContent: 'space-between',

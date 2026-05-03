@@ -1,12 +1,9 @@
 import React, { useEffect } from 'react';
 import {
-  Platform,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { SvgXml } from 'react-native-svg';
 import {
   useSharedValue,
@@ -59,7 +56,7 @@ export function BalanceCard({
 }: BalanceCardProps) {
   const { t } = useTranslation();
   const storeLocale = useUIStore((s) => s.locale);
-  const { theme } = useTheme();
+  useTheme();
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
 
   // Reanimated count-up
@@ -98,37 +95,16 @@ export function BalanceCard({
 
   const a11yLabel = `${t('balanceCard.totalBalance')}: ${displayBalance}. ${t('balanceCard.income')}: ${formattedIncome}. ${t('balanceCard.expenses')}: ${formattedExpenses}.`;
 
-  const gradientColors: [string, string] = [
-    (theme as any).balanceGradientStart ?? '#3b82f6',
-    (theme as any).balanceGradientEnd ?? '#4f46e5',
-  ];
-
   return (
     <View
       style={[styles.cardWrapper]}
       accessibilityLabel={isLoading ? t('balanceCard.loading') : a11yLabel}
       accessibilityRole="none"
     >
-      {/* Layer 1: Gradient */}
-      <LinearGradient
-        colors={gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
+      {/* Layer 1: Solid indigo background */}
+      <View style={[StyleSheet.absoluteFill, styles.solidBg]} />
 
-      {/* Layer 2: Blur (iOS) or solid overlay (Android) */}
-      {Platform.OS === 'ios' ? (
-        <BlurView
-          intensity={20}
-          tint="dark"
-          style={StyleSheet.absoluteFill}
-        />
-      ) : (
-        <View style={[StyleSheet.absoluteFill, styles.androidOverlay]} />
-      )}
-
-      {/* Layer 3: White glass overlay */}
+      {/* Layer 2: White glass overlay */}
       <View style={[StyleSheet.absoluteFill, styles.glassOverlay]} />
 
       {/* Layer 4: Noise texture */}
@@ -223,8 +199,8 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 12,
   },
-  androidOverlay: {
-    backgroundColor: 'rgba(30,58,95,0.7)',
+  solidBg: {
+    backgroundColor: '#4f46e5',
   },
   glassOverlay: {
     backgroundColor: 'rgba(255,255,255,0.08)',
