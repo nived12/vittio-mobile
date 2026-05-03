@@ -19,6 +19,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { registerForPushNotifications } from '../src/utils/notifications';
+import { ThemeProvider } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
 
 // Show notifications as banners when app is in foreground
@@ -57,10 +58,12 @@ export default function RootLayout() {
   const isAuthenticated     = useAuthStore((s) => s.isAuthenticated);
   const isHydrated          = useAuthStore((s) => s.isHydrated);
   const hydrate             = useAuthStore((s) => s.hydrate);
-  const hydrateLocale           = useUIStore((s) => s.hydrateLocale);
-  const hydrateBiometricLock    = useUIStore((s) => s.hydrateBiometricLock);
-  const hydrateNotificationPrefs = useUIStore((s) => s.hydrateNotificationPrefs);
-  const biometricLock       = useUIStore((s) => s.biometricLock);
+  const hydrateLocale              = useUIStore((s) => s.hydrateLocale);
+  const hydrateBiometricLock       = useUIStore((s) => s.hydrateBiometricLock);
+  const hydrateNotificationPrefs   = useUIStore((s) => s.hydrateNotificationPrefs);
+  const hydrateColorScheme         = useUIStore((s) => s.hydrateColorScheme);
+  const hydrateCelebrationState    = useUIStore((s) => s.hydrateCelebrationState);
+  const biometricLock              = useUIStore((s) => s.biometricLock);
 
   const segments    = useSegments();
   const appState    = useRef<AppStateStatus>(AppState.currentState);
@@ -76,7 +79,13 @@ export default function RootLayout() {
         Inter_600SemiBold,
         Inter_700Bold,
       });
-      await Promise.all([hydrate(), hydrateLocale(), hydrateBiometricLock()]);
+      await Promise.all([
+        hydrate(),
+        hydrateLocale(),
+        hydrateBiometricLock(),
+        hydrateColorScheme(),
+        hydrateCelebrationState(),
+      ]);
     }
     prepare();
   }, [hydrate, hydrateLocale, hydrateBiometricLock]);
@@ -143,13 +152,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <StatusBar style="auto" />
-          <Slot />
-          {showLock && (
-            <BiometricLockScreen onUnlock={() => setShowLock(false)} />
-          )}
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <StatusBar style="auto" />
+            <Slot />
+            {showLock && (
+              <BiometricLockScreen onUnlock={() => setShowLock(false)} />
+            )}
+          </QueryClientProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

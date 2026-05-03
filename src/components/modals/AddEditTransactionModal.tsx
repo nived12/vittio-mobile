@@ -14,6 +14,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
+import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
@@ -52,6 +60,7 @@ import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useCategories } from '../../hooks/useCategories';
 import { useMerchantRule, useCreateMerchantRule } from '../../hooks/useMerchantRules';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 import { parseVoice, parseImage } from '../../api/transactions';
 import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
@@ -234,6 +243,15 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const { locale, showToast } = useUIStore();
   const isEditMode = Boolean(transaction);
 
+  // ── Dark mode ──
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
+  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
+  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
+  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
+
   // ── Queries ──
   const { data: accounts = [] } = useBankAccounts();
   const { data: categoriesData } = useCategories();
@@ -263,6 +281,30 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const [transferToAccount, setTransferToAccount] = useState<BankAccount | null>(null);
   const [showTransferToPicker, setShowTransferToPicker] = useState(false);
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
+
+  // ── Spring animation (modal sheet entry/exit) ──
+  const translateY = useSharedValue(80);
+  const animOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      translateY.value = withSpring(0, Springs.modal);
+      animOpacity.value = withTiming(1, { duration: 150 });
+    }
+  }, [visible]);
+
+  const handleClose = useCallback(() => {
+    if (isSaving) return;
+    translateY.value = withSpring(80, Springs.modal, (finished) => {
+      if (finished) runOnJS(onClose)();
+    });
+    animOpacity.value = withTiming(0, { duration: 120 });
+  }, [isSaving, onClose]);
+
+  const animatedSheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: animOpacity.value,
+  }));
 
   // ── AI input state ──
   type AiState = 'idle' | 'recording' | 'processing' | 'prefilled';
@@ -583,25 +625,25 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
-      onRequestClose={isSaving ? undefined : onClose}
+      animationType="none"
+      onRequestClose={isSaving ? undefined : handleClose}
     >
       <View style={styles.overlay}>
         <TouchableOpacity
           style={styles.backdrop}
           activeOpacity={1}
-          onPress={isSaving ? undefined : onClose}
+          onPress={isSaving ? undefined : handleClose}
         />
 
-        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
-            <View style={styles.handle} />
+        <Animated.View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }, animatedSheetStyle]}>
+            <View style={[styles.handle, { backgroundColor: borderCol }]} />
 
             {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity onPress={onClose} disabled={isSaving} hitSlop={12}>
-                <X size={22} color="#64748b" />
+            <View style={[styles.header, { borderBottomColor: dividerCol }]}>
+              <TouchableOpacity onPress={handleClose} disabled={isSaving} hitSlop={12}>
+                <X size={22} color={textSecondary} />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>
+              <Text style={[styles.headerTitle, { color: textPrimary }]}>
                 {isEditMode ? t('transactions.edit_title') : t('transactions.add_title')}
               </Text>
               <View style={{ width: 22 }} />
@@ -782,13 +824,13 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               )}
 
               {/* Fields */}
-              <Text style={styles.sectionLabel}>DETALLES</Text>
+              <Text style={[styles.sectionLabel, { color: textSecondary }]}>DETALLES</Text>
 
               {/* Description */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.description_label')} *</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.description_label')} *</Text>
                 <TextInput
-                  style={styles.fieldInput}
+                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                   value={description}
                   onChangeText={setDescription}
                   placeholder={t('transactions.description_placeholder')}
@@ -800,14 +842,14 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
               {/* Date */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.date_label')} *</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.date_label')} *</Text>
                 <TouchableOpacity
-                  style={styles.fieldRow}
+                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
                   onPress={() => setShowDatePicker(true)}
                   accessibilityRole="button"
                   accessibilityLabel={`${t('transactions.date_label')}: ${dateDisplay}`}
                 >
-                  <Text style={styles.fieldRowText}>{dateDisplay}</Text>
+                  <Text style={[styles.fieldRowText, { color: textPrimary }]}>{dateDisplay}</Text>
                   <ChevronRight size={16} color="#94a3b8" />
                 </TouchableOpacity>
               </View>
@@ -819,21 +861,29 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   maximumDate={new Date()}
                   onChange={(_event, selected) => {
-                    setShowDatePicker(Platform.OS === 'ios');
                     if (selected) setDate(selected);
                   }}
                 />
               )}
+              {showDatePicker && Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(false)}
+                  style={styles.datePickerDoneBtn}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.datePickerDoneBtnText}>{t('common.done')}</Text>
+                </TouchableOpacity>
+              )}
 
               {/* Account */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.account_label')} *</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.account_label')} *</Text>
                 <TouchableOpacity
-                  style={styles.fieldRow}
+                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
                   onPress={() => setShowAccountPicker(true)}
                   accessibilityRole="button"
                 >
-                  <Text style={selectedAccount ? styles.fieldRowText : styles.fieldRowPlaceholder}>
+                  <Text style={selectedAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
                     {selectedAccount ? (selectedAccount.custom_name ?? selectedAccount.name) : t('transactions.no_account_warning')}
                   </Text>
                   <ChevronRight size={16} color="#94a3b8" />
@@ -846,13 +896,13 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               {/* Transfer destination account */}
               {topType === 'transfer' && (
                 <View style={styles.fieldBlock}>
-                  <Text style={styles.fieldLabel}>{t('transactions.transfer_to_label')} *</Text>
+                  <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.transfer_to_label')} *</Text>
                   <TouchableOpacity
-                    style={[styles.fieldRow, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
+                    style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
                     onPress={() => setShowTransferToPicker(true)}
                     accessibilityRole="button"
                   >
-                    <Text style={transferToAccount ? styles.fieldRowText : styles.fieldRowPlaceholder}>
+                    <Text style={transferToAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
                       {transferToAccount
                         ? (transferToAccount.custom_name ?? transferToAccount.name)
                         : t('transactions.select_transfer_account_title')}
@@ -867,22 +917,22 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
               {/* Category */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.category_label')}</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.category_label')}</Text>
                 <TouchableOpacity
-                  style={styles.fieldRow}
+                  style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
                   onPress={() => setShowCategoryPicker(true)}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.fieldRowText}>{categoryDisplay}</Text>
+                  <Text style={[styles.fieldRowText, { color: textPrimary }]}>{categoryDisplay}</Text>
                   <ChevronRight size={16} color="#94a3b8" />
                 </TouchableOpacity>
               </View>
 
               {/* Optional fields */}
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.concept_label')}</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.concept_label')}</Text>
                 <TextInput
-                  style={styles.fieldInput}
+                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                   value={concept}
                   onChangeText={setConcept}
                   placeholder="Más detalles..."
@@ -892,9 +942,9 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.merchant_label')}</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.merchant_label')}</Text>
                 <TextInput
-                  style={styles.fieldInput}
+                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                   value={merchant}
                   onChangeText={setMerchant}
                   onBlur={() => {
@@ -908,9 +958,9 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               </View>
 
               <View style={styles.fieldBlock}>
-                <Text style={styles.fieldLabel}>{t('transactions.reference_label')}</Text>
+                <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.reference_label')}</Text>
                 <TextInput
-                  style={styles.fieldInput}
+                  style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                   value={reference}
                   onChangeText={setReference}
                   placeholder="Folio, número de orden..."
@@ -936,7 +986,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 </Text>
               </TouchableOpacity>
             </ScrollView>
-          </View>
+        </Animated.View>
       </View>
 
       {/* Sub-sheets */}
@@ -1313,5 +1363,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: '#64748b',
+  },
+  datePickerDoneBtn: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  datePickerDoneBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: '#4f46e5',
   },
 });

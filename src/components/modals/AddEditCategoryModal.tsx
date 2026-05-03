@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics';
 import { useCreateCategory, useUpdateCategory } from '../../hooks/useCategories';
 import { useUIStore } from '../../stores/uiStore';
 import { colors, spacing, textStyles } from '../../theme';
+import { useTheme } from '../../theme/ThemeContext';
 import type { Category } from '../../api/categories';
 
 // ── Constants ─────────────────────────────────────────────────────────────
@@ -59,6 +60,12 @@ interface Props {
 // ── Component ─────────────────────────────────────────────────────────────
 
 export function AddEditCategoryModal({ visible, onClose, category, parentCategory }: Props) {
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
+  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
+  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useUIStore();
@@ -119,17 +126,17 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }]}>
           {/* Handle */}
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.neutral[300] }]} />
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>
+            <Text style={[styles.headerTitle, { color: textPrimary }]}>
               {isEditMode ? t('categories.editTitle') : t('categories.addTitle')}
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={8}>
-              <X size={20} color={colors.text.secondary} />
+              <X size={20} color={textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -147,13 +154,13 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
             showsVerticalScrollIndicator={false}
           >
             {/* Name field */}
-            <Text style={styles.fieldLabel}>{t('categories.nameLabel')}</Text>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('categories.nameLabel')}</Text>
             <TextInput
-              style={[styles.textInput, nameError && styles.textInputError]}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderCol, color: textPrimary }, nameError && styles.textInputError]}
               value={name}
               onChangeText={setName}
               placeholder={t('categories.namePlaceholder')}
-              placeholderTextColor={colors.text.muted}
+              placeholderTextColor={textSecondary}
               autoFocus
               maxLength={40}
               returnKeyType="done"
@@ -164,7 +171,7 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
             )}
 
             {/* Color picker */}
-            <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>{t('categories.colorLabel')}</Text>
+            <Text style={[styles.fieldLabel, { marginTop: spacing.md, color: textSecondary }]}>{t('categories.colorLabel')}</Text>
             <View style={styles.colorGrid}>
               {COLOR_OPTIONS.map((c) => (
                 <TouchableOpacity
@@ -185,14 +192,15 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
             </View>
 
             {/* Icon picker */}
-            <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>{t('categories.iconLabel')}</Text>
-            <Text style={styles.iconHint}>{t('categories.iconHint')}</Text>
+            <Text style={[styles.fieldLabel, { marginTop: spacing.md, color: textSecondary }]}>{t('categories.iconLabel')}</Text>
+            <Text style={[styles.iconHint, { color: textSecondary }]}>{t('categories.iconHint')}</Text>
             <View style={styles.iconGrid}>
               {ICON_OPTIONS.map((icon) => (
                 <TouchableOpacity
                   key={icon}
                   style={[
                     styles.iconCell,
+                    { backgroundColor: inputBg, borderColor: borderCol },
                     selectedIcon === icon && { backgroundColor: selectedColor + '22', borderColor: selectedColor },
                   ]}
                   onPress={() => {
@@ -202,7 +210,7 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selectedIcon === icon }}
                 >
-                  <Text style={[styles.iconText, selectedIcon === icon && { color: selectedColor }]}>
+                  <Text style={[styles.iconText, { color: textSecondary }, selectedIcon === icon && { color: selectedColor }]}>
                     {icon.split('-').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
                   </Text>
                 </TouchableOpacity>
@@ -210,9 +218,9 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
             </View>
 
             {/* Preview */}
-            <View style={styles.preview}>
+            <View style={[styles.preview, { backgroundColor: inputBg }]}>
               <View style={[styles.previewDot, { backgroundColor: selectedColor }]} />
-              <Text style={styles.previewName}>{name || t('categories.namePlaceholder')}</Text>
+              <Text style={[styles.previewName, { color: textPrimary }]}>{name || t('categories.namePlaceholder')}</Text>
             </View>
 
             <View style={{ height: spacing.lg }} />

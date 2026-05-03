@@ -15,13 +15,15 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
+import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { AddEditTransactionModal } from '../../../src/components/modals/AddEditTransactionModal';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
@@ -110,6 +112,13 @@ export default function TransactionDetailScreen() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const { data: tx, isLoading, isError } = useTransaction(txId);
   const deleteMutation = useDeleteTransaction();
@@ -210,10 +219,10 @@ export default function TransactionDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.navHeader}>
+      <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[styles.navHeader, { backgroundColor: bg }]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <ChevronLeft size={20} color="#475569" />
+            <CaretLeft size={20} color="#475569" weight="regular" />
             <Text style={styles.backLabel}>{t('transactionDetail.back')}</Text>
           </TouchableOpacity>
         </View>
@@ -243,10 +252,10 @@ export default function TransactionDetailScreen() {
 
   if (isError || !tx) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.navHeader}>
+      <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[styles.navHeader, { backgroundColor: bg }]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <ChevronLeft size={20} color="#475569" />
+            <CaretLeft size={20} color="#475569" weight="regular" />
             <Text style={styles.backLabel}>{t('transactionDetail.back')}</Text>
           </TouchableOpacity>
         </View>
@@ -281,16 +290,16 @@ export default function TransactionDetailScreen() {
   const formattedDate = format(parseISO(tx.date), 'MMMM d, yyyy');
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
       {/* Nav header */}
-      <View style={styles.navHeader}>
+      <View style={[styles.navHeader, { backgroundColor: bg }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('transactionDetail.back')}
         >
-          <ChevronLeft size={20} color="#475569" />
+          <CaretLeft size={20} color={textPrimary} weight="regular" />
           <Text style={styles.backLabel}>{t('transactionDetail.back')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -299,7 +308,7 @@ export default function TransactionDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel="Más opciones"
         >
-          <MoreHorizontal size={22} color="#475569" />
+          <DotsThreeOutline size={22} color="#475569" weight="regular" />
         </TouchableOpacity>
       </View>
 
@@ -308,11 +317,11 @@ export default function TransactionDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Hero card */}
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, { backgroundColor: surface, borderColor: borderCol }]}>
           <View style={[styles.heroIconCircle, { backgroundColor: iconBg }]}>
             <IconComponent size={28} color={iconColor} />
           </View>
-          <Text style={styles.heroTitle} numberOfLines={2}>
+          <Text style={[styles.heroTitle, { color: textPrimary }]} numberOfLines={2}>
             {tx.merchant ?? tx.description}
           </Text>
           {tx.concept ? <Text style={styles.heroConcept}>{tx.concept}</Text> : null}
@@ -325,7 +334,7 @@ export default function TransactionDetailScreen() {
         </View>
 
         {/* Details card */}
-        <View style={styles.detailsCard}>
+        <View style={[styles.detailsCard, { backgroundColor: surface, borderColor: borderCol }]}>
           {/* Category — tappable for all transactions (to allow re-categorize) */}
           <TouchableOpacity
             style={styles.detailRow}
@@ -344,7 +353,7 @@ export default function TransactionDetailScreen() {
               <ChevronRight size={16} color="#cbd5e1" />
             </View>
           </TouchableOpacity>
-          <View style={styles.detailDivider} />
+          <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
 
           {/* Account */}
           <TouchableOpacity
@@ -358,7 +367,7 @@ export default function TransactionDetailScreen() {
               <ChevronRight size={16} color="#cbd5e1" />
             </View>
           </TouchableOpacity>
-          <View style={styles.detailDivider} />
+          <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
 
           {/* Type */}
           <View style={styles.detailRow}>
@@ -367,7 +376,7 @@ export default function TransactionDetailScreen() {
               <Text style={[styles.typeBadgeText, { color: typeBadge.text }]}>{typeBadge.label}</Text>
             </View>
           </View>
-          <View style={styles.detailDivider} />
+          <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
 
           {/* Source */}
           <View style={styles.detailRow}>
@@ -380,7 +389,7 @@ export default function TransactionDetailScreen() {
           {/* Merchant (if present) */}
           {tx.merchant ? (
             <>
-              <View style={styles.detailDivider} />
+              <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('transactionDetail.fields.merchant')}</Text>
                 <Text style={styles.detailValue}>{tx.merchant}</Text>
@@ -391,7 +400,7 @@ export default function TransactionDetailScreen() {
           {/* Reference (if present) */}
           {tx.reference ? (
             <>
-              <View style={styles.detailDivider} />
+              <View style={[styles.detailDivider, { backgroundColor: dividerCol }]} />
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('transactionDetail.fields.reference')}</Text>
                 <Text style={styles.detailValue}>{tx.reference}</Text>

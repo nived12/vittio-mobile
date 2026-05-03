@@ -7,27 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		062C81C0B9262EC666006A7C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F3E65D4F15FA32BBF3D0FD /* ExpoModulesProvider.swift */; };
+		0F2F660C099FB5F641896836 /* libPods-Vittio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C6BCEB9AA0BA53591CCCC45D /* libPods-Vittio.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		341F9A4F9FC157FC94ADB635 /* libPods-Vittio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C84F4C1A30B416BB76E7D686 /* libPods-Vittio.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		A52A06E7B74413130ECF546A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EFA55C55108E2D54A1D4226E /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		DA7CED59BA255F897737C554 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB55FF8568C6BA7BD0389D3C /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
-		F52A735045FC4F68AE550A36 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 301EB2E5CF4262F559A63E0E /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* Vittio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vittio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Vittio/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Vittio/Info.plist; sourceTree = "<group>"; };
-		301EB2E5CF4262F559A63E0E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Vittio/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		39340305617E2B510B5B5504 /* Pods-Vittio.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Vittio.release.xcconfig"; path = "Target Support Files/Pods-Vittio/Pods-Vittio.release.xcconfig"; sourceTree = "<group>"; };
-		73F3E65D4F15FA32BBF3D0FD /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Vittio/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		1AD53E997B76BFBC700857C8 /* Pods-Vittio.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Vittio.release.xcconfig"; path = "Target Support Files/Pods-Vittio/Pods-Vittio.release.xcconfig"; sourceTree = "<group>"; };
+		2E04DBE24081B25D3818861B /* Pods-Vittio.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Vittio.debug.xcconfig"; path = "Target Support Files/Pods-Vittio/Pods-Vittio.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Vittio/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C75EF41BC26CD04A7E0074FE /* Pods-Vittio.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Vittio.debug.xcconfig"; path = "Target Support Files/Pods-Vittio/Pods-Vittio.debug.xcconfig"; sourceTree = "<group>"; };
-		C84F4C1A30B416BB76E7D686 /* libPods-Vittio.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Vittio.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB55FF8568C6BA7BD0389D3C /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Vittio/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		C6BCEB9AA0BA53591CCCC45D /* libPods-Vittio.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Vittio.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		EFA55C55108E2D54A1D4226E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Vittio/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Vittio/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Vittio-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Vittio-Bridging-Header.h"; path = "Vittio/Vittio-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				341F9A4F9FC157FC94ADB635 /* libPods-Vittio.a in Frameworks */,
+				0F2F660C099FB5F641896836 /* libPods-Vittio.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,36 +53,27 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				301EB2E5CF4262F559A63E0E /* PrivacyInfo.xcprivacy */,
+				EFA55C55108E2D54A1D4226E /* PrivacyInfo.xcprivacy */,
 			);
 			name = Vittio;
-			sourceTree = "<group>";
-		};
-		2B913BE34B10CFCF5520BA61 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				C75EF41BC26CD04A7E0074FE /* Pods-Vittio.debug.xcconfig */,
-				39340305617E2B510B5B5504 /* Pods-Vittio.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				C84F4C1A30B416BB76E7D686 /* libPods-Vittio.a */,
+				C6BCEB9AA0BA53591CCCC45D /* libPods-Vittio.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4E89185E738D66FE3C6E704C /* Vittio */ = {
+		314819676A2372B4AA95493F /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				73F3E65D4F15FA32BBF3D0FD /* ExpoModulesProvider.swift */,
+				2E04DBE24081B25D3818861B /* Pods-Vittio.debug.xcconfig */,
+				1AD53E997B76BFBC700857C8 /* Pods-Vittio.release.xcconfig */,
 			);
-			name = Vittio;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -99,8 +90,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				2B913BE34B10CFCF5520BA61 /* Pods */,
-				95E3B5FAD5D44EBA7BDAF4B2 /* ExpoModulesProviders */,
+				314819676A2372B4AA95493F /* Pods */,
+				D572A46BFAB139E198059FD2 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -115,14 +106,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		95E3B5FAD5D44EBA7BDAF4B2 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				4E89185E738D66FE3C6E704C /* Vittio */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +113,22 @@
 			);
 			name = Supporting;
 			path = Vittio/Supporting;
+			sourceTree = "<group>";
+		};
+		D572A46BFAB139E198059FD2 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				E8AD589DAF9B1E5512C95025 /* Vittio */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		E8AD589DAF9B1E5512C95025 /* Vittio */ = {
+			isa = PBXGroup;
+			children = (
+				BB55FF8568C6BA7BD0389D3C /* ExpoModulesProvider.swift */,
+			);
+			name = Vittio;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Vittio" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				C179B83FEC09994E55EFFB28 /* [Expo] Configure project */,
+				BEAC607D7883C4C64B46AE55 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				22D02DAD4919862CBEDF103E /* [CP] Embed Pods Frameworks */,
+				19E77ACD85E996D8BCD81ABD /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				F52A735045FC4F68AE550A36 /* PrivacyInfo.xcprivacy in Resources */,
+				A52A06E7B74413130ECF546A /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +241,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		22D02DAD4919862CBEDF103E /* [CP] Embed Pods Frameworks */ = {
+		19E77ACD85E996D8BCD81ABD /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,8 +270,10 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Vittio/Pods-Vittio-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXNotifications/ExpoNotifications_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoLocalization/ExpoLocalization_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
@@ -282,8 +283,10 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoApplication_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoNotifications_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoLocalization_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
@@ -296,7 +299,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Vittio/Pods-Vittio-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C179B83FEC09994E55EFFB28 /* [Expo] Configure project */ = {
+		BEAC607D7883C4C64B46AE55 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -328,7 +331,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				062C81C0B9262EC666006A7C /* ExpoModulesProvider.swift in Sources */,
+				DA7CED59BA255F897737C554 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,15 +340,13 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C75EF41BC26CD04A7E0074FE /* Pods-Vittio.debug.xcconfig */;
+			baseConfigurationReference = 2E04DBE24081B25D3818861B /* Pods-Vittio.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Vittio/Vittio.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphonesimulator*]" = "";
-				"CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]" = NO;
-				"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]" = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9Y84K3A2BJ;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -376,15 +377,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 39340305617E2B510B5B5504 /* Pods-Vittio.release.xcconfig */;
+			baseConfigurationReference = 1AD53E997B76BFBC700857C8 /* Pods-Vittio.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Vittio/Vittio.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphonesimulator*]" = "";
-				"CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]" = NO;
-				"CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]" = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9Y84K3A2BJ;
 				INFOPLIST_FILE = Vittio/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

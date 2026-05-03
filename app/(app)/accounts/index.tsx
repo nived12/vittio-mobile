@@ -16,6 +16,7 @@ import { useBankAccounts } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
@@ -33,6 +34,9 @@ const accountTypeConfig = {
 
 function AccountRow({ account, locale }: { account: BankAccount; locale: string }) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const textPrimary   = isDark ? (theme as any).textPrimary   : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
   const config = accountTypeConfig[account.account_type] ?? accountTypeConfig.debit;
   const { Icon } = config;
 
@@ -72,10 +76,10 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
       })()}
       {/* Text */}
       <View style={styles.accountCenter}>
-        <Text style={styles.accountName} numberOfLines={1}>
+        <Text style={[styles.accountName, { color: textPrimary }]} numberOfLines={1}>
           {account.custom_name ?? account.name}
         </Text>
-        <Text style={styles.accountMeta}>
+        <Text style={[styles.accountMeta, { color: textSecondary }]}>
           {typeLabel} · {account.currency}
         </Text>
       </View>
@@ -84,6 +88,7 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
         <Text
           style={[
             styles.accountBalance,
+            { color: textPrimary },
             account.balance < 0 && { color: '#e11d48' },
             account.balance === 0 && { color: '#94a3b8' },
           ]}
@@ -108,6 +113,12 @@ export default function AccountsScreen() {
   const requireConfirmed = useRequireConfirmed();
 
   const { data: accounts, isLoading, isError, refetch } = useBankAccounts();
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -148,10 +159,10 @@ export default function AccountsScreen() {
   }
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
       {/* Nav header */}
       <View style={styles.navHeader}>
-        <Text style={styles.navTitle} accessibilityRole="header">{t('accounts.title')}</Text>
+        <Text style={[styles.navTitle, { color: textPrimary }]} accessibilityRole="header">{t('accounts.title')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => requireConfirmed(() => setShowAddModal(true))}
@@ -182,7 +193,7 @@ export default function AccountsScreen() {
           </View>
         ) : (accounts?.length ?? 0) > 0 ? (
           <View
-            style={styles.netWorthCard}
+            style={[styles.netWorthCard, { backgroundColor: surface, borderColor: borderCol }]}
             accessibilityRole="summary"
             accessibilityLabel={`${t('accounts.totalBalance')}: ${fmtTotal} across ${accounts!.length} accounts`}
           >
@@ -192,6 +203,7 @@ export default function AccountsScreen() {
                 <Text
                   style={[
                     styles.netWorthAmount,
+                    { color: textPrimary },
                     totalBalance < 0 && { color: '#e11d48' },
                   ]}
                 >
@@ -234,11 +246,11 @@ export default function AccountsScreen() {
             fullScreen
           />
         ) : (
-          <View style={styles.accountsCard}>
+          <View style={[styles.accountsCard, { backgroundColor: surface, borderColor: borderCol }]}>
             {accounts!.map((account, idx) => (
               <React.Fragment key={account.id}>
                 <AccountRow account={account} locale={resolvedLocale} />
-                {idx < accounts!.length - 1 && <View style={styles.separator} />}
+                {idx < accounts!.length - 1 && <View style={[styles.separator, { backgroundColor: dividerCol }]} />}
               </React.Fragment>
             ))}
           </View>

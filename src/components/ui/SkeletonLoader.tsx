@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleProp, ViewStyle } from 'react-native';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface SkeletonBoxProps {
   width: number | `${number}%`;
@@ -18,6 +19,8 @@ export function SkeletonBox({
   borderRadius = 6,
   style,
 }: SkeletonBoxProps) {
+  const { theme, isDark } = useTheme();
+  const skeletonBase = isDark ? (theme as any).skeletonBase : '#e2e8f0';
   const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export function SkeletonBox({
           width,
           height,
           borderRadius,
-          backgroundColor: '#e2e8f0', // slate-200
+          backgroundColor: skeletonBase,
           opacity,
         },
         style,
@@ -59,6 +62,8 @@ export function SkeletonBox({
  * Skeleton for a single TransactionRow (72pt height).
  */
 export function TransactionRowSkeleton() {
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
   return (
     <View
       style={{
@@ -67,7 +72,7 @@ export function TransactionRowSkeleton() {
         height: 72,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        backgroundColor: '#ffffff',
+        backgroundColor: surface,
       }}
     >
       {/* Icon circle */}
@@ -125,15 +130,18 @@ export function BalanceCardSkeleton({ width }: { width: number }) {
  * Skeleton for an account chip (160×80pt).
  */
 export function AccountChipSkeleton() {
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
   return (
     <View
       style={{
         width: 160,
         height: 80,
         borderRadius: 12,
-        backgroundColor: '#ffffff',
+        backgroundColor: surface,
         borderWidth: 1,
-        borderColor: '#e2e8f0',
+        borderColor: borderCol,
         padding: 12,
         justifyContent: 'space-between',
       }}

@@ -17,6 +17,7 @@ import { X, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateSaving, useUpdateSaving } from '../../hooks/useSavings';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 import type { Saving } from '../../api/savings';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -44,6 +45,13 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(saving);
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
+  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
+  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
+  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
 
   const [name, setName]                   = useState('');
   const [targetAmount, setTargetAmount]   = useState('');
@@ -118,24 +126,24 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[s.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }]}>
         {/* Handle + header */}
-        <View style={s.handle} />
-        <View style={s.header}>
-          <Text style={s.title}>
+        <View style={[s.handle, { backgroundColor: borderCol }]} />
+        <View style={[s.header, { borderBottomColor: dividerCol }]}>
+          <Text style={[s.title, { color: textPrimary }]}>
             {isEdit ? t('savings.addModal.titleEdit') : t('savings.addModal.titleAdd')}
           </Text>
           <TouchableOpacity onPress={onClose} style={s.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <X size={20} color="#64748b" />
+            <X size={20} color={textSecondary} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets>
           {/* Name */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.nameLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.nameLabel')}</Text>
             <TextInput
-              style={[s.input, errors.name && s.inputError]}
+              style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.name && s.inputError]}
               value={name}
               onChangeText={setName}
               placeholder={t('savings.addModal.namePlaceholder')}
@@ -148,9 +156,9 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Target amount */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.targetAmountLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.targetAmountLabel')}</Text>
             <TextInput
-              style={[s.input, errors.targetAmount && s.inputError]}
+              style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.targetAmount && s.inputError]}
               value={targetAmount}
               onChangeText={setTargetAmount}
               placeholder="0.00"
@@ -162,9 +170,9 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Current amount */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.currentAmountLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.currentAmountLabel')}</Text>
             <TextInput
-              style={s.input}
+              style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
               value={currentAmount}
               onChangeText={setCurrentAmount}
               placeholder="0.00"
@@ -175,13 +183,13 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Target date */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.targetDateLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.targetDateLabel')}</Text>
             <TouchableOpacity
-              style={[s.input, s.dateRow]}
+              style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]}
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={targetDate ? s.inputText : s.placeholder}>
+              <Text style={targetDate ? [s.inputText, { color: textPrimary }] : s.placeholder}>
                 {targetDate ? formatDisplayDate(targetDate, displayLocale) : t('savings.addModal.targetDatePlaceholder')}
               </Text>
               {targetDate ? (
@@ -208,12 +216,12 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Color */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.colorLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.colorLabel')}</Text>
             <View style={s.swatches}>
               {COLORS.map((c) => (
                 <TouchableOpacity
                   key={c}
-                  style={[s.swatch, { backgroundColor: c }, color === c && s.swatchSelected]}
+                  style={[s.swatch, { backgroundColor: c }, color === c && [s.swatchSelected, { borderColor: textPrimary }]]}
                   onPress={() => { Haptics.selectionAsync(); setColor(c); }}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: color === c }}
@@ -224,15 +232,15 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Status */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.statusLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.statusLabel')}</Text>
             <View style={s.segRow}>
               {(['active', 'paused'] as const).map((st) => (
                 <TouchableOpacity
                   key={st}
-                  style={[s.segPill, status === st && s.segPillActive]}
+                  style={[s.segPill, { backgroundColor: inputBg }, status === st && s.segPillActive]}
                   onPress={() => { Haptics.selectionAsync(); setStatus(st); }}
                 >
-                  <Text style={[s.segText, status === st && s.segTextActive]}>
+                  <Text style={[s.segText, { color: textSecondary }, status === st && s.segTextActive]}>
                     {st === 'active' ? t('savings.addModal.statusActive') : t('savings.addModal.statusPaused')}
                   </Text>
                 </TouchableOpacity>
@@ -242,9 +250,9 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
 
           {/* Notes */}
           <View style={s.field}>
-            <Text style={s.label}>{t('savings.addModal.notesLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.notesLabel')}</Text>
             <TextInput
-              style={[s.input, s.multiline]}
+              style={[s.input, s.multiline, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
               value={notes}
               onChangeText={setNotes}
               placeholder={t('savings.addModal.notesPlaceholder')}
@@ -274,45 +282,43 @@ const s = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15,23,42,0.4)' },
   sheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    borderTopLeftRadius: 20, borderTopRightRadius: 20,
     maxHeight: '90%',
   },
   handle: {
-    width: 36, height: 4, borderRadius: 2, backgroundColor: '#e2e8f0',
+    width: 36, height: 4, borderRadius: 2,
     alignSelf: 'center', marginTop: 12, marginBottom: 4,
   },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#f1f5f9',
+    borderBottomWidth: 1,
   },
-  title: { fontFamily: 'Inter_600SemiBold', fontSize: 17, color: '#0f172a' },
+  title: { fontFamily: 'Inter_600SemiBold', fontSize: 17 },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   field: { paddingHorizontal: 16, paddingTop: 16 },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748b', letterSpacing: 0.5, marginBottom: 6, textTransform: 'uppercase' },
+  label: { fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.5, marginBottom: 6, textTransform: 'uppercase' },
   input: {
-    borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10,
+    borderWidth: 1, borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 12,
-    fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a',
-    backgroundColor: '#fafafa',
+    fontFamily: 'Inter_400Regular', fontSize: 15,
   },
   inputError: { borderColor: '#e11d48' },
-  inputText: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a' },
+  inputText: { fontFamily: 'Inter_400Regular', fontSize: 15 },
   placeholder: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#94a3b8' },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#e11d48', marginTop: 4 },
   swatches: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   swatch: { width: 32, height: 32, borderRadius: 16 },
-  swatchSelected: { borderWidth: 3, borderColor: '#0f172a' },
+  swatchSelected: { borderWidth: 3 },
   segRow: { flexDirection: 'row', gap: 8 },
   segPill: {
     flex: 1, height: 40, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
   },
   segPillActive: { backgroundColor: '#4f46e5' },
-  segText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#64748b' },
+  segText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
   segTextActive: { color: '#fff' },
   saveBtn: {
     marginHorizontal: 16, marginTop: 16, height: 52,

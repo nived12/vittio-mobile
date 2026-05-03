@@ -11,7 +11,12 @@ async function secureGet(key: string): Promise<string | null> {
   if (__DEV__ && Platform.OS === 'web') {
     try { return localStorage.getItem(key); } catch { return null; }
   }
-  return SecureStore.getItemAsync(key);
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch {
+    // Keychain unavailable (e.g. Personal Team dev build without entitlements)
+    return null;
+  }
 }
 
 async function secureSet(key: string, value: string): Promise<void> {
@@ -19,7 +24,11 @@ async function secureSet(key: string, value: string): Promise<void> {
     try { localStorage.setItem(key, value); } catch { /* ignore */ }
     return;
   }
-  await SecureStore.setItemAsync(key, value);
+  try {
+    await SecureStore.setItemAsync(key, value);
+  } catch {
+    // Keychain unavailable — tokens live in memory only for this session
+  }
 }
 
 async function secureDelete(key: string): Promise<void> {
@@ -27,15 +36,23 @@ async function secureDelete(key: string): Promise<void> {
     try { localStorage.removeItem(key); } catch { /* ignore */ }
     return;
   }
-  await SecureStore.deleteItemAsync(key);
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch {
+    // Best-effort delete
+  }
 }
 
 const KEYS = {
-  ACCESS_TOKEN:    'vittio_access_token',
-  REFRESH_TOKEN:   'vittio_refresh_token',
-  USER:            'vittio_user',
-  LOCALE:          'vittio_locale',
-  BIOMETRIC_LOCK:  'vittio_biometric_lock',
+  ACCESS_TOKEN:              'vittio_access_token',
+  REFRESH_TOKEN:             'vittio_refresh_token',
+  USER:                      'vittio_user',
+  LOCALE:                    'vittio_locale',
+  BIOMETRIC_LOCK:            'vittio_biometric_lock',
+  COLOR_SCHEME:              'vittio_color_scheme',
+  CELEBRATED_GOALS:          'vittio_celebrated_goals',
+  CELEBRATED_DEBTS:          'vittio_celebrated_debts',
+  FIRST_IMPORT_CELEBRATED:   'vittio_first_import_celebrated',
 } as const;
 
 export interface StoredTokens {
@@ -142,6 +159,45 @@ async function clearTokens(): Promise<void> {
   ]);
 }
 
+async function saveColorScheme(scheme: 'system' | 'light' | 'dark'): Promise<void> {
+  await secureSet(KEYS.COLOR_SCHEME, scheme);
+}
+
+async function getColorScheme(): Promise<'system' | 'light' | 'dark'> {
+  const stored = await secureGet(KEYS.COLOR_SCHEME);
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
+  return 'system';
+}
+
+async function saveCelebratedGoals(ids: string[]): Promise<void> {
+  await secureSet(KEYS.CELEBRATED_GOALS, JSON.stringify(ids));
+}
+
+async function getCelebratedGoals(): Promise<string[]> {
+  const raw = await secureGet(KEYS.CELEBRATED_GOALS);
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; } catch { return []; }
+}
+
+async function saveCelebratedDebts(ids: string[]): Promise<void> {
+  await secureSet(KEYS.CELEBRATED_DEBTS, JSON.stringify(ids));
+}
+
+async function getCelebratedDebts(): Promise<string[]> {
+  const raw = await secureGet(KEYS.CELEBRATED_DEBTS);
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; } catch { return []; }
+}
+
+async function saveFirstImportCelebrated(seen: boolean): Promise<void> {
+  await secureSet(KEYS.FIRST_IMPORT_CELEBRATED, seen ? '1' : '0');
+}
+
+async function getFirstImportCelebrated(): Promise<boolean> {
+  const stored = await secureGet(KEYS.FIRST_IMPORT_CELEBRATED);
+  return stored === '1';
+}
+
 export const tokenStorage = {
   saveTokens,
   getTokens,
@@ -153,5 +209,13 @@ export const tokenStorage = {
   getLocale,
   saveBiometricLock,
   getBiometricLock,
+  saveColorScheme,
+  getColorScheme,
+  saveCelebratedGoals,
+  getCelebratedGoals,
+  saveCelebratedDebts,
+  getCelebratedDebts,
+  saveFirstImportCelebrated,
+  getFirstImportCelebrated,
   clearTokens,
 };

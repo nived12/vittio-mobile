@@ -494,7 +494,11 @@
     "passwordChanged": "Contraseña actualizada",
     "passwordSaveError": "No se pudo actualizar la contraseña. Inténtalo de nuevo.",
     "invalidCurrentPassword": "La contraseña actual es incorrecta",
-    "oauthAccountPassword": "Esta cuenta usa Google. No es posible cambiar la contraseña."
+    "oauthAccountPassword": "Esta cuenta usa Google. No es posible cambiar la contraseña.",
+    "appearance": "APARIENCIA",
+    "schemeSystem": "Sistema",
+    "schemeLight": "Claro",
+    "schemeDark": "Oscuro"
   },
   "categories": {
     "title": "Categorías",
@@ -873,9 +877,6 @@
     "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
     "UNKNOWN_ERROR": "Ocurrió un error inesperado",
     "generic": "Algo salió mal. Por favor intenta de nuevo."
-  },
-  "common": {
-    "cancel": "Cancelar"
   },
   "aiInput": {
     "voice": {

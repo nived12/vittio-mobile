@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { CaretLeft } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
           onPress={() => router.back()}
           accessibilityRole="button"
         >
-          <ChevronLeft size={24} color={colors.text.primary} />
+          <CaretLeft size={24} color={colors.text.primary} weight="regular" />
         </TouchableOpacity>
         <Text style={styles.title}>{t('settings.title')}</Text>
       </View>

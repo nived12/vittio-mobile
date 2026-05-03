@@ -26,6 +26,7 @@ import {
 } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
@@ -415,6 +416,13 @@ export default function TransactionsScreen() {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
+  const inputBg     = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const fmtAmount = (n: number) =>
     new Intl.NumberFormat(resolvedLocale, {
@@ -426,10 +434,10 @@ export default function TransactionsScreen() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
       {/* Header */}
-      <View style={styles.navHeader}>
-        <Text style={styles.navTitle} accessibilityRole="header">
+      <View style={[styles.navHeader, { backgroundColor: bg }]}>
+        <Text style={[styles.navTitle, { color: textPrimary }]} accessibilityRole="header">
           {t('transactions.title')}
         </Text>
         <TouchableOpacity
@@ -447,11 +455,11 @@ export default function TransactionsScreen() {
       </View>
 
       {/* Search */}
-      <View style={styles.searchRow}>
-        <View style={styles.searchBar}>
+      <View style={[styles.searchRow, { backgroundColor: bg }]}>
+        <View style={[styles.searchBar, { backgroundColor: inputBg, borderColor: borderCol }]}>
           <Search size={16} color="#94a3b8" style={{ marginLeft: 12 }} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: textPrimary }]}
             value={search}
             onChangeText={handleSearchChange}
             placeholder={t('transactions.search.placeholder')}
@@ -474,7 +482,7 @@ export default function TransactionsScreen() {
       </View>
 
       {/* Summary bar */}
-      <View style={styles.summaryBar}>
+      <View style={[styles.summaryBar, { backgroundColor: bg, borderColor: borderCol }]}>
         <View>
           <Text style={styles.summaryValue} accessibilityLabel={undefined}>
             {summaryData ? fmtAmount(summaryData.total_income) : '—'}
@@ -579,7 +587,7 @@ export default function TransactionsScreen() {
               isDeleting={deletingId === item.id}
             />
           )}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: dividerCol }]} />}
           SectionSeparatorComponent={() => <View style={{ height: 8 }} />}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}

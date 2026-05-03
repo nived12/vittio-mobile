@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
+  Dimensions,
   Platform,
   ScrollView,
   StyleSheet,
@@ -9,16 +10,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronLeft, MoreHorizontal } from 'lucide-react-native';
+import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { useGoal, useDeleteGoal } from '../../../../src/hooks/useGoals';
 import { AddEditGoalModal } from '../../../../src/components/modals/AddEditGoalModal';
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { useUIStore } from '../../../../src/stores/uiStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
 
 function formatCurrency(amount: number, locale: string): string {
@@ -26,8 +29,11 @@ function formatCurrency(amount: number, locale: string): string {
 }
 
 function StatCard({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+  const { theme: t2, isDark: dark } = useTheme();
+  const cardSurface = dark ? (t2 as any).surface : '#ffffff';
+  const cardBorder  = dark ? (t2 as any).border  : '#e2e8f0';
   return (
-    <View style={s.statCard}>
+    <View style={[s.statCard, { backgroundColor: cardSurface, borderColor: cardBorder }]}>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
       <Text style={[s.statValue, valueColor ? { color: valueColor } : {}]} numberOfLines={1}>{value}</Text>
     </View>
@@ -43,9 +49,28 @@ export default function GoalDetailScreen() {
   const [showEdit, setShowEdit] = useState(false);
   const requireConfirmed = useRequireConfirmed();
 
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
+
   const goalId = Number(id);
   const { data: goal, isLoading, isError, refetch } = useGoal(goalId);
   const deleteMutation = useDeleteGoal();
+  const confettiRef = useRef<ConfettiCannon>(null);
+  const celebratedGoals = useUIStore((s) => s.celebratedGoals);
+  const addCelebratedGoal = useUIStore((s) => s.addCelebratedGoal);
+
+  useEffect(() => {
+    if (goal && goal.progress_percentage >= 100 && !celebratedGoals.includes(String(goal.id))) {
+      const timer = setTimeout(() => confettiRef.current?.start(), 400);
+      addCelebratedGoal(String(goal.id));
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [goal?.progress_percentage]);
 
   function handleMore() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -74,9 +99,9 @@ export default function GoalDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
           <SkeletonBox width={120} height={18} />
           <View style={{ width: 44 }} />
         </View>
@@ -89,9 +114,9 @@ export default function GoalDetailScreen() {
 
   if (isError || !goal) {
     return (
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
         </View>
         <EmptyState icon="wifi-off" iconColor="#cbd5e1" title={t('goals.detail.error.title')}
           ctaLabel={t('common.retry')} ctaVariant="primary" onCta={() => refetch()} fullScreen />
@@ -107,16 +132,16 @@ export default function GoalDetailScreen() {
 
   return (
     <>
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
-          <Text style={s.navTitle} numberOfLines={1}>{goal.name}</Text>
-          <TouchableOpacity onPress={handleMore} style={s.moreBtn}><MoreHorizontal size={22} color="#64748b" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
+          <Text style={[s.navTitle, { color: textPrimary }]} numberOfLines={1}>{goal.name}</Text>
+          <TouchableOpacity onPress={handleMore} style={s.moreBtn}><DotsThreeOutline size={22} color="#64748b" weight="regular" /></TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]} showsVerticalScrollIndicator={false}>
           {/* Hero */}
-          <View style={s.heroCard}>
+          <View style={[s.heroCard, { backgroundColor: surface, borderColor: borderCol }]}>
             <View style={s.heroTopRow}>
               <View style={[s.typeBadge, goal.goal_type === 'savings_goal' ? { backgroundColor: '#e0e7ff' } : { backgroundColor: '#ffe4e6' }]}>
                 <Text style={[s.typeBadgeText, goal.goal_type === 'savings_goal' ? { color: '#3730a3' } : { color: '#9f1239' }]}>
@@ -133,7 +158,7 @@ export default function GoalDetailScreen() {
             </View>
             <Text style={s.pctHero}>{goal.progress_percentage}%</Text>
             <Text style={s.deadlineText}>{t('goals.detail.complete')} · {deadline.toLocaleDateString(displayLocale)}</Text>
-            <View style={s.progressTrack}>
+            <View style={[s.progressTrack, { backgroundColor: dividerCol }]}>
               <View style={[s.progressFill, { backgroundColor: goal.color, width: `${pct}%` as unknown as number, minWidth: 4 }]} />
             </View>
           </View>
@@ -162,12 +187,12 @@ export default function GoalDetailScreen() {
           {/* Linked savings */}
           {goal.goal_type === 'savings_goal' && (
             <View style={s.section}>
-              <Text style={s.sectionTitle}>{t('goals.detail.linkedSavings')}</Text>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('goals.detail.linkedSavings')}</Text>
               {goal.savings.length === 0 ? (
                 <Text style={s.emptyLinked}>{t('goals.noLinkedSavings')}</Text>
               ) : (
                 goal.savings.map((sv) => (
-                  <View key={sv.id} style={s.linkedCard}>
+                  <View key={sv.id} style={[s.linkedCard, { backgroundColor: surface, borderColor: borderCol }]}>
                     <View style={[s.linkedDot, { backgroundColor: sv.color }]} />
                     <View style={{ flex: 1, marginLeft: 10 }}>
                       <Text style={s.linkedName} numberOfLines={1}>{sv.name}</Text>
@@ -185,12 +210,12 @@ export default function GoalDetailScreen() {
           {/* Linked debts */}
           {goal.goal_type === 'debt_payoff' && (
             <View style={s.section}>
-              <Text style={s.sectionTitle}>{t('goals.detail.linkedDebts')}</Text>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('goals.detail.linkedDebts')}</Text>
               {goal.debts.length === 0 ? (
                 <Text style={s.emptyLinked}>{t('goals.noLinkedDebts')}</Text>
               ) : (
                 goal.debts.map((db) => (
-                  <View key={db.id} style={s.linkedCard}>
+                  <View key={db.id} style={[s.linkedCard, { backgroundColor: surface, borderColor: borderCol }]}>
                     <View style={[s.linkedDot, { backgroundColor: db.color }]} />
                     <View style={{ flex: 1, marginLeft: 10 }}>
                       <Text style={s.linkedName} numberOfLines={1}>{db.name}</Text>
@@ -207,8 +232,8 @@ export default function GoalDetailScreen() {
 
           {goal.notes && (
             <View style={s.section}>
-              <Text style={s.sectionTitle}>{t('common.notes')}</Text>
-              <View style={s.card}><Text style={s.notesText}>{goal.notes}</Text></View>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('common.notes')}</Text>
+              <View style={[s.card, { backgroundColor: surface, borderColor: borderCol }]}><Text style={s.notesText}>{goal.notes}</Text></View>
             </View>
           )}
 
@@ -219,6 +244,16 @@ export default function GoalDetailScreen() {
       </View>
 
       <AddEditGoalModal visible={showEdit} onClose={() => setShowEdit(false)} goal={goal} />
+      <ConfettiCannon
+        ref={confettiRef}
+        count={80}
+        origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height + 10 }}
+        autoStart={false}
+        fadeOut
+        fallSpeed={2500}
+        explosionSpeed={300}
+        colors={['#4f46e5', '#10b981', '#f59e0b', '#e11d48', '#ffffff']}
+      />
     </>
   );
 }

@@ -16,7 +16,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronLeft, CreditCard, Banknote, MoreHorizontal } from 'lucide-react-native';
+import { CreditCard, Banknote } from 'lucide-react-native';
+import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { useBankAccount, useDeleteBankAccount } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
@@ -24,6 +25,7 @@ import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
@@ -104,6 +106,13 @@ export default function AccountDetailScreen() {
   const locale = useUIStore((s) => s.locale);
   const showToast = useUIStore((s) => s.showToast);
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -251,10 +260,10 @@ export default function AccountDetailScreen() {
   // ── Error ────────────────────────────────────────────────────────────────
   if (accountError || (!accountLoading && !account)) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.navHeader}>
+      <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[styles.navHeader, { backgroundColor: bg }]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <ChevronLeft size={20} color="#475569" />
+            <CaretLeft size={20} color="#475569" weight="regular" />
             <Text style={styles.backLabel}>{t('accountDetail.back')}</Text>
           </TouchableOpacity>
         </View>
@@ -283,16 +292,16 @@ export default function AccountDetailScreen() {
     : '';
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
       {/* Nav header */}
-      <View style={styles.navHeader}>
+      <View style={[styles.navHeader, { backgroundColor: bg }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('accountDetail.back')}
         >
-          <ChevronLeft size={20} color="#475569" />
+          <CaretLeft size={20} color={textPrimary} weight="regular" />
           <Text style={styles.backLabel}>{t('accountDetail.back')}</Text>
         </TouchableOpacity>
         {account && !isDeletingAccount && (
@@ -302,7 +311,7 @@ export default function AccountDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Más opciones"
           >
-            <MoreHorizontal size={22} color="#475569" />
+            <DotsThreeOutline size={22} color="#475569" weight="regular" />
           </TouchableOpacity>
         )}
         {isDeletingAccount && (
@@ -332,7 +341,7 @@ export default function AccountDetailScreen() {
               </View>
             ) : account ? (
               <View
-                style={styles.accountCard}
+                style={[styles.accountCard, { backgroundColor: surface, borderColor: borderCol }]}
                 accessibilityRole="none"
                 accessibilityLabel={`${account.custom_name ?? account.name}, ${cfg.label} account, balance ${fmtBalance}, ${account.transactions_count} transactions`}
               >
@@ -358,7 +367,7 @@ export default function AccountDetailScreen() {
                     );
                   })()}
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={styles.accountName} numberOfLines={2}>
+                    <Text style={[styles.accountName, { color: textPrimary }]} numberOfLines={2}>
                       {account.custom_name ?? account.name}
                     </Text>
                     <Text style={styles.bankName}>{account.bank_name}</Text>
@@ -381,7 +390,7 @@ export default function AccountDetailScreen() {
 
             {/* Transactions section header */}
             <View style={styles.txSectionRow}>
-              <Text style={styles.txSectionLabel}>
+              <Text style={[styles.txSectionLabel, { color: textPrimary }]}>
                 {t('accountDetail.sections.transactions').toUpperCase()}
               </Text>
             </View>
@@ -405,7 +414,7 @@ export default function AccountDetailScreen() {
             isDeleting={deletingId === item.id}
           />
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: dividerCol }]} />}
         SectionSeparatorComponent={() => <View style={{ height: 8 }} />}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.3}

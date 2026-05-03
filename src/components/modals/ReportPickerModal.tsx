@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { downloadMonthlyReport } from '../../api/reports';
 import { useUIStore } from '../../stores/uiStore';
 import { colors, spacing, textStyles } from '../../theme';
+import { useTheme } from '../../theme/ThemeContext';
 
 const MONTH_NAMES_ES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -30,6 +31,11 @@ interface Props {
 }
 
 export function ReportPickerModal({ visible, onClose }: Props) {
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
+  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
   const insets = useSafeAreaInsets();
   const { t }  = useTranslation();
   const locale  = useUIStore((s) => s.locale);
@@ -84,43 +90,43 @@ export function ReportPickerModal({ visible, onClose }: Props) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
-          <View style={styles.handle} />
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 20, backgroundColor: sheetBg }]}>
+          <View style={[styles.handle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.neutral[300] }]} />
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>{t('report.title')}</Text>
+            <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('report.title')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={8}>
-              <X size={20} color={colors.text.secondary} />
+              <X size={20} color={textSecondary} />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.subtitle}>{t('report.selectMonthSubtitle')}</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>{t('report.selectMonthSubtitle')}</Text>
 
           {/* Month / year picker */}
           <View style={styles.pickerRow}>
             <TouchableOpacity
-              style={styles.arrowBtn}
+              style={[styles.arrowBtn, { backgroundColor: inputBg }]}
               onPress={prevMonth}
               accessibilityRole="button"
               accessibilityLabel={t('report.prevMonth')}
             >
-              <ChevronLeft size={22} color={colors.text.primary} />
+              <ChevronLeft size={22} color={textPrimary} />
             </TouchableOpacity>
 
             <View style={styles.monthDisplay}>
-              <Text style={styles.monthText}>{monthNames[month - 1]}</Text>
-              <Text style={styles.yearText}>{year}</Text>
+              <Text style={[styles.monthText, { color: textPrimary }]}>{monthNames[month - 1]}</Text>
+              <Text style={[styles.yearText, { color: textSecondary }]}>{year}</Text>
             </View>
 
             <TouchableOpacity
-              style={[styles.arrowBtn, isFutureMonth && styles.arrowBtnDisabled]}
+              style={[styles.arrowBtn, { backgroundColor: inputBg }, isFutureMonth && styles.arrowBtnDisabled]}
               onPress={nextMonth}
               disabled={isFutureMonth}
               accessibilityRole="button"
               accessibilityLabel={t('report.nextMonth')}
             >
-              <ChevronRight size={22} color={isFutureMonth ? colors.text.muted : colors.text.primary} />
+              <ChevronRight size={22} color={isFutureMonth ? textSecondary : textPrimary} />
             </TouchableOpacity>
           </View>
 

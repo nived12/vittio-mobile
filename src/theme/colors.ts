@@ -141,3 +141,38 @@ export const colors = {
   },
 
 } as const;
+
+// ─────────────────────────────────────────
+// Dark Mode Semantic Tokens
+// ─────────────────────────────────────────
+export const darkColors = {
+  background:      '#0f172a', // slate-900
+  surface:         '#1e293b', // slate-800
+  surfaceElevated: '#334155', // slate-700
+  surfaceOverlay:  'rgba(255,255,255,0.06)',
+  textPrimary:     '#f1f5f9', // slate-100
+  textSecondary:   '#94a3b8', // slate-400
+  textDisabled:    '#475569', // slate-600
+  border:          'rgba(255,255,255,0.1)',
+  borderFocused:   '#6366f1', // indigo-500
+  primary:         '#6366f1', // indigo-500 (lighter for dark bg contrast)
+  primaryLight:    'rgba(99,102,241,0.15)',
+  positive:        '#10b981', // emerald-500 (unchanged)
+  negative:        '#e11d48', // rose-600 (unchanged)
+  warning:         '#fbbf24', // amber-400
+  tabBarBg:        '#1e293b',
+  tabBarBorder:    'rgba(255,255,255,0.08)',
+  tabBarActive:    '#6366f1',
+  tabBarInactive:  '#64748b',
+  skeletonBase:    '#334155',
+  skeletonHighlight: '#475569',
+  // Gradients
+  balanceGradientStart: '#1e3a5f',
+  balanceGradientEnd:   '#1e293b',
+  fabGradientStart: '#6366f1',
+  fabGradientEnd:   '#4f46e5',
+  // Pass-through semantic amounts (unchanged from light)
+  income:   '#10b981',
+  expense:  '#e11d48',
+  transfer: '#7c3aed',
+} as const;

@@ -16,7 +16,12 @@
       "supportsTablet": false,
       "associatedDomains": [
         "applinks:app.vitt.io"
-      ]
+      ],
+      "entitlements": {
+        "keychain-access-groups": [
+          "$(AppIdentifierPrefix)io.vitt.app"
+        ]
+      }
     },
     "android": {
       "package": "io.vitt.app",

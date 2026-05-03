@@ -9,11 +9,13 @@ export const fontFamily = {
 
 // All sizes in sp (respects OS font scaling)
 export const fontSize = {
-  displayXl: 32, // balance hero number
-  displayLg: 28, // screen title, dashboard heading
+  balanceDisplay: 52, // v2: balance hero number — bold 52pt
+  displayXl: 34, // v2: +2pt from 32
+  displayLg: 30, // v2: +2pt from 28
   displayMd: 24, // section totals, large card values
-  headingLg: 20, // card titles, group headers
-  headingMd: 17, // row titles, form labels
+  headingLg: 24, // v2: +2pt from 22/20 — card titles, group headers
+  headingMd: 20, // v2: +2pt from 18/17
+  headingSm: 18, // v2: +2pt from 16
   bodyLg:    16, // primary body text, input text
   bodyMd:    15, // transaction descriptions, secondary body
   bodySm:    13, // metadata, captions, help text
@@ -22,11 +24,13 @@ export const fontSize = {
 } as const;
 
 export const lineHeight = {
-  displayXl: 38,
-  displayLg: 34,
+  balanceDisplay: 58,
+  displayXl: 40,
+  displayLg: 36,
   displayMd: 30,
-  headingLg: 26,
-  headingMd: 22,
+  headingLg: 30,
+  headingMd: 26,
+  headingSm: 24,
   bodyLg:    22,
   bodyMd:    20,
   bodySm:    18,
@@ -44,6 +48,14 @@ export const fontWeight = {
 
 // Pre-composed text styles (use these in components)
 export const textStyles = {
+  // v2: balance hero — 52pt bold, tight tracking, tabular nums
+  balanceDisplay: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.balanceDisplay,
+    lineHeight: lineHeight.balanceDisplay,
+    letterSpacing: -1.5,
+    fontVariant: ['tabular-nums'] as const,
+  },
   displayXl: {
     fontFamily: fontFamily.bold,
     fontSize: fontSize.displayXl,
@@ -61,7 +73,7 @@ export const textStyles = {
     lineHeight: lineHeight.displayMd,
   },
   headingLg: {
-    fontFamily: fontFamily.semibold,
+    fontFamily: fontFamily.bold,
     fontSize: fontSize.headingLg,
     lineHeight: lineHeight.headingLg,
   },
@@ -69,6 +81,11 @@ export const textStyles = {
     fontFamily: fontFamily.semibold,
     fontSize: fontSize.headingMd,
     lineHeight: lineHeight.headingMd,
+  },
+  headingSm: {
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.headingSm,
+    lineHeight: lineHeight.headingSm,
   },
   bodyLg: {
     fontFamily: fontFamily.regular,

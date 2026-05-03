@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { ProfileBottomSheet } from '../../src/components/modals/ProfileBottomSheet';
 import { BalanceCard } from '../../src/components/ui/BalanceCard';
 import { ChartBar } from '../../src/components/ui/ChartBar';
@@ -55,6 +56,12 @@ export default function DashboardScreen() {
 
   const { data, isLoading, isError, refetch } = useDashboard(selectedMonth);
   const cardWidth = width - 32;
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? (theme as any).background  : '#f8fafc';
+  const surface     = isDark ? (theme as any).surface     : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -74,7 +81,7 @@ export default function DashboardScreen() {
 
   if (isError && !data) {
     return (
-      <View style={[styles.errorContainer, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.errorContainer, { paddingTop: insets.top + 16, backgroundColor: bg }]}>
         <EmptyState
           icon="wifi-off"
           iconColor="#cbd5e1"
@@ -104,7 +111,7 @@ export default function DashboardScreen() {
   return (
     <>
       <ScrollView
-        style={[styles.screen, { paddingTop: insets.top }]}
+        style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -132,7 +139,7 @@ export default function DashboardScreen() {
           accessibilityRole="button"
           accessibilityLabel={`${t('dashboard.monthPicker.label')}: ${monthLabel}, tap to change`}
         >
-          <Text style={styles.monthPickerText}>{monthLabel}</Text>
+          <Text style={[styles.monthPickerText, { color: textPrimary }]}>{monthLabel}</Text>
           <ChevronDown size={16} color="#94a3b8" />
         </TouchableOpacity>
 
@@ -156,7 +163,7 @@ export default function DashboardScreen() {
         {/* Accounts */}
         <View style={styles.sectionGap}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('dashboard.sections.accounts')}</Text>
+            <Text style={[styles.sectionTitle, { color: textPrimary }]}>{t('dashboard.sections.accounts')}</Text>
             <TouchableOpacity
               onPress={() => router.navigate('/(app)/accounts')}
               accessibilityLabel={`${t('dashboard.sections.seeAll')} accounts`}
@@ -205,7 +212,7 @@ export default function DashboardScreen() {
                 return (
                   <TouchableOpacity
                     onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
-                    style={styles.accountChip}
+                    style={[styles.accountChip, { backgroundColor: surface, borderColor: borderCol }]}
                     accessibilityRole="button"
                     accessibilityLabel={`${item.bank_name}, ${item.account_type}, balance ${item.balance}`}
                     activeOpacity={0.8}
@@ -238,10 +245,10 @@ export default function DashboardScreen() {
 
         {/* Spending chart */}
         <View style={styles.sectionGap}>
-          <Text style={[styles.sectionTitle, styles.sectionTitlePad]}>
+          <Text style={[styles.sectionTitle, styles.sectionTitlePad, { color: textPrimary }]}>
             {t('dashboard.sections.spending')}
           </Text>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
             {isLoading ? (
               [1, 2, 3, 4].map((i) => <ChartBarSkeleton key={i} />)
             ) : !data?.category_summary.has_data ? (
@@ -273,7 +280,7 @@ export default function DashboardScreen() {
         {/* Recent transactions */}
         <View style={styles.sectionGap}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('dashboard.sections.recentTransactions')}</Text>
+            <Text style={[styles.sectionTitle, { color: textPrimary }]}>{t('dashboard.sections.recentTransactions')}</Text>
             <TouchableOpacity
               onPress={() => router.navigate('/(app)/transactions')}
               accessibilityLabel={`${t('dashboard.sections.seeAll')} transactions`}
@@ -282,7 +289,7 @@ export default function DashboardScreen() {
               <Text style={styles.seeAllText}>{t('dashboard.sections.seeAll')} →</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
+          <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
             {isLoading ? (
               [1, 2, 3, 4, 5].map((i) => (
                 <React.Fragment key={i}>
@@ -309,7 +316,7 @@ export default function DashboardScreen() {
                     enableSwipeActions={false}
                   />
                   {idx < data!.recent_transactions.length - 1 && (
-                    <View style={styles.separator} />
+                    <View style={[styles.separator, { backgroundColor: dividerCol }]} />
                   )}
                 </React.Fragment>
               ))
@@ -334,9 +341,9 @@ export default function DashboardScreen() {
           activeOpacity={1}
           onPress={() => setShowMonthPicker(false)}
         />
-        <View style={[styles.monthSheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.sheetHandle} />
-          <Text style={styles.sheetTitle}>{t('dashboard.monthPicker.label')}</Text>
+        <View style={[styles.monthSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('dashboard.monthPicker.label')}</Text>
           <FlatList
             data={data?.available_months ?? []}
             keyExtractor={(item) => item.value}
@@ -350,7 +357,7 @@ export default function DashboardScreen() {
                     setShowMonthPicker(false);
                   }}
                 >
-                  <Text style={[styles.monthRowText, isSelected && styles.monthRowActive]}>
+                  <Text style={[styles.monthRowText, { color: textPrimary }, isSelected && styles.monthRowActive]}>
                     {item.label}
                   </Text>
                   {isSelected && <Check size={16} color="#4f46e5" />}

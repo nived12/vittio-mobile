@@ -10,6 +10,7 @@ import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
@@ -24,6 +25,11 @@ export default function AppLayout() {
   const requireConfirmed      = useRequireConfirmed();
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
+  const { theme, isDark } = useTheme();
+  const tabBarBg       = isDark ? (theme as any).tabBarBg       : '#ffffff';
+  const tabBarBorder   = isDark ? (theme as any).tabBarBorder   : '#e2e8f0';
+  const tabBarActive   = isDark ? (theme as any).tabBarActive   : '#4f46e5';
+  const tabBarInactive = isDark ? (theme as any).tabBarInactive : '#94a3b8';
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -54,12 +60,12 @@ export default function AppLayout() {
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: '#4f46e5',
-          tabBarInactiveTintColor: '#94a3b8',
+          tabBarActiveTintColor: tabBarActive,
+          tabBarInactiveTintColor: tabBarInactive,
           tabBarStyle: {
-            backgroundColor: '#ffffff',
+            backgroundColor: tabBarBg,
             borderTopWidth: 1,
-            borderTopColor: '#e2e8f0',
+            borderTopColor: tabBarBorder,
             height: 64,
             paddingBottom: 10,
           },

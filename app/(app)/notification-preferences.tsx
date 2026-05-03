@@ -14,9 +14,10 @@ import { router } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { ChevronLeft } from 'lucide-react-native';
+import { CaretLeft } from 'phosphor-react-native';
 import { useUIStore } from '../../src/stores/uiStore';
 import { registerForPushNotifications } from '../../src/utils/notifications';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
 
 type PermissionStatus = 'granted' | 'denied' | 'undetermined';
@@ -25,6 +26,14 @@ export default function NotificationPreferencesScreen() {
   const { t } = useTranslation();
   const { notificationPrefs, setNotificationPref } = useUIStore();
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('undetermined');
+  const { theme, isDark } = useTheme();
+  const bg = isDark ? (theme as any).background : '#f8fafc';
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const separatorCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
+  const bannerBg = isDark ? 'rgba(99,102,241,0.15)' : '#eef2ff';
+  const bannerBorder = isDark ? 'rgba(99,102,241,0.25)' : '#c7d2fe';
 
   useEffect(() => {
     checkPermission();
@@ -78,29 +87,29 @@ export default function NotificationPreferencesScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: bg }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
           accessibilityLabel={t('common.back')}
         >
-          <ChevronLeft size={24} color={colors.text.primary} />
+          <CaretLeft size={24} color={colors.text.primary} weight="regular" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('notifications.title')}</Text>
+        <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('notifications.title')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Permission Banner */}
         {permissionStatus !== 'granted' && (
-          <View style={styles.permissionBanner}>
+          <View style={[styles.permissionBanner, { backgroundColor: bannerBg, borderColor: bannerBorder }]}>
             <Ionicons name="notifications-outline" size={22} color={colors.brand.primary} />
             <View style={styles.permissionTextBlock}>
-              <Text style={styles.permissionTitle}>{t('notifications.permissionBanner.title')}</Text>
+              <Text style={[styles.permissionTitle, { color: textPrimary }]}>{t('notifications.permissionBanner.title')}</Text>
               {permissionStatus === 'denied' && (
-                <Text style={styles.permissionSubtitle}>{t('notifications.permissionBanner.subtitleDenied')}</Text>
+                <Text style={[styles.permissionSubtitle, { color: textSecondary }]}>{t('notifications.permissionBanner.subtitleDenied')}</Text>
               )}
             </View>
             <TouchableOpacity
@@ -122,10 +131,10 @@ export default function NotificationPreferencesScreen() {
         )}
 
         {/* Section label */}
-        <Text style={styles.sectionLabel}>{t('notifications.sectionLabel')}</Text>
+        <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('notifications.sectionLabel')}</Text>
 
         {/* Toggle rows */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: surface }]}>
           {rows.map((row, index) => (
             <React.Fragment key={row.key}>
               <View
@@ -138,8 +147,8 @@ export default function NotificationPreferencesScreen() {
                   <Ionicons name={row.icon} size={20} color={row.iconColor} />
                 </View>
                 <View style={styles.rowText}>
-                  <Text style={styles.rowTitle}>{row.title}</Text>
-                  <Text style={styles.rowSubtitle}>{row.subtitle}</Text>
+                  <Text style={[styles.rowTitle, { color: textPrimary }]}>{row.title}</Text>
+                  <Text style={[styles.rowSubtitle, { color: textSecondary }]}>{row.subtitle}</Text>
                 </View>
                 <Switch
                   value={notificationPrefs[row.key]}
@@ -152,13 +161,13 @@ export default function NotificationPreferencesScreen() {
                   accessibilityLabel={`${row.title}, ${row.subtitle}`}
                 />
               </View>
-              {index < rows.length - 1 && <View style={styles.separator} />}
+              {index < rows.length - 1 && <View style={[styles.separator, { backgroundColor: separatorCol }]} />}
             </React.Fragment>
           ))}
         </View>
 
         {/* Footer */}
-        <Text style={styles.footer}>{t('notifications.footer')}</Text>
+        <Text style={[styles.footer, { color: textSecondary }]}>{t('notifications.footer')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

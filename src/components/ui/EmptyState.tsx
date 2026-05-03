@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, View, Text, StyleSheet } from 'react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { Button } from './Button';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,10 @@ export function EmptyState({
   fullScreen = false,
   topPadding = 40,
 }: EmptyStateProps) {
+  const { theme, isDark } = useTheme();
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(8)).current;
 
@@ -80,12 +85,12 @@ export function EmptyState({
         <IconComponent size={iconSize} color={iconColor} strokeWidth={1.5} />
       </View>
 
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" style={[styles.title, { color: textPrimary }]}>
         {title}
       </Text>
 
       {subtitle ? (
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={[styles.subtitle, { color: textSecondary }]}>{subtitle}</Text>
       ) : null}
 
       {ctaLabel && onCta ? (
@@ -126,7 +131,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 17,
     lineHeight: 22,
-    color: '#0f172a',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -134,7 +138,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
     lineHeight: 18,
-    color: '#64748b',
     textAlign: 'center',
     marginBottom: 24,
   },

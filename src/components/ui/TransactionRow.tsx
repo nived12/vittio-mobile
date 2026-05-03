@@ -17,6 +17,7 @@ import { getCategoryColor } from '../../utils/categoryColors';
 import { AmountDisplay } from './AmountDisplay';
 import { SkeletonBox } from './SkeletonLoader';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -137,9 +138,15 @@ export function TransactionRow({
   isDeleting = false,
 }: TransactionRowProps) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
   const storeLocale = useUIStore((s) => s.locale);
   const resolvedLocale = storeLocale === 'es' ? 'es-MX' : 'en-MX';
   const swipeableRef = useRef<Swipeable>(null);
+
+  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const surfaceElevated = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
   const hasReachedDeleteThreshold = useRef(false);
   const hasReachedCategorizeThreshold = useRef(false);
 
@@ -163,7 +170,7 @@ export function TransactionRow({
     iconBg = getCategoryColor(category.icon);
     iconName = category.icon;
   } else {
-    iconBg = '#f1f5f9';
+    iconBg = surfaceElevated;
     iconName = 'tag';
     iconColor = '#94a3b8';
   }
@@ -227,7 +234,7 @@ export function TransactionRow({
     <TouchableOpacity
       onPress={onPress}
       disabled={isDeleting}
-      style={[styles.row, isDeleting && styles.deletingRow]}
+      style={[styles.row, { backgroundColor: surface }, isDeleting && styles.deletingRow]}
       accessibilityRole="button"
       accessibilityLabel={`${primaryLabel}, ${amount} ${bank_account.name}, ${transaction_type}, ${dateLabel}`}
       accessibilityActions={[
@@ -246,10 +253,10 @@ export function TransactionRow({
 
       {/* Center block */}
       <View style={styles.center}>
-        <Text style={styles.primaryLabel} numberOfLines={1}>
+        <Text style={[styles.primaryLabel, { color: textPrimary }]} numberOfLines={1}>
           {primaryLabel}
         </Text>
-        <Text style={styles.subtitle} numberOfLines={1}>
+        <Text style={[styles.subtitle, { color: textSecondary }]} numberOfLines={1}>
           {subtitleText}
         </Text>
       </View>
@@ -313,8 +320,10 @@ export function TransactionRow({
  * Skeleton placeholder for a TransactionRow.
  */
 export function TransactionRowSkeleton() {
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? (theme as any).surface : '#ffffff';
   return (
-    <View style={styles.skeletonRow}>
+    <View style={[styles.skeletonRow, { backgroundColor: surface }]}>
       <SkeletonBox width={40} height={40} borderRadius={12} />
       <View style={{ flex: 1, marginLeft: 12, gap: 8 }}>
         <SkeletonBox width="60%" height={15} />
@@ -334,7 +343,6 @@ const styles = StyleSheet.create({
     minHeight: 72,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
   },
   deletingRow: {
     opacity: 0.5,
@@ -355,13 +363,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 15,
     lineHeight: 20,
-    color: '#0f172a',
   },
   subtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     lineHeight: 16,
-    color: '#64748b',
     marginTop: 2,
   },
   right: {
@@ -405,6 +411,5 @@ const styles = StyleSheet.create({
     height: 72,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
   },
 });
