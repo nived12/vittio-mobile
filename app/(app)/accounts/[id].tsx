@@ -48,9 +48,9 @@ interface CategoryPickerProps {
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   return (
     <Modal
       visible={visible}
@@ -115,11 +115,11 @@ export default function AccountDetailScreen() {
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const bg = isDark ? theme.background : '#f8fafc';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const [isRefreshing, setIsRefreshing] = useState(false);

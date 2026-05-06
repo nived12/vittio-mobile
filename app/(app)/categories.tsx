@@ -36,10 +36,10 @@ interface CategoryRowProps {
 function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: CategoryRowProps) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const textPrimary   = isDark ? (theme as any).textPrimary   : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const rowBg         = isDark ? (theme as any).surface       : '#ffffff';
-  const rowChildBg    = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? theme.textPrimary   : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const rowBg         = isDark ? theme.surface       : '#ffffff';
+  const rowChildBg    = isDark ? theme.surfaceElevated : '#f1f5f9';
   const swipeableRef = useRef<Swipeable>(null);
   const dotColor = cat.color ?? colors.brand.primary;
   const hasChildren = !isChild && (cat.children ?? []).length > 0;
@@ -141,11 +141,11 @@ export default function CategoriesScreen() {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? (theme as any).background  : '#f8fafc';
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
+  const bg          = isDark ? theme.background  : '#f8fafc';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
   const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const { data: categories = [], isLoading, refetch, isRefetching } = useCategories();
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     backgroundColor:   colors.bg.card,
     borderRadius:      10,
     borderWidth:       1,
-    borderColor:       colors.border.default,
+    borderColor:       colors.borderNested.default,
     paddingHorizontal: 12,
     paddingVertical:   10,
     gap:               8,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor:  colors.bg.card,
     borderRadius:     12,
     borderWidth:      1,
-    borderColor:      colors.border.default,
+    borderColor:      colors.borderNested.default,
     overflow:         'hidden',
   },
   row: {
@@ -411,12 +411,12 @@ const styles = StyleSheet.create({
   },
   childDivider: {
     height:           1,
-    backgroundColor:  colors.border.subtle,
+    backgroundColor:  colors.borderNested.subtle,
     marginHorizontal: spacing.cardPadding,
   },
   groupDivider: {
     height:          1,
-    backgroundColor: colors.border.default,
+    backgroundColor: colors.borderNested.default,
   },
   center: {
     flex:           1,

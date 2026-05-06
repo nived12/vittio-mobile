@@ -49,8 +49,8 @@ export function EmptyState({
   topPadding = 40,
 }: EmptyStateProps) {
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
 
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(8)).current;

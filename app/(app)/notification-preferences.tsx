@@ -27,10 +27,10 @@ export default function NotificationPreferencesScreen() {
   const { notificationPrefs, setNotificationPref } = useUIStore();
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('undetermined');
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const bg = isDark ? theme.background : '#f8fafc';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
   const separatorCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
   const bannerBg = isDark ? 'rgba(99,102,241,0.15)' : '#eef2ff';
   const bannerBorder = isDark ? 'rgba(99,102,241,0.25)' : '#c7d2fe';
@@ -153,7 +153,7 @@ export default function NotificationPreferencesScreen() {
                 <Switch
                   value={notificationPrefs[row.key]}
                   onValueChange={(val) => handleToggle(row.key, val)}
-                  trackColor={{ false: colors.border.default, true: colors.brand.primary }}
+                  trackColor={{ false: colors.borderNested.default, true: colors.brand.primary }}
                   thumbColor="#ffffff"
                   disabled={permissionStatus !== 'granted'}
                   accessibilityRole="switch"
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: colors.border.subtle,
+    backgroundColor: colors.borderNested.subtle,
     marginLeft: 64,
   },
   footer: {

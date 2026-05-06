@@ -20,7 +20,7 @@ export function SkeletonBox({
   style,
 }: SkeletonBoxProps) {
   const { theme, isDark } = useTheme();
-  const skeletonBase = isDark ? (theme as any).skeletonBase : '#e2e8f0';
+  const skeletonBase = isDark ? theme.skeletonBase : '#e2e8f0';
   const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function SkeletonBox({
  */
 export function TransactionRowSkeleton() {
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const surface = isDark ? theme.surface : '#ffffff';
   return (
     <View
       style={{
@@ -131,8 +131,8 @@ export function BalanceCardSkeleton({ width }: { width: number }) {
  */
 export function AccountChipSkeleton() {
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   return (
     <View
       style={{

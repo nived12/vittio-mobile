@@ -54,10 +54,10 @@ type ErrorVariant =
 
 export default function LoginScreen() {
   const { t } = useTranslation();
-  const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const { theme } = useTheme();
+  const bg = theme.background;
+  const textPrimary = theme.textPrimary;
+  const textSecondary = theme.textSecondary;
   const login = useAuthStore((s) => s.login);
   const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border.default,
+    backgroundColor: colors.borderNested.default,
   },
   dividerText: {
     ...textStyles.bodySm,
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
     height: components.button.heightLg,
     borderRadius: components.button.borderRadius,
     borderWidth: 1,
-    borderColor: colors.border.default,
+    borderColor: colors.borderNested.default,
     backgroundColor: '#ffffff',
     gap: 10,
     marginBottom: spacing.md,

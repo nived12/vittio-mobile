@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border.default,
+    backgroundColor: colors.borderNested.default,
   },
   dividerText: {
     ...textStyles.bodySm,
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     height: components.button.heightLg,
     borderRadius: components.button.borderRadius,
     borderWidth: 1,
-    borderColor: colors.border.default,
+    borderColor: colors.borderNested.default,
     backgroundColor: '#ffffff',
     gap: 10,
     marginBottom: spacing.lg,

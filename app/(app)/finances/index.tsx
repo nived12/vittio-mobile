@@ -89,7 +89,7 @@ function SavingsList({
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: savings, isLoading, isError, refetch } = useSavings();
 
   return (
@@ -151,10 +151,10 @@ function SavingsList({
 function SavingCard({ saving, locale }: { saving: Saving; locale: string }) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const trackBg     = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
   const days = daysUntil(saving.target_date);
 
   return (
@@ -223,7 +223,7 @@ function DebtsList({ onAdd }: { onAdd: () => void }) {
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: debts, isLoading, isError, refetch } = useDebts();
 
   return (
@@ -284,10 +284,10 @@ function DebtsList({ onAdd }: { onAdd: () => void }) {
 function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const trackBg     = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
   const today = new Date().getDate();
   const isOverdue = Boolean(
     debt.due_day_of_month && today > debt.due_day_of_month && debt.status === 'active',
@@ -358,7 +358,7 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
 function GoalsList({ onAdd }: { onAdd: () => void }) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: goals, isLoading, isError, refetch } = useGoals();
 
   return (
@@ -417,10 +417,10 @@ function GoalsList({ onAdd }: { onAdd: () => void }) {
 function GoalCard({ goal }: { goal: Goal }) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol   = isDark ? (theme as any).border      : '#e2e8f0';
-  const trackBg     = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   return (
     <TouchableOpacity
@@ -531,10 +531,10 @@ export default function FinancesScreen() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const requireConfirmed = useRequireConfirmed();
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? (theme as any).background  : '#f8fafc';
-  const surface     = isDark ? (theme as any).surface     : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const segTrackBg  = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const bg          = isDark ? theme.background  : '#f8fafc';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const segTrackBg  = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   const segments: { key: Segment; label: string }[] = [
     { key: 'savings', label: t('finances.tabs.savings') },

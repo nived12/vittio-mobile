@@ -61,11 +61,11 @@ interface Props {
 
 export function AddEditCategoryModal({ visible, onClose, category, parentCategory }: Props) {
   const { theme, isDark } = useTheme();
-  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
-  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
-  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
+  const sheetBg       = isDark ? theme.surface         : '#ffffff';
+  const inputBg       = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? theme.textPrimary     : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary   : '#64748b';
+  const borderCol     = isDark ? theme.border          : '#e2e8f0';
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useUIStore();
@@ -316,14 +316,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surface2,
     borderRadius:    10,
     borderWidth:     1,
-    borderColor:     colors.border.default,
+    borderColor:     colors.borderNested.default,
     paddingHorizontal: 14,
     paddingVertical:   12,
     ...textStyles.bodyMd,
     color: colors.text.primary,
   },
   textInputError: {
-    borderColor: colors.border.error,
+    borderColor: colors.borderNested.error,
     backgroundColor: colors.error.bg,
   },
   errorText: {
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     borderRadius:    10,
     backgroundColor: colors.bg.surface2,
     borderWidth:     1,
-    borderColor:     colors.border.default,
+    borderColor:     colors.borderNested.default,
     alignItems:      'center',
     justifyContent:  'center',
   },

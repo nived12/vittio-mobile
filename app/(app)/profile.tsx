@@ -24,12 +24,12 @@ export default function ProfileScreen() {
   const { showToast } = useUIStore();
   const user = useAuthStore((s) => s.user);
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const surfaceEl = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const bg = isDark ? theme.background : '#f8fafc';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const surfaceEl = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   const mutedCol = isDark ? '#64748b' : '#94a3b8';
 
   const [firstName, setFirstName] = useState(user?.first_name ?? '');
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border.default,
+    borderColor: colors.borderNested.default,
     padding: spacing.cardPadding,
   },
   fieldLabel: {
@@ -191,14 +191,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.surface2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.border.default,
+    borderColor: colors.borderNested.default,
     paddingHorizontal: 14,
     paddingVertical: 12,
     ...textStyles.bodyMd,
     color: colors.text.primary,
   },
   textInputError: {
-    borderColor: colors.border.error,
+    borderColor: colors.borderNested.error,
     backgroundColor: colors.error.bg,
   },
   readOnlyInput: {

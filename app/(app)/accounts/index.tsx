@@ -36,8 +36,8 @@ const accountTypeConfig = {
 function AccountRow({ account, locale }: { account: BankAccount; locale: string }) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
   const config = accountTypeConfig[account.account_type] ?? accountTypeConfig.debit;
   const { Icon } = config;
 
@@ -64,7 +64,7 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
         const Logo = getBankLogoComponent(account.bank_logo_url);
         if (Logo) {
           return (
-            <View style={[styles.accountIcon, { backgroundColor: isDark ? (theme as any).surface : '#ffffff', borderWidth: 1, borderColor: isDark ? (theme as any).border : '#e2e8f0' }]}>
+            <View style={[styles.accountIcon, { backgroundColor: isDark ? theme.surface : '#ffffff', borderWidth: 1, borderColor: isDark ? theme.border : '#e2e8f0' }]}>
               <Logo width={24} height={24} />
             </View>
           );
@@ -115,11 +115,11 @@ export default function AccountsScreen() {
 
   const { data: accounts, isLoading, isError, refetch } = useBankAccounts();
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const bg = isDark ? theme.background : '#f8fafc';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const handleRefresh = useCallback(async () => {

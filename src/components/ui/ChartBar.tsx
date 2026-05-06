@@ -47,8 +47,8 @@ export function ChartBar({
   isLoading = false,
 }: ChartBarProps) {
   const { theme, isDark } = useTheme();
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const surfaceElevated = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const surfaceElevated = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   const barPercent = maxValue > 0 ? value / maxValue : 0;
   const clampedPercent = Math.max(0.04, Math.min(1.0, barPercent));

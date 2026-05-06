@@ -49,9 +49,9 @@ export function SectionHeader({
   const storeLocale = useUIStore((s) => s.locale);
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
 
-  const background = isDark ? (theme as any).background : '#f8fafc';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#475569';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const background = isDark ? theme.background : '#f8fafc';
+  const textPrimary = isDark ? theme.textPrimary : '#475569';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
 
   const dateLabel = formatSectionDate(dateKey, resolvedLocale, t);
 

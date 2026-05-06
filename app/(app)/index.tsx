@@ -58,11 +58,11 @@ export default function DashboardScreen() {
   const { data, isLoading, isError, refetch } = useDashboard(selectedMonth);
   const cardWidth = width - 32;
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const bg = theme.background;
+  const surface = theme.surface;
+  const textPrimary = theme.textPrimary;
+  const textSecondary = theme.textSecondary;
+  const borderCol = theme.border;
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const handleRefresh = useCallback(async () => {

@@ -109,9 +109,9 @@ interface CategoryPickerProps {
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   return (
     <Modal
       visible={visible}
@@ -159,11 +159,11 @@ interface FilterSheetProps {
 function FilterSheet({ visible, current, categories, onApply, onClose }: FilterSheetProps) {
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const surfaceEl = isDark ? (theme as any).surfaceElevated : '#f8fafc';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const surfaceEl = isDark ? theme.surfaceElevated : '#f8fafc';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
 
   const [period, setPeriod] = useState<ActiveFilters['period']>(current.period);
   const [categoryId, setCategoryId] = useState<number | undefined>(current.categoryId);
@@ -427,12 +427,12 @@ export default function TransactionsScreen() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { theme, isDark } = useTheme();
-  const bg = isDark ? (theme as any).background : '#f8fafc';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const borderCol = isDark ? (theme as any).border : '#e2e8f0';
+  const bg = isDark ? theme.background : '#f8fafc';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
-  const inputBg = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const fmtAmount = (n: number) =>

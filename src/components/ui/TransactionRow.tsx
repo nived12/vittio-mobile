@@ -150,10 +150,10 @@ export function TransactionRow({
   const resolvedLocale = storeLocale === 'es' ? 'es-MX' : 'en-MX';
   const swipeableRef = useRef<Swipeable>(null);
 
-  const surface = isDark ? (theme as any).surface : '#ffffff';
-  const textPrimary = isDark ? (theme as any).textPrimary : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary : '#64748b';
-  const surfaceElevated = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const surfaceElevated = isDark ? theme.surfaceElevated : '#f1f5f9';
   const hasReachedDeleteThreshold = useRef(false);
   const hasReachedCategorizeThreshold = useRef(false);
 
@@ -329,7 +329,7 @@ export function TransactionRow({
  */
 export function TransactionRowSkeleton() {
   const { theme, isDark } = useTheme();
-  const surface = isDark ? (theme as any).surface : '#ffffff';
+  const surface = isDark ? theme.surface : '#ffffff';
   return (
     <View style={[styles.skeletonRow, { backgroundColor: surface }]}>
       <SkeletonBox width={40} height={40} borderRadius={12} />

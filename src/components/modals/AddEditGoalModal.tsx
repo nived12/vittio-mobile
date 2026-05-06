@@ -46,11 +46,11 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(goal);
   const { theme, isDark } = useTheme();
-  const sheetBg       = isDark ? (theme as any).surface         : '#ffffff';
-  const inputBg       = isDark ? (theme as any).surfaceElevated : '#f1f5f9';
-  const textPrimary   = isDark ? (theme as any).textPrimary     : '#0f172a';
-  const textSecondary = isDark ? (theme as any).textSecondary   : '#64748b';
-  const borderCol     = isDark ? (theme as any).border          : '#e2e8f0';
+  const sheetBg       = isDark ? theme.surface         : '#ffffff';
+  const inputBg       = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? theme.textPrimary     : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary   : '#64748b';
+  const borderCol     = isDark ? theme.border          : '#e2e8f0';
   const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
 
   const [name, setName]                             = useState('');

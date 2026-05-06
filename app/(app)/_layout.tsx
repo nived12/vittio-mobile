@@ -17,19 +17,19 @@ import { useTheme } from '../../src/theme/ThemeContext';
 export default function AppLayout() {
   const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
-  const showUploadStatement   = useUIStore((s) => s.showStatementUpload);
-  const openStatementUpload   = useUIStore((s) => s.openStatementUpload);
-  const closeStatementUpload  = useUIStore((s) => s.closeStatementUpload);
+  const showUploadStatement = useUIStore((s) => s.showStatementUpload);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
+  const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
-  const user                  = useAuthStore((s) => s.user);
-  const requireConfirmed      = useRequireConfirmed();
+  const user = useAuthStore((s) => s.user);
+  const requireConfirmed = useRequireConfirmed();
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
-  const { theme, isDark } = useTheme();
-  const tabBarBg       = isDark ? (theme as any).tabBarBg       : '#ffffff';
-  const tabBarBorder   = isDark ? (theme as any).tabBarBorder   : '#e2e8f0';
-  const tabBarActive   = isDark ? (theme as any).tabBarActive   : '#4f46e5';
-  const tabBarInactive = isDark ? (theme as any).tabBarInactive : '#94a3b8';
+  const { theme } = useTheme();
+  const tabBarBg = theme.tabBarBg;
+  const tabBarBorder = theme.tabBarBorder;
+  const tabBarActive = theme.tabBarActive;
+  const tabBarInactive = theme.tabBarInactive;
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);

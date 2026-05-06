@@ -40,11 +40,11 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime:              5 * 60 * 1000, // 5 minutes
-      gcTime:                 10 * 60 * 1000, // 10 minutes
-      retry:                  2,
-      refetchOnWindowFocus:   true,
-      networkMode:            'offlineFirst',
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2,
+      refetchOnWindowFocus: true,
+      networkMode: 'offlineFirst',
     },
     mutations: {
       networkMode: 'offlineFirst',
@@ -55,18 +55,18 @@ const queryClient = new QueryClient({
 // ── Root layout ────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const isAuthenticated     = useAuthStore((s) => s.isAuthenticated);
-  const isHydrated          = useAuthStore((s) => s.isHydrated);
-  const hydrate             = useAuthStore((s) => s.hydrate);
-  const hydrateLocale              = useUIStore((s) => s.hydrateLocale);
-  const hydrateBiometricLock       = useUIStore((s) => s.hydrateBiometricLock);
-  const hydrateNotificationPrefs   = useUIStore((s) => s.hydrateNotificationPrefs);
-  const hydrateColorScheme         = useUIStore((s) => s.hydrateColorScheme);
-  const hydrateCelebrationState    = useUIStore((s) => s.hydrateCelebrationState);
-  const biometricLock              = useUIStore((s) => s.biometricLock);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isHydrated = useAuthStore((s) => s.isHydrated);
+  const hydrate = useAuthStore((s) => s.hydrate);
+  const hydrateLocale = useUIStore((s) => s.hydrateLocale);
+  const hydrateBiometricLock = useUIStore((s) => s.hydrateBiometricLock);
+  const hydrateNotificationPrefs = useUIStore((s) => s.hydrateNotificationPrefs);
+  const hydrateColorScheme = useUIStore((s) => s.hydrateColorScheme);
+  const hydrateCelebrationState = useUIStore((s) => s.hydrateCelebrationState);
+  const biometricLock = useUIStore((s) => s.biometricLock);
 
-  const segments    = useSegments();
-  const appState    = useRef<AppStateStatus>(AppState.currentState);
+  const segments = useSegments();
+  const appState = useRef<AppStateStatus>(AppState.currentState);
   const [showLock, setShowLock] = useState(false);
   const pushRegistered = useRef(false);
 
@@ -88,7 +88,7 @@ export default function RootLayout() {
       ]);
     }
     prepare();
-  }, [hydrate, hydrateLocale, hydrateBiometricLock]);
+  }, [hydrate, hydrateLocale, hydrateBiometricLock, hydrateColorScheme, hydrateCelebrationState]);
 
   // ── 2. Once hydrated: hide splash + enforce auth routing ───────────────
   useEffect(() => {

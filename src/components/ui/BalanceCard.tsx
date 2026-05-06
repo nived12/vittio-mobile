@@ -8,11 +8,12 @@ import { SvgXml } from 'react-native-svg';
 import {
   useSharedValue,
   withTiming,
+  useAnimatedReaction,
+  runOnJS,
 } from 'react-native-reanimated';
 import { ArrowUp, ArrowDown, TrendingDown } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../stores/uiStore';
-import { useTheme } from '../../theme/ThemeContext';
 import { BalanceCountUp } from '../../theme/animations';
 import { SkeletonBox } from './SkeletonLoader';
 
@@ -56,39 +57,37 @@ export function BalanceCard({
 }: BalanceCardProps) {
   const { t } = useTranslation();
   const storeLocale = useUIStore((s) => s.locale);
-  useTheme();
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
 
-  // Reanimated count-up
+  // Reanimated count-up — animatedAmount runs on UI thread, useAnimatedReaction
+  // bridges each frame back to JS via runOnJS to update the display string.
   const animatedAmount = useSharedValue(0);
-  const targetRef = React.useRef(0);
-  const hasAnimated = React.useRef(false);
   const [displayBalance, setDisplayBalance] = React.useState('');
 
-  // Listen to animated value via JS to format currency string
-  useEffect(() => {
-    if (!isLoading) {
-      const target = Math.abs(totalBalance);
-      if (!hasAnimated.current) {
-        hasAnimated.current = true;
-        targetRef.current = target;
-        animatedAmount.value = withTiming(target, BalanceCountUp);
-      } else {
-        targetRef.current = target;
-        animatedAmount.value = withTiming(target, BalanceCountUp);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, totalBalance]);
-
-  // Update display string via a polling approach (Reanimated-safe)
-  useEffect(() => {
-    if (!isLoading) {
+  // Stable JS-thread callback — runOnJS requires a named function reference,
+  // not an inline lambda, so we memoize it with useCallback.
+  const updateDisplayBalance = React.useCallback(
+    (val: number) => {
       setDisplayBalance(
-        (totalBalance < 0 ? '−' : '') + fmt(totalBalance, currency, resolvedLocale),
+        (totalBalance < 0 ? '−' : '') + fmt(val, currency, resolvedLocale),
       );
+    },
+    [totalBalance, currency, resolvedLocale],
+  );
+
+  useEffect(() => {
+    if (!isLoading) {
+      animatedAmount.value = withTiming(Math.abs(totalBalance), BalanceCountUp);
     }
-  }, [isLoading, totalBalance, currency, resolvedLocale]);
+  }, [isLoading, totalBalance, animatedAmount]);
+
+  useAnimatedReaction(
+    () => animatedAmount.value,
+    (current) => {
+      runOnJS(updateDisplayBalance)(current);
+    },
+    [updateDisplayBalance],
+  );
 
   const formattedIncome = fmt(totalIncome, currency, resolvedLocale);
   const formattedExpenses = fmt(totalExpenses, currency, resolvedLocale);
