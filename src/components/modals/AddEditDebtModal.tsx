@@ -17,6 +17,7 @@ import { X, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateDebt, useUpdateDebt } from '../../hooks/useDebts';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 import type { Debt } from '../../api/debts';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -44,6 +45,13 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(debt);
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? theme.surface         : '#ffffff';
+  const inputBg       = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? theme.textPrimary     : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary   : '#64748b';
+  const borderCol     = isDark ? theme.border          : '#e2e8f0';
+  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
 
   const [name, setName]                       = useState('');
   const [originalAmount, setOriginalAmount]   = useState('');
@@ -133,43 +141,43 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableOpacity style={s.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[s.sheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={s.handle} />
-        <View style={s.header}>
-          <Text style={s.title}>
+      <View style={[s.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }]}>
+        <View style={[s.handle, { backgroundColor: borderCol }]} />
+        <View style={[s.header, { borderBottomColor: dividerCol }]}>
+          <Text style={[s.title, { color: textPrimary }]}>
             {isEdit ? t('debts.addModal.titleEdit') : t('debts.addModal.titleAdd')}
           </Text>
           <TouchableOpacity onPress={onClose} style={s.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <X size={20} color="#64748b" />
+            <X size={20} color={textSecondary} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} automaticallyAdjustKeyboardInsets>
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.nameLabel')}</Text>
-            <TextInput style={[s.input, errors.name && s.inputError]} value={name} onChangeText={setName}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.nameLabel')}</Text>
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.name && s.inputError]} value={name} onChangeText={setName}
               placeholder={t('debts.addModal.namePlaceholder')} placeholderTextColor="#94a3b8" maxLength={100} />
             {errors.name && <Text style={s.errorText}>{errors.name}</Text>}
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.originalAmountLabel')}</Text>
-            <TextInput style={[s.input, errors.originalAmount && s.inputError]} value={originalAmount}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.originalAmountLabel')}</Text>
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.originalAmount && s.inputError]} value={originalAmount}
               onChangeText={setOriginalAmount} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
             {errors.originalAmount && <Text style={s.errorText}>{errors.originalAmount}</Text>}
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.currentBalanceLabel')}</Text>
-            <TextInput style={[s.input, errors.currentBalance && s.inputError]} value={currentBalance}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.currentBalanceLabel')}</Text>
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.currentBalance && s.inputError]} value={currentBalance}
               onChangeText={setCurrentBalance} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
             {errors.currentBalance && <Text style={s.errorText}>{errors.currentBalance}</Text>}
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.interestRateLabel')}</Text>
-            <View style={[s.input, { flexDirection: 'row', alignItems: 'center' }]}>
-              <TextInput style={{ flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a' }}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.interestRateLabel')}</Text>
+            <View style={[s.input, { flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderColor: borderCol }]}>
+              <TextInput style={{ flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, color: textPrimary }}
                 value={interestRate} onChangeText={setInterestRate} placeholder="0.00"
                 placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
               <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: '#94a3b8' }}>% annual</Text>
@@ -177,22 +185,22 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.minimumPaymentLabel')}</Text>
-            <TextInput style={s.input} value={minimumPayment} onChangeText={setMinimumPayment}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.minimumPaymentLabel')}</Text>
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]} value={minimumPayment} onChangeText={setMinimumPayment}
               placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.dueDayLabel')}</Text>
-            <TextInput style={[s.input, errors.dueDay && s.inputError]} value={dueDay} onChangeText={setDueDay}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.dueDayLabel')}</Text>
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.dueDay && s.inputError]} value={dueDay} onChangeText={setDueDay}
               placeholder={t('debts.addModal.dueDayPlaceholder')} placeholderTextColor="#94a3b8" keyboardType="number-pad" maxLength={2} />
             {errors.dueDay && <Text style={s.errorText}>{errors.dueDay}</Text>}
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.targetDateLabel')}</Text>
-            <TouchableOpacity style={[s.input, s.dateRow]} onPress={() => setShowDatePicker(true)} activeOpacity={0.7}>
-              <Text style={targetPayoffDate ? s.inputText : s.placeholder}>
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.targetDateLabel')}</Text>
+            <TouchableOpacity style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]} onPress={() => setShowDatePicker(true)} activeOpacity={0.7}>
+              <Text style={targetPayoffDate ? [s.inputText, { color: textPrimary }] : s.placeholder}>
                 {targetPayoffDate ? formatDisplayDate(targetPayoffDate, displayLocale) : t('debts.addModal.targetDatePlaceholder')}
               </Text>
               {targetPayoffDate ? (
@@ -212,22 +220,22 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.colorLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.colorLabel')}</Text>
             <View style={s.swatches}>
               {COLORS.map((c) => (
-                <TouchableOpacity key={c} style={[s.swatch, { backgroundColor: c }, color === c && s.swatchSelected]}
+                <TouchableOpacity key={c} style={[s.swatch, { backgroundColor: c }, color === c && [s.swatchSelected, { borderColor: textPrimary }]]}
                   onPress={() => { Haptics.selectionAsync(); setColor(c); }} />
               ))}
             </View>
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.statusLabel')}</Text>
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.statusLabel')}</Text>
             <View style={s.segRow}>
               {(['active', 'paused'] as const).map((st) => (
-                <TouchableOpacity key={st} style={[s.segPill, status === st && s.segPillActive]}
+                <TouchableOpacity key={st} style={[s.segPill, { backgroundColor: inputBg }, status === st && s.segPillActive]}
                   onPress={() => { Haptics.selectionAsync(); setStatus(st); }}>
-                  <Text style={[s.segText, status === st && s.segTextActive]}>
+                  <Text style={[s.segText, { color: textSecondary }, status === st && s.segTextActive]}>
                     {st === 'active' ? t('debts.addModal.statusActive') : t('debts.addModal.statusPaused')}
                   </Text>
                 </TouchableOpacity>
@@ -236,8 +244,8 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>{t('debts.addModal.notesLabel')}</Text>
-            <TextInput style={[s.input, s.multiline]} value={notes} onChangeText={setNotes}
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.notesLabel')}</Text>
+            <TextInput style={[s.input, s.multiline, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]} value={notes} onChangeText={setNotes}
               placeholder={t('debts.addModal.notesPlaceholder')} placeholderTextColor="#94a3b8" multiline numberOfLines={3} />
           </View>
         </ScrollView>
@@ -256,28 +264,28 @@ const s = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15,23,42,0.4)' },
   sheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%',
+    borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%',
   },
-  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#e2e8f0', alignSelf: 'center', marginTop: 12, marginBottom: 4 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
-  title: { fontFamily: 'Inter_600SemiBold', fontSize: 17, color: '#0f172a' },
+  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
+  title: { fontFamily: 'Inter_600SemiBold', fontSize: 17 },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   field: { paddingHorizontal: 16, paddingTop: 16 },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748b', letterSpacing: 0.5, marginBottom: 6, textTransform: 'uppercase' },
-  input: { borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a', backgroundColor: '#fafafa' },
+  label: { fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.5, marginBottom: 6, textTransform: 'uppercase' },
+  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Inter_400Regular', fontSize: 15 },
   inputError: { borderColor: '#e11d48' },
-  inputText: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a' },
+  inputText: { fontFamily: 'Inter_400Regular', fontSize: 15 },
   placeholder: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#94a3b8' },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#e11d48', marginTop: 4 },
   swatches: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   swatch: { width: 32, height: 32, borderRadius: 16 },
-  swatchSelected: { borderWidth: 3, borderColor: '#0f172a' },
+  swatchSelected: { borderWidth: 3 },
   segRow: { flexDirection: 'row', gap: 8 },
-  segPill: { flex: 1, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9' },
+  segPill: { flex: 1, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   segPillActive: { backgroundColor: '#4f46e5' },
-  segText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#64748b' },
+  segText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
   segTextActive: { color: '#fff' },
   saveBtn: { marginHorizontal: 16, marginTop: 16, height: 52, backgroundColor: '#4f46e5', borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   saveBtnDisabled: { opacity: 0.6 },

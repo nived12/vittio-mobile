@@ -12,16 +12,25 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { CaretLeft } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
   const user = useAuthStore((s) => s.user);
+  const { theme, isDark } = useTheme();
+  const bg = isDark ? theme.background : '#f8fafc';
+  const surface = isDark ? theme.surface : '#ffffff';
+  const surfaceEl = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
+  const mutedCol = isDark ? '#64748b' : '#94a3b8';
 
   const [firstName, setFirstName] = useState(user?.first_name ?? '');
   const [lastName, setLastName] = useState(user?.last_name ?? '');
@@ -55,16 +64,16 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           accessibilityRole="button"
         >
-          <ChevronLeft size={24} color={colors.text.primary} />
+          <CaretLeft size={24} color={textPrimary} weight="regular" />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('settings.title')}</Text>
+        <Text style={[styles.title, { color: textPrimary }]}>{t('settings.title')}</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -77,14 +86,14 @@ export default function ProfileScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.card}>
-            <Text style={styles.fieldLabel}>{t('settings.firstNameLabel')}</Text>
+          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.firstNameLabel')}</Text>
             <TextInput
-              style={[styles.textInput, firstNameError && styles.textInputError]}
+              style={[styles.textInput, { backgroundColor: surfaceEl, color: textPrimary, borderColor: borderCol }, firstNameError && styles.textInputError]}
               value={firstName}
               onChangeText={setFirstName}
               placeholder={t('auth.signup.firstNamePlaceholder')}
-              placeholderTextColor={colors.text.muted}
+              placeholderTextColor={mutedCol}
               autoCapitalize="words"
               autoCorrect={false}
               returnKeyType="next"
@@ -95,13 +104,13 @@ export default function ProfileScreen() {
 
             <View style={styles.fieldSpacer} />
 
-            <Text style={styles.fieldLabel}>{t('settings.lastNameLabel')}</Text>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.lastNameLabel')}</Text>
             <TextInput
-              style={[styles.textInput, lastNameError && styles.textInputError]}
+              style={[styles.textInput, { backgroundColor: surfaceEl, color: textPrimary, borderColor: borderCol }, lastNameError && styles.textInputError]}
               value={lastName}
               onChangeText={setLastName}
               placeholder={t('auth.signup.lastNamePlaceholder')}
-              placeholderTextColor={colors.text.muted}
+              placeholderTextColor={mutedCol}
               autoCapitalize="words"
               autoCorrect={false}
               returnKeyType="done"
@@ -112,11 +121,11 @@ export default function ProfileScreen() {
 
             <View style={styles.fieldSpacer} />
 
-            <Text style={styles.fieldLabel}>{t('settings.emailLabel')}</Text>
-            <View style={[styles.textInput, styles.readOnlyInput]}>
-              <Text style={styles.readOnlyText}>{user?.email}</Text>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.emailLabel')}</Text>
+            <View style={[styles.textInput, styles.readOnlyInput, { backgroundColor: surfaceEl, borderColor: borderCol }]}>
+              <Text style={[styles.readOnlyText, { color: textSecondary }]}>{user?.email}</Text>
             </View>
-            <Text style={styles.fieldHint}>{t('settings.emailHint')}</Text>
+            <Text style={[styles.fieldHint, { color: mutedCol }]}>{t('settings.emailHint')}</Text>
 
             <TouchableOpacity
               style={[styles.saveBtn, updateUserMutation.isPending && styles.saveBtnDisabled]}
@@ -139,15 +148,15 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex:            1,
+    flex: 1,
     backgroundColor: colors.bg.screen,
   },
   header: {
-    flexDirection:     'row',
-    alignItems:        'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: spacing.screenPaddingH,
-    paddingVertical:   spacing.md,
-    gap:               8,
+    paddingVertical: spacing.md,
+    gap: 8,
   },
   backBtn: {
     padding: 4,
@@ -161,40 +170,40 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.screenPaddingH,
-    paddingTop:        spacing.sm,
+    paddingTop: spacing.sm,
   },
   card: {
     backgroundColor: colors.bg.card,
-    borderRadius:    12,
-    borderWidth:     1,
-    borderColor:     colors.border.default,
-    padding:         spacing.cardPadding,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderNested.default,
+    padding: spacing.cardPadding,
   },
   fieldLabel: {
     ...textStyles.label,
-    color:        colors.text.secondary,
-    marginBottom:  spacing.xs,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    fontSize:      11,
+    fontSize: 11,
   },
   textInput: {
-    backgroundColor:   colors.bg.surface2,
-    borderRadius:      10,
-    borderWidth:       1,
-    borderColor:       colors.border.default,
+    backgroundColor: colors.bg.surface2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.borderNested.default,
     paddingHorizontal: 14,
-    paddingVertical:   12,
+    paddingVertical: 12,
     ...textStyles.bodyMd,
     color: colors.text.primary,
   },
   textInputError: {
-    borderColor:     colors.border.error,
+    borderColor: colors.borderNested.error,
     backgroundColor: colors.error.bg,
   },
   readOnlyInput: {
     justifyContent: 'center',
-    opacity:        0.7,
+    opacity: 0.7,
   },
   readOnlyText: {
     ...textStyles.bodyMd,
@@ -202,7 +211,7 @@ const styles = StyleSheet.create({
   },
   fieldHint: {
     ...textStyles.bodySm,
-    color:     colors.text.muted,
+    color: colors.text.muted,
     marginTop: 4,
   },
   fieldSpacer: {
@@ -210,22 +219,22 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...textStyles.bodySm,
-    color:     colors.expense,
+    color: colors.expense,
     marginTop: 4,
   },
   saveBtn: {
     backgroundColor: colors.brand.primary,
-    borderRadius:    10,
+    borderRadius: 10,
     paddingVertical: 13,
-    alignItems:      'center',
-    marginTop:       spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.md,
   },
   saveBtnDisabled: {
     opacity: 0.6,
   },
   saveBtnText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize:   15,
-    color:      '#ffffff',
+    fontSize: 15,
+    color: '#ffffff',
   },
 });

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 import type { RecurringSuggestion } from '../../api/transactions';
 import { AddEditTransactionModal } from './AddEditTransactionModal';
 
@@ -30,6 +31,13 @@ interface PrefillData {
 }
 
 export function RecurringSuggestionsSheet({ visible, suggestions, onClose }: Props) {
+  const { theme, isDark } = useTheme();
+  const sheetBg = isDark ? theme.surface : '#ffffff';
+  const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale } = useUIStore();
@@ -71,30 +79,30 @@ export function RecurringSuggestionsSheet({ visible, suggestions, onClose }: Pro
     const added = addedIds.has(key);
 
     return (
-      <View style={[styles.card, added && styles.cardDimmed]}>
+      <View style={[styles.card, { backgroundColor: inputBg, borderColor: borderCol }, added && styles.cardDimmed]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{avatarLetter(item.merchant)}</Text>
         </View>
 
         <View style={styles.cardContent}>
           <View style={styles.cardRow}>
-            <Text style={styles.merchantName} numberOfLines={1}>
+            <Text style={[styles.merchantName, { color: textPrimary }]} numberOfLines={1}>
               {item.merchant}
             </Text>
-            <Text style={styles.amount}>
+            <Text style={[styles.amount, { color: textPrimary }]}>
               {new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-MX', {
                 style: 'currency',
                 currency: 'MXN',
               }).format(item.amount)}
             </Text>
           </View>
-          <Text style={styles.frequency} numberOfLines={1}>
+          <Text style={[styles.frequency, { color: textSecondary }]} numberOfLines={1}>
             {formatFrequency(item)}
           </Text>
         </View>
 
         <TouchableOpacity
-          style={[styles.addBtn, added && styles.addBtnDone]}
+          style={[styles.addBtn, added && styles.addBtnDone, added && { backgroundColor: isDark ? 'rgba(16,185,129,0.15)' : '#f0fdf4' }]}
           onPress={() => !added && handleAdd(item)}
           disabled={added}
           accessibilityLabel={t('aiInput.recurring.addButton')}
@@ -120,25 +128,25 @@ export function RecurringSuggestionsSheet({ visible, suggestions, onClose }: Pro
         <View style={styles.overlay}>
           <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
 
-          <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-            <View style={styles.handle} />
+          <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }]}>
+            <View style={[styles.handle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : '#e2e8f0' }]} />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { borderBottomColor: dividerCol }]}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{t('aiInput.recurring.sheetTitle')}</Text>
-                <Text style={styles.subtitle}>{t('aiInput.recurring.sheetSubtitle')}</Text>
+                <Text style={[styles.title, { color: textPrimary }]}>{t('aiInput.recurring.sheetTitle')}</Text>
+                <Text style={[styles.subtitle, { color: textSecondary }]}>{t('aiInput.recurring.sheetSubtitle')}</Text>
               </View>
               <TouchableOpacity onPress={onClose} hitSlop={12}>
-                <Ionicons name="close" size={22} color="#64748b" />
+                <Ionicons name="close" size={22} color={textSecondary} />
               </TouchableOpacity>
             </View>
 
             {suggestions.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Ionicons name="repeat-outline" size={40} color="#cbd5e1" />
-                <Text style={styles.emptyTitle}>{t('aiInput.recurring.emptyTitle')}</Text>
-                <Text style={styles.emptySubtitle}>{t('aiInput.recurring.emptySubtitle')}</Text>
+                <Ionicons name="repeat-outline" size={40} color={textSecondary} />
+                <Text style={[styles.emptyTitle, { color: textPrimary }]}>{t('aiInput.recurring.emptyTitle')}</Text>
+                <Text style={[styles.emptySubtitle, { color: textSecondary }]}>{t('aiInput.recurring.emptySubtitle')}</Text>
               </View>
             ) : (
               <FlatList

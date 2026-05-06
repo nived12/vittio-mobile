@@ -10,20 +10,26 @@ import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
 export default function AppLayout() {
   const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
-  const showUploadStatement   = useUIStore((s) => s.showStatementUpload);
-  const openStatementUpload   = useUIStore((s) => s.openStatementUpload);
-  const closeStatementUpload  = useUIStore((s) => s.closeStatementUpload);
+  const showUploadStatement = useUIStore((s) => s.showStatementUpload);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
+  const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
-  const user                  = useAuthStore((s) => s.user);
-  const requireConfirmed      = useRequireConfirmed();
+  const user = useAuthStore((s) => s.user);
+  const requireConfirmed = useRequireConfirmed();
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
+  const { theme } = useTheme();
+  const tabBarBg = theme.tabBarBg;
+  const tabBarBorder = theme.tabBarBorder;
+  const tabBarActive = theme.tabBarActive;
+  const tabBarInactive = theme.tabBarInactive;
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -54,12 +60,12 @@ export default function AppLayout() {
         screenOptions={{
           headerShown: false,
           tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: '#4f46e5',
-          tabBarInactiveTintColor: '#94a3b8',
+          tabBarActiveTintColor: tabBarActive,
+          tabBarInactiveTintColor: tabBarInactive,
           tabBarStyle: {
-            backgroundColor: '#ffffff',
+            backgroundColor: tabBarBg,
             borderTopWidth: 1,
-            borderTopColor: '#e2e8f0',
+            borderTopColor: tabBarBorder,
             height: 64,
             paddingBottom: 10,
           },

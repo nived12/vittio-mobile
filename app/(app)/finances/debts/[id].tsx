@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
+  Dimensions,
   Platform,
   ScrollView,
   StyleSheet,
@@ -9,16 +10,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronLeft, MoreHorizontal } from 'lucide-react-native';
+import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { useDebt, useDeleteDebt } from '../../../../src/hooks/useDebts';
 import { AddEditDebtModal } from '../../../../src/components/modals/AddEditDebtModal';
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { useUIStore } from '../../../../src/stores/uiStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
 
 function formatCurrency(amount: number, locale: string): string {
@@ -26,8 +29,11 @@ function formatCurrency(amount: number, locale: string): string {
 }
 
 function StatCard({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+  const { theme: t2, isDark: dark } = useTheme();
+  const cardSurface = dark ? (t2 as any).surface : '#ffffff';
+  const cardBorder  = dark ? (t2 as any).border  : '#e2e8f0';
   return (
-    <View style={s.statCard}>
+    <View style={[s.statCard, { backgroundColor: cardSurface, borderColor: cardBorder }]}>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
       <Text style={[s.statValue, valueColor ? { color: valueColor } : {}]} numberOfLines={1}>{value}</Text>
     </View>
@@ -43,9 +49,28 @@ export default function DebtDetailScreen() {
   const [showEdit, setShowEdit] = useState(false);
   const requireConfirmed = useRequireConfirmed();
 
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? theme.background  : '#f8fafc';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
+
   const debtId = Number(id);
   const { data: debt, isLoading, isError, refetch } = useDebt(debtId);
   const deleteMutation = useDeleteDebt();
+  const confettiRef = useRef<ConfettiCannon>(null);
+  const celebratedDebts = useUIStore((s) => s.celebratedDebts);
+  const addCelebratedDebt = useUIStore((s) => s.addCelebratedDebt);
+
+  useEffect(() => {
+    if (debt && debt.current_balance <= 0 && !celebratedDebts.includes(String(debt.id))) {
+      const timer = setTimeout(() => confettiRef.current?.start(), 400);
+      addCelebratedDebt(String(debt.id));
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [debt?.current_balance]);
 
   function handleMore() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -74,9 +99,9 @@ export default function DebtDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
           <SkeletonBox width={120} height={18} />
           <View style={{ width: 44 }} />
         </View>
@@ -90,9 +115,9 @@ export default function DebtDetailScreen() {
 
   if (isError || !debt) {
     return (
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
         </View>
         <EmptyState icon="wifi-off" iconColor="#cbd5e1" title={t('debts.error.title')}
           ctaLabel={t('common.retry')} ctaVariant="primary" onCta={() => refetch()} fullScreen />
@@ -106,16 +131,16 @@ export default function DebtDetailScreen() {
 
   return (
     <>
-      <View style={[s.screen, { paddingTop: insets.top }]}>
-        <View style={s.navBar}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><ChevronLeft size={24} color="#0f172a" /></TouchableOpacity>
-          <Text style={s.navTitle} numberOfLines={1}>{debt.name}</Text>
-          <TouchableOpacity onPress={handleMore} style={s.moreBtn}><MoreHorizontal size={22} color="#64748b" /></TouchableOpacity>
+      <View style={[s.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
+        <View style={[s.navBar, { backgroundColor: bg }]}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn}><CaretLeft size={24} color={textPrimary} weight="regular" /></TouchableOpacity>
+          <Text style={[s.navTitle, { color: textPrimary }]} numberOfLines={1}>{debt.name}</Text>
+          <TouchableOpacity onPress={handleMore} style={s.moreBtn}><DotsThreeOutline size={22} color="#64748b" weight="regular" /></TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 32 }]} showsVerticalScrollIndicator={false}>
           {/* Hero */}
-          <View style={s.heroCard}>
+          <View style={[s.heroCard, { backgroundColor: surface, borderColor: borderCol }]}>
             <View style={[s.heroCircle, { backgroundColor: debt.color }]}>
               <Text style={s.heroEmoji}>💳</Text>
             </View>
@@ -126,7 +151,7 @@ export default function DebtDetailScreen() {
                 </Text>
               </View>
             )}
-            <View style={s.progressTrack}>
+            <View style={[s.progressTrack, { backgroundColor: dividerCol }]}>
               <View style={[s.progressFill, { backgroundColor: debt.color, width: `${pct}%` as unknown as number, minWidth: 4 }]} />
             </View>
             <Text style={s.pctText}>{debt.progress_percentage}% paid off</Text>
@@ -142,7 +167,7 @@ export default function DebtDetailScreen() {
 
           {/* Payment card */}
           {debt.payment_mode && debt.target_payment_amount && (
-            <View style={s.card}>
+            <View style={[s.card, { backgroundColor: surface, borderColor: borderCol }]}>
               <Text style={s.cardTitle}>{t('debts.fields.monthlyPayment')}</Text>
               <Text style={s.cardValue}>{formatCurrency(debt.target_payment_amount, displayLocale)}</Text>
               <Text style={s.cardSub}>/ {debt.payment_frequency}</Text>
@@ -152,7 +177,7 @@ export default function DebtDetailScreen() {
           {/* Linked goals */}
           {debt.goals.length > 0 && (
             <View style={s.section}>
-              <Text style={s.sectionTitle}>Goals</Text>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>Goals</Text>
               <View style={s.chipRow}>
                 {debt.goals.map((g) => (
                   <View key={g.id} style={[s.goalChip, { borderColor: g.color }]}>
@@ -166,8 +191,8 @@ export default function DebtDetailScreen() {
 
           {debt.notes && (
             <View style={s.section}>
-              <Text style={s.sectionTitle}>{t('common.notes')}</Text>
-              <View style={s.card}><Text style={s.notesText}>{debt.notes}</Text></View>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('common.notes')}</Text>
+              <View style={[s.card, { backgroundColor: surface, borderColor: borderCol }]}><Text style={s.notesText}>{debt.notes}</Text></View>
             </View>
           )}
 
@@ -178,6 +203,16 @@ export default function DebtDetailScreen() {
       </View>
 
       <AddEditDebtModal visible={showEdit} onClose={() => setShowEdit(false)} debt={debt} />
+      <ConfettiCannon
+        ref={confettiRef}
+        count={80}
+        origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height + 10 }}
+        autoStart={false}
+        fadeOut
+        fallSpeed={2500}
+        explosionSpeed={300}
+        colors={['#4f46e5', '#10b981', '#f59e0b', '#e11d48', '#ffffff']}
+      />
     </>
   );
 }

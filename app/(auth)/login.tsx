@@ -29,12 +29,13 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, isApiError } from '../../src/api/client';
 import { authApi } from '../../src/api/auth';
 import { colors, components, spacing, textStyles } from '../../src/theme';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
 
 // ── Validation schema ──────────────────────────────────────────────────────
 
 const loginSchema = z.object({
-  email:    z.string().email('Enter a valid email address').toLowerCase().trim(),
+  email: z.string().email('Enter a valid email address').toLowerCase().trim(),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -52,25 +53,29 @@ type ErrorVariant =
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function LoginScreen() {
-  const { t }            = useTranslation();
-  const login            = useAuthStore((s) => s.login);
-  const loginWithGoogle  = useAuthStore((s) => s.loginWithGoogle);
-  const isLoading        = useAuthStore((s) => s.isLoading);
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const bg = theme.background;
+  const textPrimary = theme.textPrimary;
+  const textSecondary = theme.textSecondary;
+  const login = useAuthStore((s) => s.login);
+  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
-  const [showPassword,    setShowPassword]    = useState(false);
-  const [errorCode,       setErrorCode]       = useState<ErrorVariant>(null);
-  const [resendSuccess,   setResendSuccess]   = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorCode, setErrorCode] = useState<ErrorVariant>(null);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const passwordRef = useRef<TextInput>(null);
 
   // ── Animations ───────────────────────────────────────────────────────────
-  const logoOpacity   = useRef(new Animated.Value(0)).current;
-  const formOpacity   = useRef(new Animated.Value(0)).current;
-  const formShake     = useRef(new Animated.Value(0)).current;
-  const errorSlideY   = useRef(new Animated.Value(12)).current;
-  const errorOpacity  = useRef(new Animated.Value(0)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
+  const formShake = useRef(new Animated.Value(0)).current;
+  const errorSlideY = useRef(new Animated.Value(12)).current;
+  const errorOpacity = useRef(new Animated.Value(0)).current;
 
   // ── Form ─────────────────────────────────────────────────────────────────
   const {
@@ -83,21 +88,21 @@ export default function LoginScreen() {
     defaultValues: { email: '', password: '' },
   });
 
-  const emailValue    = watch('email');
+  const emailValue = watch('email');
   const passwordValue = watch('password');
-  const canSubmit     = emailValue.length > 0 && passwordValue.length > 0;
+  const canSubmit = emailValue.length > 0 && passwordValue.length > 0;
 
   // ── Entrance animation ────────────────────────────────────────────────────
   useEffect(() => {
     Animated.stagger(50, [
       Animated.timing(logoOpacity, {
-        toValue:         1,
-        duration:        250,
+        toValue: 1,
+        duration: 250,
         useNativeDriver: true,
       }),
       Animated.timing(formOpacity, {
-        toValue:         1,
-        duration:        250,
+        toValue: 1,
+        duration: 250,
         useNativeDriver: true,
       }),
     ]).start();
@@ -110,21 +115,21 @@ export default function LoginScreen() {
       errorOpacity.setValue(0);
       Animated.parallel([
         Animated.spring(errorSlideY, {
-          toValue:        0,
-          damping:        15,
-          stiffness:      200,
+          toValue: 0,
+          damping: 15,
+          stiffness: 200,
           useNativeDriver: true,
         }),
         Animated.timing(errorOpacity, {
-          toValue:         1,
-          duration:        250,
+          toValue: 1,
+          duration: 250,
           useNativeDriver: true,
         }),
       ]).start();
     } else {
       Animated.timing(errorOpacity, {
-        toValue:         0,
-        duration:        200,
+        toValue: 0,
+        duration: 200,
         useNativeDriver: true,
       }).start();
     }
@@ -134,12 +139,12 @@ export default function LoginScreen() {
   function triggerShake() {
     Animated.sequence([
       Animated.timing(formShake, { toValue: -8, duration: 50, useNativeDriver: true }),
-      Animated.timing(formShake, { toValue:  8, duration: 50, useNativeDriver: true }),
+      Animated.timing(formShake, { toValue: 8, duration: 50, useNativeDriver: true }),
       Animated.timing(formShake, { toValue: -6, duration: 50, useNativeDriver: true }),
-      Animated.timing(formShake, { toValue:  6, duration: 50, useNativeDriver: true }),
+      Animated.timing(formShake, { toValue: 6, duration: 50, useNativeDriver: true }),
       Animated.timing(formShake, { toValue: -4, duration: 50, useNativeDriver: true }),
-      Animated.timing(formShake, { toValue:  4, duration: 50, useNativeDriver: true }),
-      Animated.timing(formShake, { toValue:  0, duration: 50, useNativeDriver: true }),
+      Animated.timing(formShake, { toValue: 4, duration: 50, useNativeDriver: true }),
+      Animated.timing(formShake, { toValue: 0, duration: 50, useNativeDriver: true }),
     ]).start();
   }
 
@@ -160,7 +165,7 @@ export default function LoginScreen() {
 
       if (
         code === 'INVALID_CREDENTIALS' ||
-        code === 'EMAIL_NOT_CONFIRMED'  ||
+        code === 'EMAIL_NOT_CONFIRMED' ||
         code === 'RATE_LIMIT_EXCEEDED'
       ) {
         setErrorCode(code as ErrorVariant);
@@ -205,10 +210,10 @@ export default function LoginScreen() {
       if (result.type !== 'success') return;
 
       const parsed = ExpoLinking.parse(result.url);
-      const access_token  = parsed.queryParams?.['access_token'] as string | undefined;
+      const access_token = parsed.queryParams?.['access_token'] as string | undefined;
       const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
-      const expires_in    = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
-      const error         = parsed.queryParams?.['error'] as string | undefined;
+      const expires_in = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
+      const error = parsed.queryParams?.['error'] as string | undefined;
 
       if (error != null) {
         setErrorCode('INVALID_CREDENTIALS');
@@ -261,7 +266,7 @@ export default function LoginScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { backgroundColor: bg }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -280,19 +285,19 @@ export default function LoginScreen() {
             style={[
               styles.formContainer,
               {
-                opacity:   formOpacity,
+                opacity: formOpacity,
                 transform: [{ translateX: formShake }],
               },
             ]}
           >
             {/* Heading */}
             <Text
-              style={styles.heading}
+              style={[styles.heading, { color: textPrimary }]}
               accessibilityRole="header"
             >
               {t('auth.login.title')}
             </Text>
-            <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
+            <Text style={[styles.subtitle, { color: textSecondary }]}>{t('auth.login.subtitle')}</Text>
 
             {/* Email field */}
             <View style={styles.fieldGroup}>
@@ -435,7 +440,7 @@ export default function LoginScreen() {
                     styles.errorToast,
                     {
                       transform: [{ translateY: errorSlideY }],
-                      opacity:   errorOpacity,
+                      opacity: errorOpacity,
                     },
                   ]}
                   accessibilityLiveRegion="assertive"
@@ -522,20 +527,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow:          1,
-    backgroundColor:   colors.bg.screen,
+    flexGrow: 1,
+    backgroundColor: colors.bg.screen,
     paddingHorizontal: spacing.screenPaddingH,
-    paddingBottom:     spacing.lg,
+    paddingBottom: spacing.lg,
   },
 
   // Logo
   logoContainer: {
-    alignItems:  'center',
-    marginTop:   64,
+    alignItems: 'center',
+    marginTop: 64,
     marginBottom: spacing.xxl,
   },
   logoImage: {
-    width:  180,
+    width: 180,
     height: 60,
   },
 
@@ -546,12 +551,12 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...textStyles.headingLg,
-    color:        colors.text.primary,
+    color: colors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
     ...textStyles.bodyMd,
-    color:        colors.text.secondary,
+    color: colors.text.secondary,
     marginBottom: spacing.xl,
   },
 
@@ -564,54 +569,54 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   passwordLabelRow: {
-    flexDirection:  'row',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems:     'center',
-    marginBottom:   6,
+    alignItems: 'center',
+    marginBottom: 6,
   },
 
   // Input
   input: {
-    height:       components.input.height,
+    height: components.input.height,
     borderRadius: components.input.borderRadius,
-    borderWidth:  1,
-    borderColor:  components.input.resting.borderColor,
+    borderWidth: 1,
+    borderColor: components.input.resting.borderColor,
     backgroundColor: components.input.resting.backgroundColor,
     paddingHorizontal: components.input.paddingH,
-    fontFamily:   components.input.fontFamily,
-    fontSize:     components.input.fontSize,
-    color:        components.input.resting.color,
+    fontFamily: components.input.fontFamily,
+    fontSize: components.input.fontSize,
+    color: components.input.resting.color,
   },
   inputWithRight: {
-    flex:         1,
+    flex: 1,
     borderRadius: 0, // overridden by wrapper
   },
   inputError: {
     backgroundColor: components.input.error.backgroundColor,
-    borderColor:     components.input.error.borderColor,
+    borderColor: components.input.error.borderColor,
   },
   inputWrapper: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    height:          components.input.height,
-    borderRadius:    components.input.borderRadius,
-    borderWidth:     1,
-    borderColor:     components.input.resting.borderColor,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: components.input.height,
+    borderRadius: components.input.borderRadius,
+    borderWidth: 1,
+    borderColor: components.input.resting.borderColor,
     backgroundColor: components.input.resting.backgroundColor,
-    paddingLeft:     components.input.paddingH,
-    paddingRight:    8,
-    overflow:        'hidden',
+    paddingLeft: components.input.paddingH,
+    paddingRight: 8,
+    overflow: 'hidden',
   },
   eyeButton: {
-    padding:    8,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   // Forgot password
   forgotLink: {
-    alignSelf:  'flex-end',
-    marginTop:  10,
+    alignSelf: 'flex-end',
+    marginTop: 10,
     paddingVertical: 8,
   },
   forgotLinkText: {
@@ -624,11 +629,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   submitButton: {
-    height:          components.button.heightLg,
-    borderRadius:    components.button.borderRadius,
+    height: components.button.heightLg,
+    borderRadius: components.button.borderRadius,
     backgroundColor: colors.brand.primary,
-    alignItems:      'center',
-    justifyContent:  'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButtonDisabled: {
     backgroundColor: components.button.primary.disabledBg,
@@ -636,7 +641,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     ...textStyles.bodyLg,
     fontFamily: 'Inter_600SemiBold',
-    color:      '#ffffff',
+    color: '#ffffff',
   },
   submitButtonTextDisabled: {
     color: components.button.primary.disabledColor,
@@ -644,66 +649,66 @@ const styles = StyleSheet.create({
 
   // Error toast
   errorToast: {
-    flexDirection:    'row',
-    alignItems:       'flex-start',
-    marginTop:        spacing.md,
-    padding:          12,
-    borderRadius:     10,
-    borderWidth:      1,
-    borderColor:      colors.error.border,
-    backgroundColor:  components.toast.error.backgroundColor,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: spacing.md,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.error.border,
+    backgroundColor: components.toast.error.backgroundColor,
   },
   errorIcon: {
     marginRight: 8,
-    marginTop:   2,
+    marginTop: 2,
   },
   errorTextContainer: {
     flex: 1,
   },
   errorToastText: {
     fontFamily: 'Inter_400Regular',
-    fontSize:   13,
+    fontSize: 13,
     lineHeight: 18,
-    color:      components.toast.error.textColor,
+    color: components.toast.error.textColor,
   },
   resendButton: {
     marginTop: 6,
   },
   resendButtonText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize:   13,
-    color:      colors.brand.primary,
+    fontSize: 13,
+    color: colors.brand.primary,
   },
 
   // Divider
   divider: {
-    flexDirection:  'row',
-    alignItems:     'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: spacing.lg,
   },
   dividerLine: {
-    flex:            1,
-    height:          1,
-    backgroundColor: colors.border.default,
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.borderNested.default,
   },
   dividerText: {
     ...textStyles.bodySm,
-    color:           colors.neutral[400],
+    color: colors.neutral[400],
     marginHorizontal: 12,
   },
 
   // Google Sign-In
   googleButton: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    justifyContent:  'center',
-    height:          components.button.heightLg,
-    borderRadius:    components.button.borderRadius,
-    borderWidth:     1,
-    borderColor:     colors.border.default,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: components.button.heightLg,
+    borderRadius: components.button.borderRadius,
+    borderWidth: 1,
+    borderColor: colors.borderNested.default,
     backgroundColor: '#ffffff',
-    gap:             10,
-    marginBottom:    spacing.md,
+    gap: 10,
+    marginBottom: spacing.md,
   },
   googleButtonDisabled: {
     opacity: 0.6,
@@ -711,16 +716,16 @@ const styles = StyleSheet.create({
   googleButtonText: {
     ...textStyles.bodyMd,
     fontFamily: 'Inter_600SemiBold',
-    color:      colors.text.primary,
+    color: colors.text.primary,
   },
 
   // Sign up
   signUpRow: {
-    flexDirection:  'row',
+    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems:     'center',
-    gap:             4,
-    marginBottom:   spacing.lg,
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: spacing.lg,
   },
   signUpText: {
     ...textStyles.bodySm,
@@ -729,6 +734,6 @@ const styles = StyleSheet.create({
   signUpLink: {
     ...textStyles.bodySm,
     fontFamily: 'Inter_600SemiBold',
-    color:      colors.brand.primary,
+    color: colors.brand.primary,
   },
 });

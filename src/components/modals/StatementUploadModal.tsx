@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Easing,
   FlatList,
   Keyboard,
@@ -13,13 +14,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import { es as dateFnsEs } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
 import { X, FileText, CheckCircle, AlertTriangle, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { resolveBankAccountName } from '../../utils/displayNames';
+import { useTheme } from '../../theme/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import {
@@ -125,9 +130,18 @@ function PulseIcon() {
 export function StatementUploadModal({ visible, onClose, preselectedAccount }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { locale, showToast } = useUIStore();
+  const { locale, showToast, hasSeenFirstImportCelebration, markFirstImportCelebrated } = useUIStore();
+
+  // ── Dark mode ──
+  const { theme, isDark } = useTheme();
+  const sheetBg = isDark ? theme.surface : '#ffffff';
+  const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useBankAccounts();
+  const confettiRef = useRef<ConfettiCannon>(null);
 
   const [step, setStep] = useState<Step>('account_selection');
   const [file, setFile] = useState<PickedFile | null>(null);
@@ -242,6 +256,10 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
           setStep('success');
           queryClient.invalidateQueries({ queryKey: ['transactions'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+          if (!hasSeenFirstImportCelebration) {
+            setTimeout(() => confettiRef.current?.start(), 400);
+            markFirstImportCelebrated();
+          }
         }
       } else {
         schedulePoll(id);
@@ -288,7 +306,12 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
     }
   }
 
-  const dateDisplay = format(cutoffDate, locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy');
+  const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+  const dateDisplay = format(
+    cutoffDate,
+    locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy',
+    locale === 'es' ? { locale: dateFnsEs } : {},
+  );
   const isDismissable = step !== 'uploading' && step !== 'processing';
 
   // ── Render ──
@@ -306,18 +329,18 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
           onPress={isDismissable ? handleDismissAttempt : undefined}
         />
 
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 20, backgroundColor: sheetBg }]}>
           {/* Handle */}
-          {isDismissable && <View style={styles.handle} />}
+          {isDismissable && <View style={[styles.handle, { backgroundColor: borderCol }]} />}
 
           {/* ── Step: account_selection ── */}
           {step === 'account_selection' && (
             <>
-              <View style={styles.header}>
+              <View style={[styles.header, { borderBottomColor: isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9' }]}>
                 <TouchableOpacity onPress={handleDismissAttempt} hitSlop={12}>
-                  <X size={22} color="#64748b" />
+                  <X size={22} color={textSecondary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('statement_upload.modal_title')}</Text>
+                <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('statement_upload.modal_title')}</Text>
                 <View style={{ width: 22 }} />
               </View>
 
@@ -346,13 +369,13 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
               )}
 
               {/* Cutoff date */}
-              <Text style={styles.sectionLabel}>{t('statement_upload.cutoff_date_label')}</Text>
+              <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('statement_upload.cutoff_date_label')}</Text>
               <TouchableOpacity
-                style={styles.fieldRow}
+                style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
                 onPress={() => setShowDatePicker(true)}
                 accessibilityRole="button"
               >
-                <Text style={styles.fieldRowText}>{dateDisplay}</Text>
+                <Text style={[styles.fieldRowText, { color: textPrimary }]}>{dateDisplay}</Text>
                 <ChevronRight size={16} color="#94a3b8" />
               </TouchableOpacity>
               {showDatePicker && (
@@ -361,17 +384,26 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   mode="date"
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   maximumDate={new Date()}
+                  locale={displayLocale}
                   onChange={(_evt, d) => {
-                    setShowDatePicker(Platform.OS === 'ios');
                     if (d) setCutoffDate(d);
                   }}
                 />
+              )}
+              {showDatePicker && Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(false)}
+                  style={styles.datePickerDoneBtn}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.datePickerDoneBtnText}>{t('common.done')}</Text>
+                </TouchableOpacity>
               )}
 
               {/* Account list (collapsed if pre-selected from Account Detail) */}
               {!preselectedAccount && (
                 <>
-                  <Text style={styles.sectionLabel}>{t('statement_upload.account_question')}</Text>
+                  <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('statement_upload.account_question')}</Text>
                   <FlatList
                     data={accounts}
                     keyExtractor={(a) => String(a.id)}
@@ -388,7 +420,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                           <View style={[styles.radio, selected && styles.radioSelected]} />
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.accountName, selected && { color: '#4f46e5' }]}>
-                              {item.custom_name ?? item.name}
+                              {resolveBankAccountName(item, t)}
                             </Text>
                             <Text style={styles.accountMeta}>{item.account_type} · {item.currency}</Text>
                           </View>
@@ -402,11 +434,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
               {preselectedAccount && (
                 <>
-                  <Text style={styles.sectionLabel}>{t('statement_upload.account_question')}</Text>
+                  <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('statement_upload.account_question')}</Text>
                   <View style={[styles.accountRow, styles.accountRowSelected]}>
                     <View style={[styles.radio, styles.radioSelected]} />
                     <Text style={[styles.accountName, { color: '#4f46e5' }]}>
-                      {preselectedAccount.custom_name ?? preselectedAccount.name}
+                      {resolveBankAccountName(preselectedAccount, t)}
                     </Text>
                   </View>
                 </>
@@ -511,6 +543,16 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
           )}
         </View>
       </View>
+      <ConfettiCannon
+        ref={confettiRef}
+        count={80}
+        origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height + 10 }}
+        autoStart={false}
+        fadeOut
+        fallSpeed={2500}
+        explosionSpeed={300}
+        colors={['#4f46e5', '#10b981', '#f59e0b', '#e11d48', '#ffffff']}
+      />
     </Modal>
   );
 }
@@ -779,5 +821,16 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: 'rgba(99,102,241,0.5)',
     borderRadius: 4,
+  },
+  datePickerDoneBtn: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  datePickerDoneBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: '#4f46e5',
   },
 });

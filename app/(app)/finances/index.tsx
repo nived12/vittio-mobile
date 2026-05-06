@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight, Plus } from 'lucide-react-native';
 import { useUIStore } from '../../../src/stores/uiStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import { useSavings } from '../../../src/hooks/useSavings';
 import { useDebts } from '../../../src/hooks/useDebts';
 import { useGoals } from '../../../src/hooks/useGoals';
@@ -87,13 +88,15 @@ function SavingsList({
   const { t } = useTranslation();
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+  const { theme, isDark } = useTheme();
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: savings, isLoading, isError, refetch } = useSavings();
 
   return (
     <View style={{ flex: 1 }}>
       {/* List header */}
       <View style={listStyles.listHeader}>
-        <Text style={listStyles.listTitle}>{t('savings.title')}</Text>
+        <Text style={[listStyles.listTitle, { color: textPrimary }]}>{t('savings.title')}</Text>
         <TouchableOpacity
           onPress={onAdd}
           style={listStyles.addBtn}
@@ -147,11 +150,16 @@ function SavingsList({
 
 function SavingCard({ saving, locale }: { saving: Saving; locale: string }) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
   const days = daysUntil(saving.target_date);
 
   return (
     <TouchableOpacity
-      style={cardStyles.card}
+      style={[cardStyles.card, { backgroundColor: surface, borderColor: borderCol }]}
       onPress={() => router.push(`/(app)/finances/savings/${saving.id}` as `/(app)/finances/savings/${string}`)}
       activeOpacity={0.8}
       accessibilityRole="button"
@@ -162,7 +170,7 @@ function SavingCard({ saving, locale }: { saving: Saving; locale: string }) {
           <Text style={cardStyles.iconText}>💰</Text>
         </View>
         <View style={cardStyles.centerInfo}>
-          <Text style={cardStyles.name} numberOfLines={1}>{saving.name}</Text>
+          <Text style={[cardStyles.name, { color: textPrimary }]} numberOfLines={1}>{saving.name}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
             <StatusBadge status={saving.status} type="saving" />
             {days !== null && (
@@ -185,7 +193,7 @@ function SavingCard({ saving, locale }: { saving: Saving; locale: string }) {
       </View>
 
       {/* Row 2 — Progress bar */}
-      <View style={[cardStyles.track, { marginTop: 10 }]}>
+      <View style={[cardStyles.track, { marginTop: 10, backgroundColor: trackBg }]}>
         <View
           style={[
             cardStyles.fill,
@@ -214,12 +222,14 @@ function DebtsList({ onAdd }: { onAdd: () => void }) {
   const { t } = useTranslation();
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+  const { theme, isDark } = useTheme();
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: debts, isLoading, isError, refetch } = useDebts();
 
   return (
     <View style={{ flex: 1 }}>
       <View style={listStyles.listHeader}>
-        <Text style={listStyles.listTitle}>{t('debts.title')}</Text>
+        <Text style={[listStyles.listTitle, { color: textPrimary }]}>{t('debts.title')}</Text>
         <TouchableOpacity
           onPress={onAdd}
           style={listStyles.addBtn}
@@ -273,6 +283,11 @@ function DebtsList({ onAdd }: { onAdd: () => void }) {
 
 function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
   const today = new Date().getDate();
   const isOverdue = Boolean(
     debt.due_day_of_month && today > debt.due_day_of_month && debt.status === 'active',
@@ -280,7 +295,7 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
 
   return (
     <TouchableOpacity
-      style={cardStyles.card}
+      style={[cardStyles.card, { backgroundColor: surface, borderColor: borderCol }]}
       onPress={() => router.push(`/(app)/finances/debts/${debt.id}` as `/(app)/finances/debts/${string}`)}
       activeOpacity={0.8}
       accessibilityRole="button"
@@ -291,7 +306,7 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
           <Text style={cardStyles.iconText}>💳</Text>
         </View>
         <View style={cardStyles.centerInfo}>
-          <Text style={cardStyles.name} numberOfLines={1}>{debt.name}</Text>
+          <Text style={[cardStyles.name, { color: textPrimary }]} numberOfLines={1}>{debt.name}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
             <Text style={cardStyles.daysText}>{debt.progress_percentage}% paid</Text>
             {debt.due_day_of_month !== null && (
@@ -322,7 +337,7 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
       </View>
 
       {/* Row 2 — Progress bar */}
-      <View style={[cardStyles.track, { marginTop: 10 }]}>
+      <View style={[cardStyles.track, { marginTop: 10, backgroundColor: trackBg }]}>
         <View
           style={[
             cardStyles.fill,
@@ -342,12 +357,14 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
 
 function GoalsList({ onAdd }: { onAdd: () => void }) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
   const { data: goals, isLoading, isError, refetch } = useGoals();
 
   return (
     <View style={{ flex: 1 }}>
       <View style={listStyles.listHeader}>
-        <Text style={listStyles.listTitle}>{t('goals.title')}</Text>
+        <Text style={[listStyles.listTitle, { color: textPrimary }]}>{t('goals.title')}</Text>
         <TouchableOpacity
           onPress={onAdd}
           style={listStyles.addBtn}
@@ -399,10 +416,15 @@ function GoalsList({ onAdd }: { onAdd: () => void }) {
 
 function GoalCard({ goal }: { goal: Goal }) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const trackBg     = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   return (
     <TouchableOpacity
-      style={cardStyles.card}
+      style={[cardStyles.card, { backgroundColor: surface, borderColor: borderCol }]}
       onPress={() => router.push(`/(app)/finances/goals/${goal.id}` as `/(app)/finances/goals/${string}`)}
       activeOpacity={0.8}
       accessibilityRole="button"
@@ -443,10 +465,10 @@ function GoalCard({ goal }: { goal: Goal }) {
       </View>
 
       {/* Row 2 — Name */}
-      <Text style={[cardStyles.name, { marginTop: 6 }]} numberOfLines={1}>{goal.name}</Text>
+      <Text style={[cardStyles.name, { marginTop: 6, color: textPrimary }]} numberOfLines={1}>{goal.name}</Text>
 
       {/* Row 3 — Progress bar */}
-      <View style={[cardStyles.track, { marginTop: 10 }]}>
+      <View style={[cardStyles.track, { marginTop: 10, backgroundColor: trackBg }]}>
         <View
           style={[
             cardStyles.fill,
@@ -508,6 +530,11 @@ export default function FinancesScreen() {
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
   const requireConfirmed = useRequireConfirmed();
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? theme.background  : '#f8fafc';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const segTrackBg  = isDark ? theme.surfaceElevated : '#f1f5f9';
 
   const segments: { key: Segment; label: string }[] = [
     { key: 'savings', label: t('finances.tabs.savings') },
@@ -522,21 +549,21 @@ export default function FinancesScreen() {
 
   return (
     <>
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
         {/* Header */}
-        <View style={styles.topBar}>
-          <Text style={styles.screenTitle}>{t('navigation.finances')}</Text>
+        <View style={[styles.topBar, { backgroundColor: bg }]}>
+          <Text style={[styles.screenTitle, { color: textPrimary }]}>{t('navigation.finances')}</Text>
         </View>
 
         {/* Segmented control */}
         <View style={styles.segmentContainer}>
-          <View style={styles.segmentTrack} accessibilityRole="tablist">
+          <View style={[styles.segmentTrack, { backgroundColor: segTrackBg }]} accessibilityRole="tablist">
             {segments.map(({ key, label }) => {
               const isActive = activeSegment === key;
               return (
                 <TouchableOpacity
                   key={key}
-                  style={[styles.segmentPill, isActive && styles.segmentPillActive]}
+                  style={[styles.segmentPill, isActive && [styles.segmentPillActive, { backgroundColor: surface }]]}
                   onPress={() => handleSegmentPress(key)}
                   accessibilityRole="tab"
                   accessibilityState={{ selected: isActive }}

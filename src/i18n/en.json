@@ -382,6 +382,7 @@
     "debit": "Debit",
     "credit": "Credit",
     "cash": "Cash",
+    "unknownAccount": "Account",
     "types": {
       "debit": "Debit",
       "credit": "Credit",
@@ -494,7 +495,11 @@
     "passwordChanged": "Password updated",
     "passwordSaveError": "Couldn't update password. Please try again.",
     "invalidCurrentPassword": "Current password is incorrect",
-    "oauthAccountPassword": "This account uses Google Sign-In. Password change is not available."
+    "oauthAccountPassword": "This account uses Google Sign-In. Password change is not available.",
+    "appearance": "APPEARANCE",
+    "schemeSystem": "System",
+    "schemeLight": "Light",
+    "schemeDark": "Dark"
   },
   "categories": {
     "title": "Categories",
@@ -873,9 +878,6 @@
     "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
     "UNKNOWN_ERROR": "An unexpected error occurred",
     "generic": "Something went wrong. Please try again."
-  },
-  "common": {
-    "cancel": "Cancel"
   },
   "aiInput": {
     "voice": {

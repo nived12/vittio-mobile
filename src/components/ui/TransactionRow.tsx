@@ -13,10 +13,12 @@ import * as LucideIcons from 'lucide-react-native';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
+import { resolveTransactionLabel } from '../../utils/displayNames';
 import { getCategoryColor } from '../../utils/categoryColors';
 import { AmountDisplay } from './AmountDisplay';
 import { SkeletonBox } from './SkeletonLoader';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -101,15 +103,21 @@ interface BadgeConfig {
   label: string;
 }
 
-function getBadge(txType: TransactionType, t: (k: string) => string): BadgeConfig | null {
+function getBadge(txType: TransactionType, isDark: boolean, t: (k: string) => string): BadgeConfig | null {
   switch (txType) {
     case 'fixed_expense':
-      return { bg: '#fef3c7', text: '#92400e', label: t('transactionRow.types.fixed_expense') };
+      return isDark
+        ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24', label: t('transactionRow.types.fixed_expense') }
+        : { bg: '#fef3c7', text: '#92400e', label: t('transactionRow.types.fixed_expense') };
     case 'income':
-      return { bg: '#d1fae5', text: '#065f46', label: t('transactionRow.types.income') };
+      return isDark
+        ? { bg: 'rgba(16,185,129,0.15)', text: '#10b981', label: t('transactionRow.types.income') }
+        : { bg: '#d1fae5', text: '#065f46', label: t('transactionRow.types.income') };
     case 'transfer_in':
     case 'transfer_out':
-      return { bg: '#ede9fe', text: '#5b21b6', label: t('transactionRow.types.transfer_in') };
+      return isDark
+        ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionRow.types.transfer_in') }
+        : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionRow.types.transfer_in') };
     default:
       return null; // variable_expense — no badge (most common, reduces noise)
   }
@@ -137,17 +145,24 @@ export function TransactionRow({
   isDeleting = false,
 }: TransactionRowProps) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
   const storeLocale = useUIStore((s) => s.locale);
   const resolvedLocale = storeLocale === 'es' ? 'es-MX' : 'en-MX';
   const swipeableRef = useRef<Swipeable>(null);
+
+  const surface = isDark ? theme.surface : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const surfaceElevated = isDark ? theme.surfaceElevated : '#f1f5f9';
   const hasReachedDeleteThreshold = useRef(false);
   const hasReachedCategorizeThreshold = useRef(false);
 
   // ── Labels ──────────────────────────────────────────────────────────────
-  const primaryLabel = merchant ?? concept ?? description;
+  const primaryLabel = resolveTransactionLabel(concept, merchant, description);
   const dateLabel = formatDate(date, resolvedLocale, t);
+  const accountLabel = bank_account.name?.trim() || '—';
   const subtitleText = showAccountName
-    ? `${dateLabel} · ${bank_account.name}`
+    ? `${dateLabel} · ${accountLabel}`
     : dateLabel;
 
   // ── Category icon ────────────────────────────────────────────────────────
@@ -156,20 +171,20 @@ export function TransactionRow({
   let iconColor = '#ffffff';
 
   if (is_transfer) {
-    iconBg = '#ede9fe';
+    iconBg = isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe';
     iconName = 'arrow-left-right';
     iconColor = '#7c3aed';
   } else if (category) {
     iconBg = getCategoryColor(category.icon);
     iconName = category.icon;
   } else {
-    iconBg = '#f1f5f9';
+    iconBg = surfaceElevated;
     iconName = 'tag';
     iconColor = '#94a3b8';
   }
 
   const IconComponent = getIcon(iconName);
-  const badge = getBadge(transaction_type, t);
+  const badge = getBadge(transaction_type, isDark, t);
   const amountVariant = getAmountVariant(transaction_type, amount);
 
   // ── Swipe actions ────────────────────────────────────────────────────────
@@ -227,7 +242,7 @@ export function TransactionRow({
     <TouchableOpacity
       onPress={onPress}
       disabled={isDeleting}
-      style={[styles.row, isDeleting && styles.deletingRow]}
+      style={[styles.row, { backgroundColor: surface }, isDeleting && styles.deletingRow]}
       accessibilityRole="button"
       accessibilityLabel={`${primaryLabel}, ${amount} ${bank_account.name}, ${transaction_type}, ${dateLabel}`}
       accessibilityActions={[
@@ -246,10 +261,10 @@ export function TransactionRow({
 
       {/* Center block */}
       <View style={styles.center}>
-        <Text style={styles.primaryLabel} numberOfLines={1}>
+        <Text style={[styles.primaryLabel, { color: textPrimary }]} numberOfLines={1}>
           {primaryLabel}
         </Text>
-        <Text style={styles.subtitle} numberOfLines={1}>
+        <Text style={[styles.subtitle, { color: textSecondary }]} numberOfLines={1}>
           {subtitleText}
         </Text>
       </View>
@@ -292,11 +307,11 @@ export function TransactionRow({
       onSwipeableWillOpen={(direction) => {
         if (direction === 'right' && !hasReachedDeleteThreshold.current) {
           hasReachedDeleteThreshold.current = true;
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => { });
         }
         if (direction === 'left' && !hasReachedCategorizeThreshold.current) {
           hasReachedCategorizeThreshold.current = true;
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
         }
       }}
       onSwipeableClose={() => {
@@ -313,8 +328,10 @@ export function TransactionRow({
  * Skeleton placeholder for a TransactionRow.
  */
 export function TransactionRowSkeleton() {
+  const { theme, isDark } = useTheme();
+  const surface = isDark ? theme.surface : '#ffffff';
   return (
-    <View style={styles.skeletonRow}>
+    <View style={[styles.skeletonRow, { backgroundColor: surface }]}>
       <SkeletonBox width={40} height={40} borderRadius={12} />
       <View style={{ flex: 1, marginLeft: 12, gap: 8 }}>
         <SkeletonBox width="60%" height={15} />
@@ -334,7 +351,6 @@ const styles = StyleSheet.create({
     minHeight: 72,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
   },
   deletingRow: {
     opacity: 0.5,
@@ -355,13 +371,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 15,
     lineHeight: 20,
-    color: '#0f172a',
   },
   subtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     lineHeight: 16,
-    color: '#64748b',
     marginTop: 2,
   },
   right: {
@@ -381,7 +395,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   deleteAction: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#e11d48',
     width: 80,
     alignItems: 'center',
     justifyContent: 'center',
@@ -405,6 +419,5 @@ const styles = StyleSheet.create({
     height: 72,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
   },
 });

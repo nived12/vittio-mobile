@@ -15,12 +15,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ChevronDown, Check } from 'lucide-react-native';
+import { resolveBankAccountName } from '../../src/utils/displayNames';
 import { format, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { ProfileBottomSheet } from '../../src/components/modals/ProfileBottomSheet';
 import { BalanceCard } from '../../src/components/ui/BalanceCard';
 import { ChartBar } from '../../src/components/ui/ChartBar';
@@ -43,7 +45,7 @@ function AvatarCircle({ initials, onPress }: { initials: string; onPress: () => 
 export default function DashboardScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { user } = useAuth();
   const locale = useUIStore((s) => s.locale);
   const selectedMonth = useUIStore((s) => s.selectedMonth);
@@ -55,13 +57,20 @@ export default function DashboardScreen() {
 
   const { data, isLoading, isError, refetch } = useDashboard(selectedMonth);
   const cardWidth = width - 32;
+  const { theme, isDark } = useTheme();
+  const bg = theme.background;
+  const surface = theme.surface;
+  const textPrimary = theme.textPrimary;
+  const textSecondary = theme.textSecondary;
+  const borderCol = theme.border;
+  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
   const handleRefresh = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     setIsRefreshing(true);
     try {
       await refetch();
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } finally {
       setIsRefreshing(false);
     }
@@ -74,7 +83,7 @@ export default function DashboardScreen() {
 
   if (isError && !data) {
     return (
-      <View style={[styles.errorContainer, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.errorContainer, { paddingTop: insets.top + 16, backgroundColor: bg }]}>
         <EmptyState
           icon="wifi-off"
           iconColor="#cbd5e1"
@@ -104,7 +113,7 @@ export default function DashboardScreen() {
   return (
     <>
       <ScrollView
-        style={[styles.screen, { paddingTop: insets.top }]}
+        style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -132,7 +141,7 @@ export default function DashboardScreen() {
           accessibilityRole="button"
           accessibilityLabel={`${t('dashboard.monthPicker.label')}: ${monthLabel}, tap to change`}
         >
-          <Text style={styles.monthPickerText}>{monthLabel}</Text>
+          <Text style={[styles.monthPickerText, { color: textPrimary }]}>{monthLabel}</Text>
           <ChevronDown size={16} color="#94a3b8" />
         </TouchableOpacity>
 
@@ -156,7 +165,7 @@ export default function DashboardScreen() {
         {/* Accounts */}
         <View style={styles.sectionGap}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('dashboard.sections.accounts')}</Text>
+            <Text style={[styles.sectionTitle, { color: textPrimary }]}>{t('dashboard.sections.accounts')}</Text>
             <TouchableOpacity
               onPress={() => router.navigate('/(app)/accounts')}
               accessibilityLabel={`${t('dashboard.sections.seeAll')} accounts`}
@@ -177,7 +186,7 @@ export default function DashboardScreen() {
               scrollEnabled={false}
             />
           ) : (data?.bank_accounts?.length ?? 0) === 0 ? (
-            <View style={styles.inlineCard}>
+            <View style={[styles.inlineCard, { backgroundColor: surface, borderColor: borderCol }]}>
               <EmptyState
                 icon="credit-card"
                 iconSize={48}
@@ -205,20 +214,21 @@ export default function DashboardScreen() {
                 return (
                   <TouchableOpacity
                     onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
-                    style={styles.accountChip}
+                    style={[styles.accountChip, { backgroundColor: surface, borderColor: borderCol }]}
                     accessibilityRole="button"
                     accessibilityLabel={`${item.bank_name}, ${item.account_type}, balance ${item.balance}`}
                     activeOpacity={0.8}
                   >
                     <View style={styles.chipTopRow}>
                       <View style={[styles.typeDot, { backgroundColor: dotColor }]} />
-                      <Text style={styles.chipName} numberOfLines={1}>
-                        {item.custom_name ?? item.name}
+                      <Text style={[styles.chipName, { color: textSecondary }]} numberOfLines={1}>
+                        {resolveBankAccountName(item, t)}
                       </Text>
                     </View>
                     <Text
                       style={[
                         styles.chipBalance,
+                        { color: textPrimary },
                         item.balance < 0 && { color: '#e11d48' },
                         item.balance === 0 && { color: '#94a3b8' },
                       ]}
@@ -238,10 +248,10 @@ export default function DashboardScreen() {
 
         {/* Spending chart */}
         <View style={styles.sectionGap}>
-          <Text style={[styles.sectionTitle, styles.sectionTitlePad]}>
+          <Text style={[styles.sectionTitle, styles.sectionTitlePad, { color: textPrimary }]}>
             {t('dashboard.sections.spending')}
           </Text>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
             {isLoading ? (
               [1, 2, 3, 4].map((i) => <ChartBarSkeleton key={i} />)
             ) : !data?.category_summary.has_data ? (
@@ -273,7 +283,7 @@ export default function DashboardScreen() {
         {/* Recent transactions */}
         <View style={styles.sectionGap}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('dashboard.sections.recentTransactions')}</Text>
+            <Text style={[styles.sectionTitle, { color: textPrimary }]}>{t('dashboard.sections.recentTransactions')}</Text>
             <TouchableOpacity
               onPress={() => router.navigate('/(app)/transactions')}
               accessibilityLabel={`${t('dashboard.sections.seeAll')} transactions`}
@@ -282,7 +292,7 @@ export default function DashboardScreen() {
               <Text style={styles.seeAllText}>{t('dashboard.sections.seeAll')} →</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.card, { padding: 0, overflow: 'hidden' }]}>
+          <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
             {isLoading ? (
               [1, 2, 3, 4, 5].map((i) => (
                 <React.Fragment key={i}>
@@ -309,7 +319,7 @@ export default function DashboardScreen() {
                     enableSwipeActions={false}
                   />
                   {idx < data!.recent_transactions.length - 1 && (
-                    <View style={styles.separator} />
+                    <View style={[styles.separator, { backgroundColor: dividerCol }]} />
                   )}
                 </React.Fragment>
               ))
@@ -329,35 +339,38 @@ export default function DashboardScreen() {
         animationType="slide"
         onRequestClose={() => setShowMonthPicker(false)}
       >
-        <TouchableOpacity
-          style={styles.modalBackdrop}
-          activeOpacity={1}
-          onPress={() => setShowMonthPicker(false)}
-        />
-        <View style={[styles.monthSheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.sheetHandle} />
-          <Text style={styles.sheetTitle}>{t('dashboard.monthPicker.label')}</Text>
-          <FlatList
-            data={data?.available_months ?? []}
-            keyExtractor={(item) => item.value}
-            renderItem={({ item }) => {
-              const isSelected = item.value === (data?.summary.selected_month ?? selectedMonth);
-              return (
-                <TouchableOpacity
-                  style={styles.monthRow}
-                  onPress={() => {
-                    setSelectedMonth(item.value);
-                    setShowMonthPicker(false);
-                  }}
-                >
-                  <Text style={[styles.monthRowText, isSelected && styles.monthRowActive]}>
-                    {item.label}
-                  </Text>
-                  {isSelected && <Check size={16} color="#4f46e5" />}
-                </TouchableOpacity>
-              );
-            }}
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowMonthPicker(false)}
           />
+          <View style={[styles.monthSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+            <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
+            <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('dashboard.monthPicker.label')}</Text>
+            <FlatList
+              data={data?.available_months ?? []}
+              keyExtractor={(item) => item.value}
+              style={{ maxHeight: Math.min(height * 0.45, 360) }}
+              renderItem={({ item }) => {
+                const isSelected = item.value === (data?.summary.selected_month ?? selectedMonth);
+                return (
+                  <TouchableOpacity
+                    style={styles.monthRow}
+                    onPress={() => {
+                      setSelectedMonth(item.value);
+                      setShowMonthPicker(false);
+                    }}
+                  >
+                    <Text style={[styles.monthRowText, { color: textPrimary }, isSelected && styles.monthRowActive]}>
+                      {item.label}
+                    </Text>
+                    {isSelected && <Check size={16} color="#4f46e5" />}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
         </View>
       </Modal>
     </>
@@ -389,7 +402,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     minHeight: 36,
   },
-  monthPickerText: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22, color: '#0f172a' },
+  monthPickerText: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22, color: '#0f172a', flexShrink: 1 },
   profileSheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
@@ -402,7 +415,7 @@ const styles = StyleSheet.create({
   profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
   profileRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a' },
   sectionPad: { paddingHorizontal: 16, marginTop: 4 },
-  sectionGap: { marginTop: 20 },
+  sectionGap: { marginTop: 24 },
   sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,13 +464,12 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   separator: { height: 1, backgroundColor: '#f1f5f9' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
+  modalContainer: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.4)' },
   monthSheet: {
     backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 16,
-    maxHeight: 400,
   },
   sheetHandle: {
     width: 36,

@@ -1,10 +1,24 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SvgXml } from 'react-native-svg';
+import {
+  useSharedValue,
+  withTiming,
+  useAnimatedReaction,
+  runOnJS,
+} from 'react-native-reanimated';
 import { ArrowUp, ArrowDown, TrendingDown } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../stores/uiStore';
+import { BalanceCountUp } from '../../theme/animations';
 import { SkeletonBox } from './SkeletonLoader';
+
+// ── Noise texture SVG ──────────────────────────────────────────────────────
+const noiseSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="200" height="200" filter="url(#noise)" opacity="1"/></svg>`;
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,35 +59,35 @@ export function BalanceCard({
   const storeLocale = useUIStore((s) => s.locale);
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
 
-  // Count-up animation — only fires on first load
-  const animatedBalance = useRef(new Animated.Value(0)).current;
-  const hasAnimated = useRef(false);
+  // Reanimated count-up — animatedAmount runs on UI thread, useAnimatedReaction
+  // bridges each frame back to JS via runOnJS to update the display string.
+  const animatedAmount = useSharedValue(0);
   const [displayBalance, setDisplayBalance] = React.useState('');
 
-  useEffect(() => {
-    if (!isLoading && !hasAnimated.current) {
-      hasAnimated.current = true;
-      // Listen to animated value and format as currency
-      const listener = animatedBalance.addListener(({ value }) => {
-        setDisplayBalance(
-          (totalBalance < 0 ? '\u2212' : '') + fmt(value, currency, resolvedLocale),
-        );
-      });
-      Animated.timing(animatedBalance, {
-        toValue: Math.abs(totalBalance),
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }).start();
-      return () => animatedBalance.removeListener(listener);
-    } else if (!isLoading && hasAnimated.current) {
+  // Stable JS-thread callback — runOnJS requires a named function reference,
+  // not an inline lambda, so we memoize it with useCallback.
+  const updateDisplayBalance = React.useCallback(
+    (val: number) => {
       setDisplayBalance(
-        (totalBalance < 0 ? '\u2212' : '') + fmt(totalBalance, currency, resolvedLocale),
+        (totalBalance < 0 ? '−' : '') + fmt(val, currency, resolvedLocale),
       );
+    },
+    [totalBalance, currency, resolvedLocale],
+  );
+
+  useEffect(() => {
+    if (!isLoading) {
+      animatedAmount.value = withTiming(Math.abs(totalBalance), BalanceCountUp);
     }
-    return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, totalBalance]);
+  }, [isLoading, totalBalance, animatedAmount]);
+
+  useAnimatedReaction(
+    () => animatedAmount.value,
+    (current) => {
+      runOnJS(updateDisplayBalance)(current);
+    },
+    [updateDisplayBalance],
+  );
 
   const formattedIncome = fmt(totalIncome, currency, resolvedLocale);
   const formattedExpenses = fmt(totalExpenses, currency, resolvedLocale);
@@ -81,26 +95,34 @@ export function BalanceCard({
   const a11yLabel = `${t('balanceCard.totalBalance')}: ${displayBalance}. ${t('balanceCard.income')}: ${formattedIncome}. ${t('balanceCard.expenses')}: ${formattedExpenses}.`;
 
   return (
-    <LinearGradient
-      colors={['#3b82f6', '#4f46e5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}
+    <View
+      style={[styles.cardWrapper]}
       accessibilityLabel={isLoading ? t('balanceCard.loading') : a11yLabel}
       accessibilityRole="none"
     >
+      {/* Layer 1: Solid indigo background */}
+      <View style={[StyleSheet.absoluteFill, styles.solidBg]} />
+
+      {/* Layer 2: White glass overlay */}
+      <View style={[StyleSheet.absoluteFill, styles.glassOverlay]} />
+
+      {/* Layer 4: Noise texture */}
+      <SvgXml
+        xml={noiseSvg}
+        style={[StyleSheet.absoluteFill, styles.noiseTexture]}
+        accessible={false}
+        preserveAspectRatio="xMidYMid slice"
+      />
+
+      {/* Layer 5: Content */}
       {isLoading ? (
         <View style={styles.skeletonContent}>
-          {/* Top row */}
           <View style={styles.labelRow}>
             <SkeletonBox width={100} height={12} style={styles.shimmer} />
             <SkeletonBox width={80} height={12} style={styles.shimmer} />
           </View>
-          {/* Balance */}
-          <SkeletonBox width={180} height={36} style={[styles.shimmer, { marginTop: 8 }]} />
-          {/* Divider */}
+          <SkeletonBox width={180} height={52} style={[styles.shimmer, { marginTop: 8 }]} />
           <View style={styles.divider} />
-          {/* Bottom row */}
           <View style={styles.bottomRow}>
             <View style={{ gap: 6 }}>
               <SkeletonBox width={80} height={12} style={styles.shimmer} />
@@ -120,18 +142,18 @@ export function BalanceCard({
             <Text style={styles.labelText}>{selectedMonth}</Text>
           </View>
 
-          {/* Balance amount */}
+          {/* Balance amount — bold 52pt */}
           <View style={styles.balanceRow}>
             {totalBalance < 0 && (
-              <TrendingDown size={18} color="#fca5a5" style={{ marginRight: 4 }} />
+              <TrendingDown size={20} color="#fca5a5" style={{ marginRight: 6 }} />
             )}
             <Text
               style={styles.balanceText}
               numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={0.7}
+              minimumFontScale={0.6}
             >
-              {displayBalance || (totalBalance < 0 ? '\u2212' : '') + fmt(totalBalance, currency, resolvedLocale)}
+              {displayBalance || (totalBalance < 0 ? '−' : '') + fmt(totalBalance, currency, resolvedLocale)}
             </Text>
           </View>
 
@@ -140,7 +162,6 @@ export function BalanceCard({
 
           {/* Income / Expenses */}
           <View style={styles.bottomRow}>
-            {/* Income */}
             <View>
               <View style={styles.statRow}>
                 <ArrowUp size={14} color="#6ee7b7" />
@@ -148,8 +169,6 @@ export function BalanceCard({
               </View>
               <Text style={styles.statLabel}>{t('balanceCard.income')}</Text>
             </View>
-
-            {/* Expenses */}
             <View style={{ alignItems: 'flex-end' }}>
               <View style={styles.statRow}>
                 <ArrowDown size={14} color="#fca5a5" />
@@ -160,21 +179,33 @@ export function BalanceCard({
           </View>
         </>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    height: 160,
-    borderRadius: 20,
+  cardWrapper: {
+    height: 190,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
     padding: 20,
     // Shadow
-    shadowColor: '#4f46e5',
+    shadowColor: '#1e3a8a',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.30,
     shadowRadius: 24,
     elevation: 12,
+  },
+  solidBg: {
+    backgroundColor: '#4f46e5',
+  },
+  glassOverlay: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  noiseTexture: {
+    opacity: 0.04,
   },
   skeletonContent: {
     flex: 1,
@@ -197,20 +228,21 @@ const styles = StyleSheet.create({
   balanceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   balanceText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 52,
+    lineHeight: 58,
     color: '#ffffff',
     fontVariant: ['tabular-nums'],
+    letterSpacing: -1.5,
     flex: 1,
   },
   divider: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.20)',
-    marginVertical: 12,
+    marginVertical: 10,
   },
   bottomRow: {
     flexDirection: 'row',
@@ -224,8 +256,8 @@ const styles = StyleSheet.create({
   },
   statAmount: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
     color: '#ffffff',
     fontVariant: ['tabular-nums'],
   },

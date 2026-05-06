@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useBanks } from '../../hooks/useBanks';
 import { useCreateBankAccount, useUpdateBankAccount } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 import { getBankLogoComponent } from '../../utils/bankLogos';
 import type { Bank } from '../../api/banks';
 import type { BankAccount, CreateBankAccountBody, UpdateBankAccountBody } from '../../api/bankAccounts';
@@ -79,6 +80,13 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
   const locale = useUIStore((s) => s.locale);
+  const { theme, isDark } = useTheme();
+  const sheetBg       = isDark ? theme.surface         : '#ffffff';
+  const inputBg       = isDark ? theme.surfaceElevated : '#f1f5f9';
+  const textPrimary   = isDark ? theme.textPrimary     : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary   : '#64748b';
+  const borderCol     = isDark ? theme.border          : '#e2e8f0';
+  const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEditMode = Boolean(account);
 
@@ -240,27 +248,27 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
           activeOpacity={1}
           onPress={isSaving || showBankPicker ? undefined : onClose}
         />
-        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16 }]}>
-            <View style={styles.handle} />
+        <View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }]}>
+            <View style={[styles.handle, { backgroundColor: borderCol }]} />
 
             {showBankPicker ? (
               // ── Inline Bank Picker (no nested Modal) ──────────────────────
               <>
-                <View style={styles.header}>
+                <View style={[styles.header, { borderBottomColor: dividerCol }]}>
                   <TouchableOpacity
                     onPress={() => { setShowBankPicker(false); setBankQuery(''); }}
                     hitSlop={12}
                   >
-                    <ChevronLeft size={22} color="#64748b" />
+                    <ChevronLeft size={22} color={textSecondary} />
                   </TouchableOpacity>
-                  <Text style={styles.headerTitle}>{t('bank_accounts.bank_picker_title')}</Text>
+                  <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('bank_accounts.bank_picker_title')}</Text>
                   <View style={{ width: 22 }} />
                 </View>
 
-                <View style={styles.searchBar}>
+                <View style={[styles.searchBar, { backgroundColor: inputBg }]}>
                   <Search size={16} color="#94a3b8" />
                   <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { color: textPrimary }]}
                     value={bankQuery}
                     onChangeText={setBankQuery}
                     placeholder={t('bank_accounts.bank_search_placeholder')}
@@ -289,26 +297,27 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                       <TouchableOpacity
                         style={[
                           styles.bankRow,
+                          { borderBottomColor: dividerCol },
                           item.id === selectedBank?.id && styles.bankRowSelected,
                         ]}
                         onPress={() => handleBankSelect(item)}
                       >
                         <BankLogo bank={item} size={40} />
-                        <Text style={styles.bankName}>{item.name}</Text>
+                        <Text style={[styles.bankName, { color: textPrimary }]}>{item.name}</Text>
                         {item.id === selectedBank?.id && <Text style={styles.checkmark}>✓</Text>}
                       </TouchableOpacity>
                     )}
                     ListFooterComponent={
                       <TouchableOpacity
-                        style={[styles.bankRow, styles.cashRow]}
+                        style={[styles.bankRow, styles.cashRow, { borderBottomColor: dividerCol }]}
                         onPress={() => handleBankSelect(null)}
                       >
                         <View style={[styles.bankAvatar, { backgroundColor: '#d1fae5' }]}>
                           <Banknote size={18} color="#065f46" />
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Text style={styles.bankName}>{t('bank_accounts.cash_option_label')}</Text>
-                          <Text style={styles.bankSubtitle}>{t('bank_accounts.cash_option_subtitle')}</Text>
+                          <Text style={[styles.bankName, { color: textPrimary }]}>{t('bank_accounts.cash_option_label')}</Text>
+                          <Text style={[styles.bankSubtitle, { color: textSecondary }]}>{t('bank_accounts.cash_option_subtitle')}</Text>
                         </View>
                         {isCash && <Text style={styles.checkmark}>✓</Text>}
                       </TouchableOpacity>
@@ -319,11 +328,11 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
             ) : (
               // ── Main Form ─────────────────────────────────────────────────
               <>
-                <View style={styles.header}>
+                <View style={[styles.header, { borderBottomColor: dividerCol }]}>
                   <TouchableOpacity onPress={onClose} disabled={isSaving} hitSlop={12}>
-                    <X size={22} color="#64748b" />
+                    <X size={22} color={textSecondary} />
                   </TouchableOpacity>
-                  <Text style={styles.headerTitle}>
+                  <Text style={[styles.headerTitle, { color: textPrimary }]}>
                     {isEditMode ? t('bank_accounts.edit_title') : t('bank_accounts.add_title')}
                   </Text>
                   <View style={{ width: 22 }} />
@@ -338,16 +347,17 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Bank picker trigger (add mode only) ── */}
                   {!isEditMode && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>{t('bank_accounts.bank_label')}</Text>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.bank_label')}</Text>
                       <TouchableOpacity
                         style={[
                           styles.fieldRow,
+                          { backgroundColor: inputBg },
                           hasAttemptedSave && !selectedBank && !isCash && styles.fieldRowRequired,
                         ]}
                         onPress={() => setShowBankPicker(true)}
                         accessibilityRole="button"
                       >
-                        <Text style={selectedBank || isCash ? styles.fieldRowText : styles.fieldRowPlaceholder}>
+                        <Text style={[selectedBank || isCash ? styles.fieldRowText : styles.fieldRowPlaceholder, { color: selectedBank || isCash ? textPrimary : '#94a3b8' }]}>
                           {isCash
                             ? t('bank_accounts.cash_option_label')
                             : selectedBank
@@ -362,9 +372,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Locked bank (edit mode) ── */}
                   {isEditMode && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>{t('bank_accounts.bank_label')}</Text>
-                      <View style={[styles.fieldRow, styles.fieldRowLocked]}>
-                        <Text style={styles.fieldRowLockedText}>{account?.bank_name ?? '—'}</Text>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.bank_label')}</Text>
+                      <View style={[styles.fieldRow, styles.fieldRowLocked, { backgroundColor: inputBg }]}>
+                        <Text style={[styles.fieldRowLockedText]}>{account?.bank_name ?? '—'}</Text>
                         <Lock size={14} color="#94a3b8" />
                       </View>
                     </View>
@@ -373,10 +383,11 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Account number (add mode, non-cash only) ── */}
                   {!isEditMode && !isCash && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>{t('bank_accounts.account_number_label')}</Text>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.account_number_label')}</Text>
                       <TextInput
                         style={[
                           styles.fieldInput,
+                          { backgroundColor: inputBg, color: textPrimary },
                           hasAttemptedSave && accountNumber.trim().length === 0 && styles.fieldInputRequired,
                         ]}
                         value={accountNumber}
@@ -395,7 +406,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Account type (add mode, non-cash) ── */}
                   {!isEditMode && !isCash && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>{t('bank_accounts.type_label')}</Text>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.type_label')}</Text>
                       <View style={styles.typeRow}>
                         {typeButtons
                           .filter((btn) => availableTypes.includes(btn.type))
@@ -408,6 +419,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                                 key={type}
                                 style={[
                                   styles.typeBtn,
+                                  { borderColor: borderCol, backgroundColor: inputBg },
                                   active && { backgroundColor: btnColor, borderColor: btnColor },
                                 ]}
                                 onPress={() => {
@@ -417,8 +429,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                                 accessibilityRole="radio"
                                 accessibilityState={{ selected: active }}
                               >
-                                <Icon size={14} color={active ? '#fff' : '#64748b'} />
-                                <Text style={[styles.typeBtnLabel, active && { color: '#fff' }]}>
+                                <Icon size={14} color={active ? '#fff' : textSecondary} />
+                                <Text style={[styles.typeBtnLabel, { color: active ? '#fff' : textSecondary }]}>
                                   {label}
                                 </Text>
                               </TouchableOpacity>
@@ -431,9 +443,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Locked type (edit mode) ── */}
                   {isEditMode && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>{t('bank_accounts.type_label')}</Text>
-                      <View style={[styles.fieldRow, styles.fieldRowLocked]}>
-                        <Text style={styles.fieldRowLockedText}>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.type_label')}</Text>
+                      <View style={[styles.fieldRow, styles.fieldRowLocked, { backgroundColor: inputBg }]}>
+                        <Text style={[styles.fieldRowLockedText]}>
                           {account?.account_type === 'debit'
                             ? t('bank_accounts.type_debit')
                             : account?.account_type === 'credit'
@@ -447,9 +459,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 
                   {/* ── Custom name ── */}
                   <View style={styles.fieldBlock}>
-                    <Text style={styles.sectionLabel}>{t('bank_accounts.name_label')}</Text>
+                    <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.name_label')}</Text>
                     <TextInput
-                      style={styles.fieldInput}
+                      style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary }]}
                       value={customName}
                       onChangeText={setCustomName}
                       placeholder={t('bank_accounts.name_placeholder')}
@@ -462,19 +474,19 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 
                   {/* ── Currency — locked MVP ── */}
                   <View style={styles.fieldBlock}>
-                    <Text style={styles.sectionLabel}>{t('bank_accounts.currency_label')}</Text>
-                    <View style={[styles.fieldRow, styles.fieldRowLocked]}>
-                      <Text style={styles.fieldRowLockedText}>MXN — Peso mexicano</Text>
+                    <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.currency_label')}</Text>
+                    <View style={[styles.fieldRow, styles.fieldRowLocked, { backgroundColor: inputBg }]}>
+                      <Text style={[styles.fieldRowLockedText]}>MXN — Peso mexicano</Text>
                       <Lock size={14} color="#94a3b8" />
                     </View>
                   </View>
 
                   {/* ── Opening balance ── */}
                   <View style={styles.fieldBlock}>
-                    <Text style={styles.sectionLabel}>
+                    <Text style={[styles.sectionLabel, { color: textSecondary }]}>
                       {t('bank_accounts.opening_balance_label')}
                     </Text>
-                    <View style={styles.balanceRow}>
+                    <View style={[styles.balanceRow, { backgroundColor: inputBg }]}>
                       {/* Credit accounts: tap − to flip sign */}
                       {accountType === 'credit' && (
                         <TouchableOpacity
@@ -520,15 +532,15 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                   {/* ── Opening balance date (add mode only) ── */}
                   {!isEditMode && (
                     <View style={styles.fieldBlock}>
-                      <Text style={styles.sectionLabel}>
+                      <Text style={[styles.sectionLabel, { color: textSecondary }]}>
                         {t('bank_accounts.opening_balance_date_label')}
                       </Text>
                       <TouchableOpacity
-                        style={styles.fieldRow}
+                        style={[styles.fieldRow, { backgroundColor: inputBg }]}
                         onPress={() => setShowDatePicker(true)}
                         accessibilityRole="button"
                       >
-                        <Text style={styles.fieldRowText}>
+                        <Text style={[styles.fieldRowText, { color: textPrimary }]}>
                           {formatDisplayDate(openingBalanceDate, displayLocale)}
                         </Text>
                         <Calendar size={16} color="#94a3b8" />
@@ -592,22 +604,21 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
   modalContainer: {
-    backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
   },
   handle: {
     width: 36, height: 4, borderRadius: 2,
-    backgroundColor: '#e2e8f0', alignSelf: 'center',
+    alignSelf: 'center',
     marginTop: 12, marginBottom: 4,
   },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderBottomColor: '#f1f5f9',
+    borderBottomWidth: 1,
   },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: '#0f172a' },
+  headerTitle: { fontSize: 17, fontWeight: '600' },
   scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
   fieldBlock: { marginBottom: 20 },
   sectionLabel: {
@@ -615,19 +626,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8, marginBottom: 8, textTransform: 'uppercase',
   },
   fieldRow: {
-    backgroundColor: '#f1f5f9', borderRadius: 12,
+    borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 14,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
   fieldRowRequired: { borderWidth: 1, borderColor: '#e11d48' },
-  fieldRowLocked: { backgroundColor: '#f8fafc' },
-  fieldRowText: { fontSize: 15, color: '#0f172a', flex: 1 },
+  fieldRowLocked: {},
+  fieldRowText: { fontSize: 15, flex: 1 },
   fieldRowPlaceholder: { fontSize: 15, color: '#94a3b8', flex: 1 },
   fieldRowLockedText: { fontSize: 15, color: '#94a3b8', flex: 1 },
   fieldInput: {
-    backgroundColor: '#f1f5f9', borderRadius: 12,
+    borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 14,
-    fontSize: 15, color: '#0f172a',
+    fontSize: 15,
   },
   fieldInputRequired: {
     borderWidth: 1, borderColor: '#fca5a5',
@@ -637,11 +648,11 @@ const styles = StyleSheet.create({
   typeBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 4, paddingVertical: 12, borderRadius: 10,
-    borderWidth: 1.5, borderColor: '#e2e8f0', backgroundColor: '#f8fafc',
+    borderWidth: 1.5,
   },
-  typeBtnLabel: { fontSize: 13, fontWeight: '500', color: '#64748b' },
+  typeBtnLabel: { fontSize: 13, fontWeight: '500' },
   balanceRow: {
-    backgroundColor: '#f1f5f9', borderRadius: 12,
+    borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 14,
     flexDirection: 'row', alignItems: 'center',
     borderWidth: 1.5, borderColor: 'transparent',
@@ -670,15 +681,15 @@ const styles = StyleSheet.create({
   // Bank picker (inline)
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#f1f5f9', borderRadius: 10,
+    borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 10,
     marginHorizontal: 20, marginTop: 12, marginBottom: 4,
   },
-  searchInput: { flex: 1, fontSize: 15, color: '#0f172a' },
+  searchInput: { flex: 1, fontSize: 15 },
   bankRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingVertical: 12, paddingHorizontal: 20,
-    borderBottomWidth: 1, borderBottomColor: '#f1f5f9',
+    borderBottomWidth: 1,
   },
   bankRowSelected: { backgroundColor: '#f5f3ff' },
   cashRow: { marginTop: 4 },
@@ -687,8 +698,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   bankAvatarText: { fontSize: 14, fontWeight: '700', color: '#ffffff' },
-  bankName: { flex: 1, fontSize: 15, fontWeight: '500', color: '#0f172a' },
-  bankSubtitle: { fontSize: 13, color: '#64748b', marginTop: 2 },
+  bankName: { flex: 1, fontSize: 15, fontWeight: '500' },
+  bankSubtitle: { fontSize: 13, marginTop: 2 },
   checkmark: { fontSize: 16, color: '#4f46e5', fontWeight: '600' },
   loadingContainer: {
     flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40,

@@ -4,6 +4,7 @@ import * as LucideIcons from 'lucide-react-native';
 import { getCategoryColor } from '../../utils/categoryColors';
 import { AmountDisplay } from './AmountDisplay';
 import { SkeletonBox } from './SkeletonLoader';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,10 @@ export function ChartBar({
   index,
   isLoading = false,
 }: ChartBarProps) {
+  const { theme, isDark } = useTheme();
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const surfaceElevated = isDark ? theme.surfaceElevated : '#f1f5f9';
+
   const barPercent = maxValue > 0 ? value / maxValue : 0;
   const clampedPercent = Math.max(0.04, Math.min(1.0, barPercent));
   const percentage = Math.round(barPercent * 100);
@@ -97,7 +102,7 @@ export function ChartBar({
         </View>
 
         {/* Label */}
-        <Text style={styles.label} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={[styles.label, { color: textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
           {label}
         </Text>
 
@@ -113,7 +118,7 @@ export function ChartBar({
       </View>
 
       {/* Bar track + fill */}
-      <View style={styles.track}>
+      <View style={[styles.track, { backgroundColor: surfaceElevated }]}>
         <Animated.View
           accessibilityElementsHidden
           style={[styles.fill, { width: widthInterpolation, backgroundColor: barColor }]}
@@ -146,12 +151,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
     lineHeight: 18,
-    color: '#0f172a',
     marginLeft: 8,
   },
   track: {
     height: 6,
-    backgroundColor: '#f1f5f9', // slate-100
     borderRadius: 3,
     marginTop: 6,
     overflow: 'hidden',

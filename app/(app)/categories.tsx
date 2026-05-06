@@ -13,11 +13,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { ChevronLeft, ChevronRight, Plus, Search, Trash2, X } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react-native';
+import { Trash } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 import { useCategories, useDeleteCategory } from '../../src/hooks/useCategories';
 import { AddEditCategoryModal } from '../../src/components/modals/AddEditCategoryModal';
 import { useUIStore } from '../../src/stores/uiStore';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
 import type { Category } from '../../src/api/categories';
 
@@ -33,6 +35,11 @@ interface CategoryRowProps {
 
 function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: CategoryRowProps) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
+  const textPrimary   = isDark ? theme.textPrimary   : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const rowBg         = isDark ? theme.surface       : '#ffffff';
+  const rowChildBg    = isDark ? theme.surfaceElevated : '#f1f5f9';
   const swipeableRef = useRef<Swipeable>(null);
   const dotColor = cat.color ?? colors.brand.primary;
   const hasChildren = !isChild && (cat.children ?? []).length > 0;
@@ -70,14 +77,14 @@ function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: Categ
         onPress={handleDeletePress}
         accessibilityLabel={t('common.delete')}
       >
-        <Trash2 size={22} color="#ffffff" />
+        <Trash size={22} color="#ffffff" weight="regular" />
       </TouchableOpacity>
     );
   }
 
   const row = (
     <TouchableOpacity
-      style={[styles.row, isChild && styles.rowChild]}
+      style={[styles.row, isChild && styles.rowChild, { backgroundColor: isChild ? rowChildBg : rowBg }]}
       onPress={() => onEdit(cat)}
       activeOpacity={0.7}
       accessibilityRole="button"
@@ -89,9 +96,9 @@ function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: Categ
       <View style={[styles.colorDot, { backgroundColor: dotColor }]} />
 
       <View style={styles.rowContent}>
-        <Text style={styles.rowName}>{cat.name}</Text>
+        <Text style={[styles.rowName, { color: textPrimary }]}>{cat.name}</Text>
         {hasChildren && (
-          <Text style={styles.rowMeta}>
+          <Text style={[styles.rowMeta, { color: textSecondary }]}>
             {t('categories.subcategoryCount', { count: (cat.children ?? []).length })}
           </Text>
         )}
@@ -105,11 +112,11 @@ function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: Categ
           accessibilityRole="button"
           accessibilityLabel={t('categories.addSubcategory')}
         >
-          <Plus size={14} color={colors.text.muted} />
+          <Plus size={14} color={textSecondary} />
         </TouchableOpacity>
       )}
 
-      <ChevronRight size={16} color={colors.text.muted} />
+      <ChevronRight size={16} color={textSecondary} />
     </TouchableOpacity>
   );
 
@@ -133,6 +140,13 @@ function CategoryRow({ cat, isChild = false, onEdit, onDelete, onAddSub }: Categ
 export default function CategoriesScreen() {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
+  const { theme, isDark } = useTheme();
+  const bg          = isDark ? theme.background  : '#f8fafc';
+  const surface     = isDark ? theme.surface     : '#ffffff';
+  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
+  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const { data: categories = [], isLoading, refetch, isRefetching } = useCategories();
   const deleteMutation = useDeleteCategory();
@@ -199,16 +213,16 @@ export default function CategoriesScreen() {
               onDelete={handleDelete}
               onAddSub={openAdd}
             />
-            <View style={styles.childDivider} />
+            <View style={[styles.childDivider, { backgroundColor: dividerCol }]} />
           </View>
         ))}
-        <View style={styles.groupDivider} />
+        <View style={[styles.groupDivider, { backgroundColor: borderCol }]} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -216,9 +230,9 @@ export default function CategoriesScreen() {
           onPress={() => router.back()}
           accessibilityRole="button"
         >
-          <ChevronLeft size={24} color={colors.text.primary} />
+          <ChevronLeft size={24} color={textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('categories.title')}</Text>
+        <Text style={[styles.title, { color: textPrimary }]}>{t('categories.title')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => openAdd()}
@@ -230,14 +244,14 @@ export default function CategoriesScreen() {
       </View>
 
       {/* Search bar */}
-      <View style={styles.searchContainer}>
-        <Search size={16} color={colors.text.muted} style={styles.searchIcon} />
+      <View style={[styles.searchContainer, { backgroundColor: surface, borderColor: borderCol }]}>
+        <Search size={16} color={textSecondary} style={styles.searchIcon} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: textPrimary }]}
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder={t('categories.searchPlaceholder')}
-          placeholderTextColor={colors.text.muted}
+          placeholderTextColor={textSecondary}
           returnKeyType="search"
           clearButtonMode="never"
           autoCapitalize="none"
@@ -245,7 +259,7 @@ export default function CategoriesScreen() {
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
-            <X size={16} color={colors.text.muted} />
+            <X size={16} color={textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -253,16 +267,16 @@ export default function CategoriesScreen() {
       {/* List */}
       {isLoading ? (
         <View style={styles.center}>
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+          <Text style={[styles.loadingText, { color: textSecondary }]}>{t('common.loading')}</Text>
         </View>
       ) : filteredCategories.length === 0 ? (
         <View style={styles.center}>
           {searchQuery.length > 0 ? (
-            <Text style={styles.emptyTitle}>{t('categories.noResults')}</Text>
+            <Text style={[styles.emptyTitle, { color: textPrimary }]}>{t('categories.noResults')}</Text>
           ) : (
             <>
-              <Text style={styles.emptyTitle}>{t('categories.emptyTitle')}</Text>
-              <Text style={styles.emptySubtitle}>{t('categories.emptySubtitle')}</Text>
+              <Text style={[styles.emptyTitle, { color: textPrimary }]}>{t('categories.emptyTitle')}</Text>
+              <Text style={[styles.emptySubtitle, { color: textSecondary }]}>{t('categories.emptySubtitle')}</Text>
               <TouchableOpacity style={styles.emptyBtn} onPress={() => openAdd()}>
                 <Text style={styles.emptyBtnText}>{t('categories.addTitle')}</Text>
               </TouchableOpacity>
@@ -274,7 +288,7 @@ export default function CategoriesScreen() {
           data={filteredCategories}
           keyExtractor={(cat) => String(cat.id)}
           renderItem={({ item }) => renderGroup(item)}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { backgroundColor: surface, borderColor: borderCol }]}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -329,7 +343,7 @@ const styles = StyleSheet.create({
     backgroundColor:   colors.bg.card,
     borderRadius:      10,
     borderWidth:       1,
-    borderColor:       colors.border.default,
+    borderColor:       colors.borderNested.default,
     paddingHorizontal: 12,
     paddingVertical:   10,
     gap:               8,
@@ -346,7 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor:  colors.bg.card,
     borderRadius:     12,
     borderWidth:      1,
-    borderColor:      colors.border.default,
+    borderColor:      colors.borderNested.default,
     overflow:         'hidden',
   },
   row: {
@@ -397,12 +411,12 @@ const styles = StyleSheet.create({
   },
   childDivider: {
     height:           1,
-    backgroundColor:  colors.border.subtle,
+    backgroundColor:  colors.borderNested.subtle,
     marginHorizontal: spacing.cardPadding,
   },
   groupDivider: {
     height:          1,
-    backgroundColor: colors.border.default,
+    backgroundColor: colors.borderNested.default,
   },
   center: {
     flex:           1,

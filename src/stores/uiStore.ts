@@ -16,6 +16,20 @@ interface Toast {
 }
 
 interface UIState {
+  // Color scheme preference
+  colorScheme: 'system' | 'light' | 'dark';
+  setColorScheme: (scheme: 'system' | 'light' | 'dark') => void;
+  hydrateColorScheme: () => Promise<void>;
+
+  // Confetti guards
+  celebratedGoals: string[];
+  celebratedDebts: string[];
+  hasSeenFirstImportCelebration: boolean;
+  addCelebratedGoal: (id: string) => void;
+  addCelebratedDebt: (id: string) => void;
+  markFirstImportCelebrated: () => void;
+  hydrateCelebrationState: () => Promise<void>;
+
   // Locale
   locale: 'en' | 'es';
   setLocale: (locale: 'en' | 'es') => void;
@@ -65,7 +79,53 @@ interface UIState {
 
 let toastIdCounter = 0;
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set, get) => ({
+  // ── Color scheme ────────────────────────────────────────────────────────────
+  colorScheme: 'system',
+  setColorScheme: (scheme) => {
+    set({ colorScheme: scheme });
+    void tokenStorage.saveColorScheme(scheme);
+  },
+  hydrateColorScheme: async () => {
+    try {
+      const stored = await tokenStorage.getColorScheme();
+      set({ colorScheme: stored });
+    } catch {
+      set({ colorScheme: 'system' });
+    }
+  },
+
+  // ── Confetti guards ─────────────────────────────────────────────────────────
+  celebratedGoals: [],
+  celebratedDebts: [],
+  hasSeenFirstImportCelebration: false,
+  addCelebratedGoal: (id) => {
+    const next = [...get().celebratedGoals, id];
+    set({ celebratedGoals: next });
+    void tokenStorage.saveCelebratedGoals(next);
+  },
+  addCelebratedDebt: (id) => {
+    const next = [...get().celebratedDebts, id];
+    set({ celebratedDebts: next });
+    void tokenStorage.saveCelebratedDebts(next);
+  },
+  markFirstImportCelebrated: () => {
+    set({ hasSeenFirstImportCelebration: true });
+    void tokenStorage.saveFirstImportCelebrated(true);
+  },
+  hydrateCelebrationState: async () => {
+    try {
+      const [goals, debts, firstImport] = await Promise.all([
+        tokenStorage.getCelebratedGoals(),
+        tokenStorage.getCelebratedDebts(),
+        tokenStorage.getFirstImportCelebrated(),
+      ]);
+      set({ celebratedGoals: goals, celebratedDebts: debts, hasSeenFirstImportCelebration: firstImport });
+    } catch {
+      // keep defaults
+    }
+  },
+
   // ── Locale ─────────────────────────────────────────────────────────────────
   locale: 'es',
   setLocale: (locale) => {

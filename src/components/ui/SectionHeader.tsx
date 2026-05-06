@@ -5,6 +5,7 @@ import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../stores/uiStore';
 import { AmountDisplay } from './AmountDisplay';
+import { useTheme } from '../../theme/ThemeContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -44,8 +45,13 @@ export function SectionHeader({
   currency = 'MXN',
 }: SectionHeaderProps) {
   const { t } = useTranslation();
+  const { theme, isDark } = useTheme();
   const storeLocale = useUIStore((s) => s.locale);
   const resolvedLocale = locale ?? (storeLocale === 'es' ? 'es-MX' : 'en-MX');
+
+  const background = isDark ? theme.background : '#f8fafc';
+  const textPrimary = isDark ? theme.textPrimary : '#475569';
+  const borderCol = isDark ? theme.border : '#e2e8f0';
 
   const dateLabel = formatSectionDate(dateKey, resolvedLocale, t);
 
@@ -63,9 +69,9 @@ export function SectionHeader({
     <View
       accessibilityRole="header"
       accessibilityLabel={a11yLabel}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: background, borderBottomColor: borderCol }]}
     >
-      <Text style={styles.dateLabel}>{dateLabel}</Text>
+      <Text style={[styles.dateLabel, { color: textPrimary }]}>{dateLabel}</Text>
 
       {dailyTotal !== undefined ? (
         <AmountDisplay
@@ -77,7 +83,7 @@ export function SectionHeader({
           locale={resolvedLocale}
         />
       ) : transactionCount !== undefined ? (
-        <Text style={styles.count}>
+        <Text style={[styles.count, { color: isDark ? '#94a3b8' : '#94a3b8' }]}>
           {t('sectionHeader.count', { count: transactionCount })}
         </Text>
       ) : null}
@@ -93,16 +99,13 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#f8fafc',   // slate-50 — masks rows scrolling underneath
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
     zIndex: 10,
   },
   dateLabel: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
     lineHeight: 18,
-    color: '#475569', // slate-600
   },
   count: {
     fontFamily: 'Inter_400Regular',

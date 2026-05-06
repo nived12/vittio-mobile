@@ -19,6 +19,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { registerForPushNotifications } from '../src/utils/notifications';
+import { ThemeProvider } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
 
 // Show notifications as banners when app is in foreground
@@ -39,11 +40,11 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime:              5 * 60 * 1000, // 5 minutes
-      gcTime:                 10 * 60 * 1000, // 10 minutes
-      retry:                  2,
-      refetchOnWindowFocus:   true,
-      networkMode:            'offlineFirst',
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2,
+      refetchOnWindowFocus: true,
+      networkMode: 'offlineFirst',
     },
     mutations: {
       networkMode: 'offlineFirst',
@@ -54,16 +55,18 @@ const queryClient = new QueryClient({
 // ── Root layout ────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const isAuthenticated     = useAuthStore((s) => s.isAuthenticated);
-  const isHydrated          = useAuthStore((s) => s.isHydrated);
-  const hydrate             = useAuthStore((s) => s.hydrate);
-  const hydrateLocale           = useUIStore((s) => s.hydrateLocale);
-  const hydrateBiometricLock    = useUIStore((s) => s.hydrateBiometricLock);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isHydrated = useAuthStore((s) => s.isHydrated);
+  const hydrate = useAuthStore((s) => s.hydrate);
+  const hydrateLocale = useUIStore((s) => s.hydrateLocale);
+  const hydrateBiometricLock = useUIStore((s) => s.hydrateBiometricLock);
   const hydrateNotificationPrefs = useUIStore((s) => s.hydrateNotificationPrefs);
-  const biometricLock       = useUIStore((s) => s.biometricLock);
+  const hydrateColorScheme = useUIStore((s) => s.hydrateColorScheme);
+  const hydrateCelebrationState = useUIStore((s) => s.hydrateCelebrationState);
+  const biometricLock = useUIStore((s) => s.biometricLock);
 
-  const segments    = useSegments();
-  const appState    = useRef<AppStateStatus>(AppState.currentState);
+  const segments = useSegments();
+  const appState = useRef<AppStateStatus>(AppState.currentState);
   const [showLock, setShowLock] = useState(false);
   const pushRegistered = useRef(false);
 
@@ -76,10 +79,16 @@ export default function RootLayout() {
         Inter_600SemiBold,
         Inter_700Bold,
       });
-      await Promise.all([hydrate(), hydrateLocale(), hydrateBiometricLock()]);
+      await Promise.all([
+        hydrate(),
+        hydrateLocale(),
+        hydrateBiometricLock(),
+        hydrateColorScheme(),
+        hydrateCelebrationState(),
+      ]);
     }
     prepare();
-  }, [hydrate, hydrateLocale, hydrateBiometricLock]);
+  }, [hydrate, hydrateLocale, hydrateBiometricLock, hydrateColorScheme, hydrateCelebrationState]);
 
   // ── 2. Once hydrated: hide splash + enforce auth routing ───────────────
   useEffect(() => {
@@ -143,13 +152,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <StatusBar style="auto" />
-          <Slot />
-          {showLock && (
-            <BiometricLockScreen onUnlock={() => setShowLock(false)} />
-          )}
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <StatusBar style="auto" />
+            <Slot />
+            {showLock && (
+              <BiometricLockScreen onUnlock={() => setShowLock(false)} />
+            )}
+          </QueryClientProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
