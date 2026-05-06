@@ -1,0 +1,71 @@
+name: Claude Code Review
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    # Only run on PR comments that contain the trigger phrase
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude review')
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        continue-on-error: true
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.issue.number }}
+
+            Please review this pull request and provide a BRIEF, CONCISE review.
+
+            IMPORTANT FORMATTING RULES:
+            - Keep your ENTIRE review under 500 words
+            - Use bullet points, not paragraphs
+            - ALWAYS include file path and line number for each issue (e.g., "src/components/ui/BalanceCard.tsx:42")
+            - Only mention issues if you find them - don't add "looks good" items
+            - Group related items together
+            - Be direct and to the point
+
+            Review for:
+            - Code quality and best practices (TypeScript strict mode, React Native patterns)
+            - Potential bugs or issues
+            - Security concerns (SecureStore usage, token handling)
+            - Theme/dark mode correctness (useTheme(), no hardcoded colors)
+            - i18n completeness (all user-facing strings in en.json + es.json)
+
+            Stack context: React Native + Expo SDK 52, Expo Router v4, Zustand v5, React Query v5, TypeScript strict mode. Primary locale: es-MX.
+
+            FORMAT YOUR REVIEW EXACTLY LIKE THIS:
+
+            🔴 Critical Issues:
+            - file.tsx:42 - Issue description
+
+            🟡 Minor Issues:
+            - file.tsx:15 - Issue description
+
+            🔵 Suggestions:
+            - file.tsx:8 - Suggestion description
+
+            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
