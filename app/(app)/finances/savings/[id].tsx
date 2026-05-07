@@ -29,9 +29,9 @@ function formatCurrency(amount: number, locale: string): string {
 }
 
 function StatCard({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
-  const { theme: t2, isDark: dark } = useTheme();
-  const cardSurface = dark ? t2.surface : '#ffffff';
-  const cardBorder  = dark ? t2.border  : '#e2e8f0';
+  const { theme: t2 } = useTheme();
+  const cardSurface = t2.surface;
+  const cardBorder  = t2.border;
   return (
     <View style={[s.statCard, { backgroundColor: cardSurface, borderColor: cardBorder }]}>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
@@ -50,10 +50,10 @@ export default function SavingDetailScreen() {
   const requireConfirmed = useRequireConfirmed();
 
   const { theme, isDark } = useTheme();
-  const bg          = isDark ? theme.background  : '#f8fafc';
-  const surface     = isDark ? theme.surface     : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol   = isDark ? theme.border      : '#e2e8f0';
+  const bg          = theme.background;
+  const surface     = theme.surface;
+  const textPrimary = theme.textPrimary;
+  const borderCol   = theme.border;
   const dividerCol  = isDark ? 'rgba(255,255,255,0.06)'   : '#f1f5f9';
 
   const savingId = Number(id);

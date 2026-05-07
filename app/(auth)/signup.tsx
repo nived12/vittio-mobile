@@ -442,7 +442,7 @@ export default function SignupScreen() {
               style={styles.termsLink}
               onPress={() => {
                 const url = process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/terms';
-                if (url.startsWith('https://vitt.io/')) { Linking.openURL(url); }
+                void Linking.openURL(url);
               }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.termsLink')}
@@ -455,7 +455,7 @@ export default function SignupScreen() {
               style={styles.termsLink}
               onPress={() => {
                 const url = process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/privacy';
-                if (url.startsWith('https://vitt.io/')) { Linking.openURL(url); }
+                void Linking.openURL(url);
               }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.privacyLink')}

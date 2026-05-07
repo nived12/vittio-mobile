@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// Suppress non-error logs in production builds
+// Suppress verbose logs in production — console.error is intentionally preserved
+// so crash-level errors still surface. Replace with Sentry in Phase 14.
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
@@ -53,7 +54,8 @@ const ALLOWED_SCREENS = new Set([
 
 function isAllowedScreen(screen: string): boolean {
   if (ALLOWED_SCREENS.has(screen)) return true;
-  // Allow detail screens with numeric IDs only
+  // Allow detail screens with numeric IDs only.
+  // Update the alternation if new finances sub-routes (e.g. budgets) are added.
   return /^\/(app)\/(transactions|accounts|finances\/(goals|debts|savings))\/\d+$/.test(screen);
 }
 

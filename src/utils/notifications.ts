@@ -60,7 +60,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
     return pushToken;
   } catch (error) {
-    if (__DEV__) { console.warn('Push token registration failed:', error); }
+    // console.error is not suppressed in production — visible in crash reporters.
+    // Route to Sentry in Phase 14 instead of relying on console.
+    console.error('Push token registration failed:', error);
     return null;
   }
 }

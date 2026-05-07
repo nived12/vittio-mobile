@@ -24,6 +24,8 @@ async function secureGet(key: string): Promise<string | null> {
   }
 }
 
+// Errors propagate intentionally — callers (authStore.login, signup, loginWithGoogle,
+// refreshTokens) are responsible for catching and redirecting to login on failure.
 async function secureSet(key: string, value: string): Promise<void> {
   if (__DEV__ && Platform.OS === 'web') {
     try { localStorage.setItem(key, value); } catch { /* ignore */ }
