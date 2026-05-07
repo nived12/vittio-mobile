@@ -125,7 +125,7 @@ function getBadge(txType: TransactionType, isDark: boolean, t: (k: string) => st
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function TransactionRow({
+export const TransactionRow = React.memo(function TransactionRow({
   id,
   description,
   concept,
@@ -322,7 +322,7 @@ export function TransactionRow({
       {row}
     </Swipeable>
   );
-}
+});
 
 /**
  * Skeleton placeholder for a TransactionRow.

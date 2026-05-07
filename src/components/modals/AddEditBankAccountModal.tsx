@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
     fontSize: 20, fontWeight: '700', color: '#e11d48', lineHeight: 24,
   },
   currencyPrefix: { fontSize: 16, fontWeight: '500', color: '#475569', marginRight: 8 },
-  balanceInput: { flex: 1, fontSize: 20, fontWeight: '600', fontVariant: ['tabular-nums'] as any },
+  balanceInput: { flex: 1, fontSize: 20, fontWeight: '600', fontVariant: ['tabular-nums' as const] },
   dateConfirmBtn: {
     marginTop: 8, alignSelf: 'flex-end',
     backgroundColor: '#4f46e5', borderRadius: 8,

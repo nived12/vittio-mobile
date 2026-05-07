@@ -157,7 +157,7 @@ export default function SignupScreen() {
       const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
 
       const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
-      console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : '');
+      if (__DEV__) { console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : ''); }
 
       if (result.type !== 'success') return;
 
@@ -440,7 +440,10 @@ export default function SignupScreen() {
             {t('auth.signup.termsNotice')}{' '}
             <Text
               style={styles.termsLink}
-              onPress={() => Linking.openURL(process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/terms')}
+              onPress={() => {
+                const url = process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/terms';
+                void Linking.openURL(url);
+              }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.termsLink')}
               accessibilityHint="Opens Terms of Service in browser"
@@ -450,7 +453,10 @@ export default function SignupScreen() {
             {' '}{t('auth.signup.andConnector')}{' '}
             <Text
               style={styles.termsLink}
-              onPress={() => Linking.openURL(process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/privacy')}
+              onPress={() => {
+                const url = process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/privacy';
+                void Linking.openURL(url);
+              }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.privacyLink')}
               accessibilityHint="Opens Privacy Policy in browser"
