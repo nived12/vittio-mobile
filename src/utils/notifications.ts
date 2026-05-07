@@ -60,7 +60,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
     return pushToken;
   } catch (error) {
-    console.warn('Push token registration failed:', error);
+    if (__DEV__) { console.warn('Push token registration failed:', error); }
     return null;
   }
 }
@@ -74,6 +74,6 @@ export async function deregisterPushNotifications(): Promise<void> {
     await clearStoredPushToken();
   } catch (error) {
     // Best-effort — don't block logout
-    console.warn('Push deregistration failed:', error);
+    if (__DEV__) { console.warn('Push deregistration failed:', error); }
   }
 }

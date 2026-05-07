@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 120,
     textAlign: 'center',
-    fontVariant: ['tabular-nums'] as any,
+    fontVariant: ['tabular-nums' as const],
   },
   typeControl: {
     flexDirection: 'row',

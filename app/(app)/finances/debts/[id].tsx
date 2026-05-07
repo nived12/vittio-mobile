@@ -30,8 +30,8 @@ function formatCurrency(amount: number, locale: string): string {
 
 function StatCard({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
   const { theme: t2, isDark: dark } = useTheme();
-  const cardSurface = dark ? (t2 as any).surface : '#ffffff';
-  const cardBorder  = dark ? (t2 as any).border  : '#e2e8f0';
+  const cardSurface = dark ? t2.surface : '#ffffff';
+  const cardBorder  = dark ? t2.border  : '#e2e8f0';
   return (
     <View style={[s.statCard, { backgroundColor: cardSurface, borderColor: cardBorder }]}>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
