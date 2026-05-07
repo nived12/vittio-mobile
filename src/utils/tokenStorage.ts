@@ -9,6 +9,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // protected by Keychain (iOS) / Keystore (Android) in production.
 
 // ── SecureStore helpers (tokens + user — sensitive) ──────────────────────
+// No AsyncStorage fallback: if SecureStore is unavailable (shouldn't happen in
+// production EAS builds), return null/throw so the user is redirected to login
+// rather than silently storing tokens in unencrypted storage.
 
 async function secureGet(key: string): Promise<string | null> {
   if (__DEV__ && Platform.OS === 'web') {
@@ -17,13 +20,7 @@ async function secureGet(key: string): Promise<string | null> {
   try {
     return await SecureStore.getItemAsync(key);
   } catch {
-    // Keychain unavailable (e.g. Personal Team dev build without entitlements).
-    // Fall back to AsyncStorage so the user isn't silently logged out.
-    try {
-      return await AsyncStorage.getItem(key);
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
@@ -32,16 +29,7 @@ async function secureSet(key: string, value: string): Promise<void> {
     try { localStorage.setItem(key, value); } catch { /* ignore */ }
     return;
   }
-  try {
-    await SecureStore.setItemAsync(key, value);
-  } catch {
-    // Keychain unavailable — fall back to AsyncStorage
-    try {
-      await AsyncStorage.setItem(key, value);
-    } catch {
-      // Tokens live in memory only for this session
-    }
-  }
+  await SecureStore.setItemAsync(key, value);
 }
 
 async function secureDelete(key: string): Promise<void> {
@@ -52,8 +40,7 @@ async function secureDelete(key: string): Promise<void> {
   try {
     await SecureStore.deleteItemAsync(key);
   } catch {
-    // Best-effort delete
-    try { await AsyncStorage.removeItem(key); } catch { /* ignore */ }
+    // Best-effort delete — key may not exist
   }
 }
 

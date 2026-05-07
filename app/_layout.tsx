@@ -1,4 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+
+// Suppress non-error logs in production builds
+if (!__DEV__) {
+  console.log = () => {};
+  console.warn = () => {};
+}
 import { AppState, AppStateStatus } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -32,6 +38,24 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+// ── Deep-link screen whitelist — only navigate to known in-app routes ─────
+const ALLOWED_SCREENS = new Set([
+  '/(app)',
+  '/(app)/transactions',
+  '/(app)/accounts',
+  '/(app)/finances',
+  '/(app)/profile',
+  '/(app)/notification-preferences',
+  '/(app)/categories',
+  '/(app)/add',
+]);
+
+function isAllowedScreen(screen: string): boolean {
+  if (ALLOWED_SCREENS.has(screen)) return true;
+  // Allow detail screens with numeric IDs only
+  return /^\/(app)\/(transactions|accounts|finances\/(goals|debts|savings))\/\d+$/.test(screen);
+}
 
 // ── Splash screen — keep visible until hydration completes ─────────────────
 SplashScreen.preventAutoHideAsync();
@@ -123,8 +147,8 @@ export default function RootLayout() {
         screen?: string;
         params?: Record<string, unknown>;
       };
-      if (data?.screen) {
-        router.push(data.screen as any);
+      if (data?.screen && isAllowedScreen(data.screen)) {
+        router.push(data.screen as Parameters<typeof router.push>[0]);
       }
     });
     return () => subscription.remove();

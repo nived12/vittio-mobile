@@ -205,7 +205,7 @@ export default function LoginScreen() {
       const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
 
       const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
-      console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : '');
+      if (__DEV__) { console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : ''); }
 
       if (result.type !== 'success') return;
 
