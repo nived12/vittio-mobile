@@ -4,20 +4,20 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
+import { ShieldCheck } from 'lucide-react-native';
 
 import { useAuthStore } from '../../src/stores/authStore';
 import { legalApi } from '../../src/api/legal';
 import { getApiErrorCode } from '../../src/api/client';
-import { colors, spacing, textStyles } from '../../src/theme';
+import { spacing, textStyles } from '../../src/theme';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { CURRENT_LEGAL_VERSION } from '../../src/constants/legal';
 
 // ── URLs — will be live at vitt.io/legal/* once Phase 14 is deployed ──────
@@ -41,6 +41,7 @@ const CONSENT_ITEMS: ConsentItem[] = [
 
 export default function ConsentScreen() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const setUser = useAuthStore((s) => s.setUser);
   const user = useAuthStore((s) => s.user);
 
@@ -72,10 +73,10 @@ export default function ConsentScreen() {
     setError(null);
     try {
       await legalApi.accept();
-      // Update local user state so the routing guard reflects consent immediately
       if (user) {
         setUser({ ...user, legal_version_accepted: CURRENT_LEGAL_VERSION });
       }
+      setIsLoading(false);
       router.replace('/(app)');
     } catch (err) {
       const code = getApiErrorCode(err);
@@ -86,44 +87,86 @@ export default function ConsentScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.container}
+      contentContainerStyle={{
+        flexGrow: 1,
+        backgroundColor: theme.background,
+        paddingHorizontal: spacing.screenPaddingH,
+        paddingTop: Platform.OS === 'ios' ? 80 : 40,
+        paddingBottom: 40,
+      }}
       keyboardShouldPersistTaps="handled"
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Text style={styles.shieldIcon}>🛡️</Text>
+      <View style={{ alignItems: 'center', marginBottom: spacing.xl }}>
+        <View style={{
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: theme.primaryLight,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: spacing.md,
+        }}>
+          <ShieldCheck size={28} color={theme.primary} />
         </View>
-        <Text style={styles.title}>{t('consent.title')}</Text>
-        <Text style={styles.subtitle}>{t('consent.subtitle')}</Text>
+        <Text style={{ ...textStyles.headingLg, textAlign: 'center', color: theme.textPrimary, marginBottom: spacing.sm }}>
+          {t('consent.title')}
+        </Text>
+        <Text style={{ ...textStyles.bodyMd, textAlign: 'center', color: theme.textSecondary }}>
+          {t('consent.subtitle')}
+        </Text>
       </View>
 
       {/* Consent items */}
-      <View style={styles.itemsContainer}>
+      <View style={{ gap: spacing.listItemGap, marginBottom: spacing.lg }}>
         {CONSENT_ITEMS.map((item) => (
           <Pressable
             key={item.key}
-            style={[styles.item, checked[item.key] && styles.itemChecked]}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: spacing.listItemGap,
+              padding: spacing.md,
+              borderRadius: 12,
+              borderWidth: 1.5,
+              borderColor: checked[item.key] ? theme.primary : theme.border,
+              backgroundColor: checked[item.key] ? theme.primaryLight : theme.surface,
+            }}
             onPress={() => toggleItem(item.key)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: checked[item.key] }}
           >
             {/* Checkbox */}
-            <View style={[styles.checkbox, checked[item.key] && styles.checkboxChecked]}>
+            <View style={{
+              width: 20,
+              height: 20,
+              borderRadius: 4,
+              borderWidth: 1.5,
+              borderColor: checked[item.key] ? theme.primary : theme.border,
+              marginTop: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: checked[item.key] ? theme.primary : 'transparent',
+            }}>
               {checked[item.key] && (
-                <Text style={styles.checkmark}>✓</Text>
+                <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 14 }}>✓</Text>
               )}
             </View>
 
             {/* Label + read link */}
-            <View style={styles.itemContent}>
-              <Text style={styles.itemTitle}>{t(item.titleKey)}</Text>
-              <TouchableOpacity
-                onPress={(e) => { e.stopPropagation?.(); openDoc(item.url); }}
+            <View style={{ flex: 1 }}>
+              <Text style={{ ...textStyles.bodyMd, fontFamily: 'Inter_500Medium', color: theme.textPrimary, marginBottom: 2 }}>
+                {t(item.titleKey)}
+              </Text>
+              <Pressable
+                onPress={() => openDoc(item.url)}
                 hitSlop={8}
+                accessibilityLabel={t('consent.readLinkA11y', { doc: t(item.titleKey) })}
               >
-                <Text style={styles.readLink}>{t('consent.readLink')}</Text>
-              </TouchableOpacity>
+                <Text style={{ ...textStyles.caption, color: theme.primary }}>
+                  {t('consent.readLink')}
+                </Text>
+              </Pressable>
             </View>
           </Pressable>
         ))}
@@ -131,141 +174,36 @@ export default function ConsentScreen() {
 
       {/* Error */}
       {error && (
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={{ ...textStyles.caption, color: theme.negative, textAlign: 'center', marginBottom: spacing.md }}>
+          {error}
+        </Text>
       )}
 
       {/* Accept button */}
-      <TouchableOpacity
-        style={[styles.button, (!allChecked || isLoading) && styles.buttonDisabled]}
+      <Pressable
+        style={{
+          backgroundColor: theme.primary,
+          borderRadius: 12,
+          paddingVertical: spacing.md,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: spacing.md,
+          opacity: !allChecked || isLoading ? 0.4 : 1,
+        }}
         onPress={handleAccept}
         disabled={!allChecked || isLoading}
-        activeOpacity={0.8}
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>{t('consent.accept')}</Text>
+          <Text style={{ ...textStyles.headingSm, color: '#fff' }}>{t('consent.accept')}</Text>
         )}
-      </TouchableOpacity>
+      </Pressable>
 
       {/* Version notice */}
-      <Text style={styles.version}>
+      <Text style={{ ...textStyles.caption, color: theme.textDisabled, textAlign: 'center' }}>
         {t('consent.version', { version: CURRENT_LEGAL_VERSION })}
       </Text>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.screenPaddingH,
-    paddingTop: Platform.OS === 'ios' ? 80 : 40,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#eef2ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  shieldIcon: {
-    fontSize: 28,
-  },
-  title: {
-    ...textStyles.headingLg,
-    textAlign: 'center',
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    ...textStyles.bodyMd,
-    textAlign: 'center',
-    color: colors.text.secondary,
-  },
-  itemsContainer: {
-    gap: spacing.listItemGap,
-    marginBottom: spacing.lg,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.listItemGap,
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  itemChecked: {
-    borderColor: '#4f46e5',
-    backgroundColor: '#eef2ff',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    marginTop: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#4f46e5',
-    borderColor: '#4f46e5',
-  },
-  checkmark: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 14,
-  },
-  itemContent: {
-    flex: 1,
-  },
-  itemTitle: {
-    ...textStyles.bodyMd,
-    fontFamily: 'Inter_500Medium',
-    color: colors.text.primary,
-    marginBottom: 2,
-  },
-  readLink: {
-    ...textStyles.caption,
-    color: '#4f46e5',
-  },
-  errorText: {
-    ...textStyles.caption,
-    color: colors.negative,
-    textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  button: {
-    backgroundColor: '#4f46e5',
-    borderRadius: 12,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  buttonDisabled: {
-    opacity: 0.4,
-  },
-  buttonText: {
-    ...textStyles.headingSm,
-    color: '#fff',
-  },
-  version: {
-    ...textStyles.caption,
-    color: colors.text.muted,
-    textAlign: 'center',
-  },
-});

@@ -133,7 +133,7 @@ export default function RootLayout() {
     }
 
     // Authenticated but consent not given — gate before dashboard
-    if (isAuthenticated && user?.confirmed) {
+    if (isAuthenticated) {
       const consentCurrent = user?.legal_version_accepted === CURRENT_LEGAL_VERSION;
       if (!consentCurrent && !onConsentScreen) {
         router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);

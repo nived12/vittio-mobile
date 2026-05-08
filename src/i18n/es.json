@@ -943,6 +943,7 @@
     "privacy": "Política de Privacidad",
     "financial": "Consentimiento de Datos Financieros",
     "readLink": "Leer",
+    "readLinkA11y": "Leer {{doc}}",
     "accept": "Aceptar y Continuar",
     "acceptError": "Algo salió mal. Por favor inténtalo de nuevo.",
     "version": "Versión del documento: {{version}}"
