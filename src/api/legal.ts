@@ -1,5 +1,4 @@
 import { apiClient } from './client';
-import { CURRENT_LEGAL_VERSION } from '../constants/legal';
 
 export interface LegalAcceptResponse {
   consent_accepted: boolean;
@@ -9,7 +8,5 @@ export interface LegalAcceptResponse {
 
 export const legalApi = {
   accept: () =>
-    apiClient.post<{ data: LegalAcceptResponse }>('/legal/accept', {
-      version: CURRENT_LEGAL_VERSION,
-    }),
+    apiClient.post<{ data: LegalAcceptResponse }>('/legal/accept'),
 };

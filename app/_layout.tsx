@@ -23,7 +23,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '../src/stores/authStore';
-import { CURRENT_LEGAL_VERSION } from '../src/constants/legal';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { registerForPushNotifications } from '../src/utils/notifications';
@@ -134,8 +133,7 @@ export default function RootLayout() {
 
     // Authenticated but consent not given — gate before dashboard
     if (isAuthenticated) {
-      const consentCurrent = user?.legal_version_accepted === CURRENT_LEGAL_VERSION;
-      if (!consentCurrent && !onConsentScreen) {
+      if (!user?.consent_current && !onConsentScreen) {
         router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);
         return;
       }

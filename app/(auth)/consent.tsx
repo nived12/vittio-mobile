@@ -18,8 +18,6 @@ import { legalApi } from '../../src/api/legal';
 import { getApiErrorCode } from '../../src/api/client';
 import { spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
-import { CURRENT_LEGAL_VERSION } from '../../src/constants/legal';
-
 // ── URLs — will be live at vitt.io/legal/* once Phase 14 is deployed ──────
 const LEGAL_URLS = {
   terms:    'https://vitt.io/legal/terms',
@@ -52,6 +50,7 @@ export default function ConsentScreen() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acceptedVersion, setAcceptedVersion] = useState<string | null>(null);
 
   const allChecked = Object.values(checked).every(Boolean);
 
@@ -72,10 +71,12 @@ export default function ConsentScreen() {
     setIsLoading(true);
     setError(null);
     try {
-      await legalApi.accept();
+      const response = await legalApi.accept();
+      const version = response.data.data.version;
       if (user) {
-        setUser({ ...user, legal_version_accepted: CURRENT_LEGAL_VERSION });
+        setUser({ ...user, legal_version_accepted: version, consent_current: true });
       }
+      setAcceptedVersion(version);
       setIsLoading(false);
       router.replace('/(app)');
     } catch (err) {
@@ -200,10 +201,12 @@ export default function ConsentScreen() {
         )}
       </Pressable>
 
-      {/* Version notice */}
-      <Text style={{ ...textStyles.caption, color: theme.textDisabled, textAlign: 'center' }}>
-        {t('consent.version', { version: CURRENT_LEGAL_VERSION })}
-      </Text>
+      {/* Version notice — shown once the API confirms the accepted version */}
+      {acceptedVersion && (
+        <Text style={{ ...textStyles.caption, color: theme.textDisabled, textAlign: 'center' }}>
+          {t('consent.version', { version: acceptedVersion })}
+        </Text>
+      )}
     </ScrollView>
   );
 }

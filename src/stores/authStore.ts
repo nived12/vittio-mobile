@@ -14,6 +14,7 @@ export interface AuthUser {
   subscription_status: string;
   trial_ends_at: string | null;
   legal_version_accepted: string | null;
+  consent_current: boolean;
 }
 
 interface AuthState {
