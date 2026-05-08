@@ -935,5 +935,19 @@
       "subtitle": "When a debt payment is due"
     },
     "footer": "Notifications are sent only when Vittio detects a relevant event. You will never receive ads."
+  },
+  "consent": {
+    "title": "Before you continue",
+    "subtitle": "Please review and accept to use Vittio",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "financial": "Financial Data Consent",
+    "readLink": "Read",
+    "accept": "Accept & Continue",
+    "acceptError": "Something went wrong. Please try again.",
+    "version": "Document version: {{version}}"
+  },
+  "errors": {
+    "sessionExpired": "Your session has expired. Please log in again."
   }
 }

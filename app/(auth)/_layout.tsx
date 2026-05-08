@@ -9,6 +9,7 @@ export default function AuthLayout() {
       <Stack.Screen name="signup" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="forgot-password" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="confirm-email" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="consent" options={{ animation: 'slide_from_bottom', gestureEnabled: false }} />
     </Stack>
   );
 }

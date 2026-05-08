@@ -142,6 +142,15 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Redirect to consent screen if consent guard fires
+    if (
+      error.response?.status === 403 &&
+      getApiErrorCode(error) === 'TERMS_NOT_ACCEPTED'
+    ) {
+      const { router } = await import('expo-router');
+      router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);
+    }
+
     return Promise.reject(error);
   },
 );

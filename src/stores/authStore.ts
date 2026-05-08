@@ -13,6 +13,7 @@ export interface AuthUser {
   avatar_url: string | null;
   subscription_status: string;
   trial_ends_at: string | null;
+  legal_version_accepted: string | null;
 }
 
 interface AuthState {
