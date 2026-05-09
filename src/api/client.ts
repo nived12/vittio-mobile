@@ -20,6 +20,8 @@ interface QueueItem {
 
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
+let isRedirectingToConsent = false;
+export function resetConsentRedirect(): void { isRedirectingToConsent = false; }
 
 function processQueue(error: unknown, token: string | null): void {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -127,6 +129,18 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    if (
+      error.response?.status === 403 &&
+      getApiErrorCode(error) === 'TERMS_NOT_ACCEPTED'
+    ) {
+      if (!isRedirectingToConsent) {
+        isRedirectingToConsent = true;
+        const { router } = await import('expo-router');
+        router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);
+      }
+      return Promise.reject(error);
     }
 
     if (__DEV__) {

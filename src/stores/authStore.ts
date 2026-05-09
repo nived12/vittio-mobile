@@ -13,6 +13,8 @@ export interface AuthUser {
   avatar_url: string | null;
   subscription_status: string;
   trial_ends_at: string | null;
+  legal_version_accepted: string | null;
+  consent_current: boolean;
 }
 
 interface AuthState {
@@ -94,6 +96,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true });
     try {
+      const { resetConsentRedirect } = await import('../api/client');
+      resetConsentRedirect();
       // Imported lazily to avoid circular dep with apiClient
       const { authApi } = await import('../api/auth');
       const response = await authApi.login(email, password);

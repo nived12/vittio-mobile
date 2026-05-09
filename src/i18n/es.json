@@ -935,5 +935,20 @@
       "subtitle": "Cuando una deuda esté por vencer"
     },
     "footer": "Las notificaciones se envían solo cuando Vittio detecta un evento relevante. Nunca recibirás publicidad."
+  },
+  "consent": {
+    "title": "Antes de continuar",
+    "subtitle": "Por favor revisa y acepta para usar Vittio",
+    "terms": "Términos de Servicio",
+    "privacy": "Política de Privacidad",
+    "financial": "Consentimiento de Datos Financieros",
+    "readLink": "Leer",
+    "readLinkA11y": "Leer {{doc}}",
+    "accept": "Aceptar y Continuar",
+    "acceptError": "Algo salió mal. Por favor inténtalo de nuevo.",
+    "version": "Versión del documento: {{version}}"
+  },
+  "errors": {
+    "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo."
   }
 }

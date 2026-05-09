@@ -84,6 +84,7 @@ export default function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   const hydrate = useAuthStore((s) => s.hydrate);
+  const user = useAuthStore((s) => s.user);
   const hydrateLocale = useUIStore((s) => s.hydrateLocale);
   const hydrateBiometricLock = useUIStore((s) => s.hydrateBiometricLock);
   const hydrateNotificationPrefs = useUIStore((s) => s.hydrateNotificationPrefs);
@@ -123,14 +124,25 @@ export default function RootLayout() {
     SplashScreen.hideAsync();
 
     const inAuth = segments[0] === '(auth)';
+    const onConsentScreen = (segments[1] as string) === 'consent';
 
     if (!isAuthenticated && !inAuth) {
       router.replace('/(auth)/login');
+      return;
     }
-    if (isAuthenticated && inAuth) {
+
+    // Authenticated but consent not given — gate before dashboard
+    if (isAuthenticated) {
+      if (!user?.consent_current && !onConsentScreen) {
+        router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);
+        return;
+      }
+    }
+
+    if (isAuthenticated && inAuth && !onConsentScreen) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated, isHydrated, segments]);
+  }, [isAuthenticated, isHydrated, segments, user]);
 
   // ── 3. Register push + hydrate server-side notification prefs after auth ─
   useEffect(() => {
