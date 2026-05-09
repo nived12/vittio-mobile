@@ -96,6 +96,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true });
     try {
+      const { resetConsentRedirect } = await import('../api/client');
+      resetConsentRedirect();
       // Imported lazily to avoid circular dep with apiClient
       const { authApi } = await import('../api/auth');
       const response = await authApi.login(email, password);

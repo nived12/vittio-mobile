@@ -48,9 +48,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
       Constants.expoConfig?.extra?.eas?.projectId ??
       (Constants as any).easConfig?.projectId;
 
-    const tokenData = projectId
-      ? await Notifications.getExpoPushTokenAsync({ projectId })
-      : await Notifications.getExpoPushTokenAsync();
+    if (!projectId) return null;
+
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
 
     const pushToken = tokenData.data;
     const platform = Platform.OS as 'ios' | 'android';

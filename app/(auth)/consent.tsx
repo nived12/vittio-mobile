@@ -18,11 +18,15 @@ import { legalApi } from '../../src/api/legal';
 import { getApiErrorCode } from '../../src/api/client';
 import { spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
-// ── URLs — will be live at vitt.io/legal/* once Phase 14 is deployed ──────
+// Derive legal doc base from the API URL so dev and prod resolve automatically.
+// Dev:  http://192.168.86.38:3000/api/v1  → http://192.168.86.38:3000/legal/*
+// Prod: https://vitt.io/api/v1            → https://vitt.io/legal/*
+const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
+const _legalBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
 const LEGAL_URLS = {
-  terms:    'https://vitt.io/legal/terms',
-  privacy:  'https://vitt.io/legal/privacy',
-  financial: 'https://vitt.io/legal/financial_data',
+  terms:     `${_legalBase}/legal/terms`,
+  privacy:   `${_legalBase}/legal/privacy`,
+  financial: `${_legalBase}/legal/financial_data`,
 };
 
 interface ConsentItem {
