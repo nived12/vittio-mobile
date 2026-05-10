@@ -1,0 +1,36 @@
+{
+  "data": {
+    "bank_accounts": [
+      {
+        "id": 101,
+        "name": "BBVA Debit",
+        "custom_name": "BBVA TDD",
+        "bank_name": "BBVA",
+        "bank_id": 1,
+        "bank_logo_url": null,
+        "account_type": "debit",
+        "currency": "MXN",
+        "opening_balance": "100000.0",
+        "balance": 112345.5,
+        "transactions_count": 14,
+        "created_at": "2026-04-01T12:00:00Z",
+        "updated_at": "2026-05-09T12:00:00Z"
+      },
+      {
+        "id": 102,
+        "name": "Santander Credit",
+        "custom_name": "Santander TDC",
+        "bank_name": "Santander",
+        "bank_id": 2,
+        "bank_logo_url": null,
+        "account_type": "credit",
+        "currency": "MXN",
+        "opening_balance": "-15000.0",
+        "balance": -9125,
+        "transactions_count": 10,
+        "created_at": "2026-04-02T12:00:00Z",
+        "updated_at": "2026-05-09T12:00:00Z"
+      }
+    ]
+  }
+}

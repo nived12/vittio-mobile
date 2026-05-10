@@ -2,6 +2,9 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const useWebStorageFallback =
+  Platform.OS === 'web' && (__DEV__ || process.env.EXPO_PUBLIC_E2E === '1');
+
 // expo-secure-store's native module is empty on web — all operations are no-ops.
 // In development (Expo web preview) we fall back to localStorage so screens can
 // be visually tested. __DEV__ is false in production EAS builds, so the
@@ -14,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // rather than silently storing tokens in unencrypted storage.
 
 async function secureGet(key: string): Promise<string | null> {
-  if (__DEV__ && Platform.OS === 'web') {
+  if (useWebStorageFallback) {
     try { return localStorage.getItem(key); } catch { return null; }
   }
   try {
@@ -27,7 +30,7 @@ async function secureGet(key: string): Promise<string | null> {
 // Errors propagate intentionally — callers (authStore.login, signup, loginWithGoogle,
 // refreshTokens) are responsible for catching and redirecting to login on failure.
 async function secureSet(key: string, value: string): Promise<void> {
-  if (__DEV__ && Platform.OS === 'web') {
+  if (useWebStorageFallback) {
     try { localStorage.setItem(key, value); } catch { /* ignore */ }
     return;
   }
@@ -35,7 +38,7 @@ async function secureSet(key: string, value: string): Promise<void> {
 }
 
 async function secureDelete(key: string): Promise<void> {
-  if (__DEV__ && Platform.OS === 'web') {
+  if (useWebStorageFallback) {
     try { localStorage.removeItem(key); } catch { /* ignore */ }
     return;
   }

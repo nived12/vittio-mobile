@@ -1,0 +1,110 @@
+{
+  "data": {
+    "summary": {
+      "total_balance": 145230.5,
+      "total_transactions": 24,
+      "total_statements": 3,
+      "selected_month": "2026-05"
+    },
+    "monthly_summary": {
+      "total_income": 40000,
+      "total_expenses": 12850.25,
+      "net_income": 27149.75,
+      "income_count": 2,
+      "expense_count": 11
+    },
+    "monthly_stats": {
+      "average_transaction": 1620.23,
+      "largest_expense": 4200,
+      "largest_income": 25000,
+      "daily_average": 428.34
+    },
+    "bank_accounts": [
+      {
+        "id": 101,
+        "name": "BBVA Debit",
+        "custom_name": "BBVA TDD",
+        "bank_name": "BBVA",
+        "account_type": "debit",
+        "opening_balance": "100000.0",
+        "balance": 112345.5,
+        "currency": "MXN"
+      },
+      {
+        "id": 102,
+        "name": "Santander Credit",
+        "custom_name": "Santander TDC",
+        "bank_name": "Santander",
+        "account_type": "credit",
+        "opening_balance": "-15000.0",
+        "balance": -9125,
+        "currency": "MXN"
+      }
+    ],
+    "bank_summaries": [],
+    "recent_transactions": [
+      {
+        "id": 9001,
+        "date": "2026-05-09",
+        "description": "Nomina",
+        "concept": "Nomina",
+        "amount": 25000,
+        "transaction_type": "income",
+        "source": "manual",
+        "merchant": null,
+        "reference": null,
+        "statement_file_id": null,
+        "bank_account": {
+          "id": 101,
+          "name": "BBVA TDD",
+          "account_type": "debit"
+        },
+        "category": {
+          "id": 1,
+          "name": "Ingresos",
+          "icon": "wallet"
+        },
+        "is_transfer": false,
+        "transfer_account": null,
+        "created_at": "2026-05-09T10:00:00Z",
+        "updated_at": "2026-05-09T10:00:00Z"
+      }
+    ],
+    "recent_statement_files": [],
+    "category_summary": {
+      "has_data": true,
+      "categories": [
+        {
+          "id": 5,
+          "name": "Comida",
+          "icon": "utensils",
+          "amount": 3200
+        },
+        {
+          "id": 6,
+          "name": "Transporte",
+          "icon": "car",
+          "amount": 1800
+        }
+      ]
+    },
+    "spending_trends": [
+      {
+        "month": "2026-03",
+        "total_expenses": 9800,
+        "total_income": 38000,
+        "net_income": 28200
+      }
+    ],
+    "available_months": [
+      {
+        "value": "2026-05",
+        "label": "May 2026"
+      },
+      {
+        "value": "2026-04",
+        "label": "April 2026"
+      }
+    ]
+  }
+}
