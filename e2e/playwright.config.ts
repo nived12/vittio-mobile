@@ -11,7 +11,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ["list"],
-    ["html", { outputFolder: "e2e/playwright-report", open: "never" }]
+    ["html", { outputFolder: "e2e/playwright-report", open: "never" }],
+    ["json", { outputFile: "e2e/playwright-report/results.json" }]
   ],
   use: {
     baseURL: "http://127.0.0.1:8081",
