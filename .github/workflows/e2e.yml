@@ -1,0 +1,47 @@
+# Same as Rails E2E: comment-triggered workflows are read from the default branch YAML.
+name: Mobile E2E
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  e2e:
+    if: github.event.issue.pull_request && contains(lower(github.event.comment.body || ''), 'run-e2e')
+    runs-on: ubuntu-latest
+
+    env:
+      EXPO_PUBLIC_API_URL: http://localhost:3001/api/v1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Expo web output
+        run: npm run e2e:build
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright E2E
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-e2e-playwright-report
+          path: e2e/playwright-report
+          if-no-files-found: ignore
