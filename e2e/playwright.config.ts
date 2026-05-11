@@ -24,9 +24,10 @@ export default defineConfig({
   },
   webServer: {
     command: "npx serve dist -p 8081 --no-clipboard",
+    cwd: "..",
     url: "http://127.0.0.1:8081",
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000
+    timeout: 90_000
   },
   projects: [
     {
