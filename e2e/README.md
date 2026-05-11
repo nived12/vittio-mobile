@@ -1,40 +1,61 @@
 # Mobile Playwright E2E
 
-This folder contains regression tests for `vittio-mobile` on Expo web.
+Regression tests for Expo **web** export (`dist/`). API traffic is mocked in Playwright — you do **not** need a running backend for the current suite.
 
-## How It Works
+## How it works
 
-- Tests run against a static web build in `dist/`.
-- API calls are intercepted in `e2e/mocks/api-mocks.ts`.
-- Mock fixture JSON files live in `e2e/mocks/responses/`.
+- `npm run e2e:build` runs `expo export --platform web` into `dist/`.
+- That script sets `EXPO_PUBLIC_E2E=1` so token storage behaves like development on web (static export uses `localStorage`; see `src/utils/tokenStorage.ts`).
+- Routes under `**/api/v1/**` are fulfilled from `e2e/mocks/api-mocks.ts` and JSON in `e2e/mocks/responses/`.
+
+`EXPO_PUBLIC_API_URL` is still compiled into the bundle at build time; use any consistent base URL. Playwright mocks override real HTTP for the API paths tests hit.
 
 ## Prerequisites
 
-- Install dependencies: `npm ci`
-- Install Playwright browser once: `npx playwright install chromium`
+- Node **22+** (`nvm use 22`)
+- Dependencies: `npm ci`
+- Browsers once: `npx playwright install chromium`
 
-## Local Run
+## Local run
 
-1. Build Expo web output:
-   - `EXPO_PUBLIC_API_URL=http://localhost:3001/api/v1 npm run e2e:build`
+1. Build web output (set API base if you rely on non-mocked calls; mocks cover the default flows):
+
+   ```bash
+   EXPO_PUBLIC_API_URL=http://localhost:3001/api/v1 npm run e2e:build
+   ```
+
 2. Run tests:
-   - `npm run e2e`
-3. Open report:
-   - `npm run e2e:report`
 
-`playwright.config.ts` starts `serve dist -p 8081` automatically.
+   ```bash
+   npm run e2e
+   ```
 
-## Test Pattern
+3. Open HTML report:
 
-- `login(page)` is one line in each spec via `e2e/helpers/auth.ts`.
-- `login(page)` calls `setupApiMocks(page)` before navigating.
-- Prefer role/text/placeholder selectors (no RN web class selectors).
+   ```bash
+   npm run e2e:report
+   ```
 
-## Add a New Mock
+`e2e/playwright.config.ts` starts `npx serve dist -p 8081 --no-clipboard` with `cwd` at the app root (parent of `e2e/`) and waits up to 90s for `http://127.0.0.1:8081`.
 
-Edit only `e2e/mocks/api-mocks.ts`.
+## On-demand CI
 
-Example:
+- Post a PR comment containing **`run-e2e`** to run `.github/workflows/e2e.yml`.
+- Comment-triggered runs resolve the workflow from the repo **default branch** until that YAML is merged there.
+
+Artifacts and reports:
+
+- Reports: `e2e/playwright-report/` (ZIP + optional GitHub Pages path from the workflow)
+- Traces / screenshots / video: `e2e/test-results/`
+
+## Test pattern
+
+- `login(page)` in `e2e/helpers/auth.ts` runs `setupApiMocks(page)` then signs in via UI.
+- Prefer role / text / placeholder locators (i18n-friendly regex when needed).
+
+### New mock route
+
+Extend `e2e/mocks/api-mocks.ts` (and add fixtures under `e2e/mocks/responses/` if needed):
 
 ```ts
 await page.route("**/api/v1/goals**", (route) =>
@@ -42,9 +63,7 @@ await page.route("**/api/v1/goals**", (route) =>
 );
 ```
 
-## Add a New Test
-
-Create a file under `e2e/tests/`:
+### New test
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -52,10 +71,9 @@ import { login } from "../helpers/auth";
 
 test.beforeEach(async ({ page }) => {
   await login(page);
-  await page.getByRole("tab", { name: "Finances" }).click();
 });
 
-test("finances tab renders", async ({ page }) => {
-  await expect(page.getByText("Savings")).toBeVisible();
+test("dashboard shows key sections", async ({ page }) => {
+  await expect(page.getByText(/spending this month|gastos este mes/i).first()).toBeVisible();
 });
 ```
