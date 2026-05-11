@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mobile-e2e-test-results
-          path: test-results
+          path: e2e/test-results
           if-no-files-found: ignore
           retention-days: 3
 
