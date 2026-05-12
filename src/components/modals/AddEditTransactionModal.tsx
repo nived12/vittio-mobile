@@ -711,7 +711,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 ) : (
                   <Ionicons
                     name={aiState === 'recording' ? 'mic' : 'mic-outline'}
-                    size={22}
+                    size={28}
                     color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
                   />
                 )}
@@ -745,7 +745,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 accessibilityLabel={t('aiInput.camera.tap')}
                 hitSlop={8}
               >
-                <Ionicons name="camera-outline" size={22} color="#94a3b8" />
+                <Ionicons name="camera-outline" size={28} color="#94a3b8" />
               </TouchableOpacity>
             </View>
 
@@ -1331,8 +1331,8 @@ const styles = StyleSheet.create({
   },
   // AI input
   aiButton: {
-    width: 40,
-    height: 40,
+    width: 52,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
   },
