@@ -195,7 +195,7 @@ export default function SavingDetailScreen() {
           {/* Linked goals */}
           {saving.goals.length > 0 && (
             <View style={s.section}>
-              <Text style={[s.sectionTitle, { color: textPrimary }]}>Goals</Text>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('savings.detail.linkedGoals')}</Text>
               <View style={s.chipRow}>
                 {saving.goals.map((g) => (
                   <View key={g.id} style={[s.goalChip, { borderColor: g.color }]}>

@@ -702,7 +702,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
             <View style={styles.amountRow}>
               <TouchableOpacity
                 onPress={handleMicPress}
-                style={styles.aiButton}
+                style={[styles.aiButton, styles.aiButtonPrimary]}
                 accessibilityLabel={t('aiInput.voice.tap')}
                 hitSlop={8}
               >
@@ -741,7 +741,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
               <TouchableOpacity
                 onPress={handleCameraPress}
-                style={styles.aiButton}
+                style={[styles.aiButton, styles.aiButtonSecondary]}
                 accessibilityLabel={t('aiInput.camera.tap')}
                 hitSlop={8}
               >
@@ -1333,8 +1333,18 @@ const styles = StyleSheet.create({
   aiButton: {
     width: 52,
     height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  aiButtonPrimary: {
+    backgroundColor: '#eef2ff',
+    borderColor: '#c7d2fe',
+  },
+  aiButtonSecondary: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
   },
   amountInputWrapper: {
     flex: 1,

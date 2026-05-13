@@ -29,7 +29,7 @@ export function useRequireConfirmed(): (onConfirmed: () => void) => void {
           text:    t('auth.confirmation.resendButton'),
           onPress: () => { void authApi.resendConfirmation(); },
         },
-        { text: 'OK', style: 'cancel' },
+        { text: t('common.ok'), style: 'cancel' },
       ],
     );
   };

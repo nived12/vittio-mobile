@@ -308,7 +308,7 @@ function DebtCard({ debt, locale }: { debt: Debt; locale: string }) {
         <View style={cardStyles.centerInfo}>
           <Text style={[cardStyles.name, { color: textPrimary }]} numberOfLines={1}>{debt.name}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-            <Text style={cardStyles.daysText}>{debt.progress_percentage}% paid</Text>
+            <Text style={cardStyles.daysText}>{t('debts.cardPercentPaid', { percent: Math.round(debt.progress_percentage) })}</Text>
             {debt.due_day_of_month !== null && (
               <View
                 style={[

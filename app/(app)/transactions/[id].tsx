@@ -152,8 +152,12 @@ export default function TransactionDetailScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     if (Platform.OS === 'ios') {
       const options = txIsManual
-        ? ['Editar', 'Eliminar', 'Cancelar']
-        : ['Cancelar'];
+        ? [
+            t('transactionDetail.edit'),
+            t('transactionDetail.actions.delete'),
+            t('transactionDetail.actions.cancel'),
+          ]
+        : [t('transactionDetail.actions.cancel')];
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options,
@@ -170,15 +174,22 @@ export default function TransactionDetailScreen() {
       );
     } else {
       const buttons: Array<{ text: string; style?: 'default' | 'cancel' | 'destructive'; onPress?: () => void }> = [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('transactionDetail.actions.cancel'), style: 'cancel' },
       ];
       if (txIsManual) {
         buttons.unshift(
-          { text: 'Editar', onPress: () => Alert.alert('Próximamente', 'La edición estará disponible en la próxima versión.') },
-          { text: 'Eliminar', style: 'destructive', onPress: handleDelete },
+          {
+            text: t('transactionDetail.edit'),
+            onPress: () =>
+              Alert.alert(
+                t('transactionDetail.editComingSoonTitle'),
+                t('transactionDetail.editComingSoonMessage'),
+              ),
+          },
+          { text: t('transactionDetail.actions.delete'), style: 'destructive', onPress: handleDelete },
         );
       }
-      Alert.alert('Opciones', undefined, buttons);
+      Alert.alert(t('transactionDetail.moreOptions'), undefined, buttons);
     }
   }
 
