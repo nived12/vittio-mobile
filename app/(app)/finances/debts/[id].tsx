@@ -154,7 +154,9 @@ export default function DebtDetailScreen() {
             <View style={[s.progressTrack, { backgroundColor: dividerCol }]}>
               <View style={[s.progressFill, { backgroundColor: debt.color, width: `${pct}%` as unknown as number, minWidth: 4 }]} />
             </View>
-            <Text style={s.pctText}>{debt.progress_percentage}% paid off</Text>
+            <Text style={s.pctText}>
+              {t('debts.detail.percentPaidOff', { percent: Math.round(debt.progress_percentage) })}
+            </Text>
           </View>
 
           {/* Stats */}
@@ -170,14 +172,16 @@ export default function DebtDetailScreen() {
             <View style={[s.card, { backgroundColor: surface, borderColor: borderCol }]}>
               <Text style={s.cardTitle}>{t('debts.fields.monthlyPayment')}</Text>
               <Text style={s.cardValue}>{formatCurrency(debt.target_payment_amount, displayLocale)}</Text>
-              <Text style={s.cardSub}>/ {debt.payment_frequency}</Text>
+              <Text style={s.cardSub}>
+                / {t(`debts.frequency.${debt.payment_frequency}` as const)}
+              </Text>
             </View>
           )}
 
           {/* Linked goals */}
           {debt.goals.length > 0 && (
             <View style={s.section}>
-              <Text style={[s.sectionTitle, { color: textPrimary }]}>Goals</Text>
+              <Text style={[s.sectionTitle, { color: textPrimary }]}>{t('debts.detail.linkedGoals')}</Text>
               <View style={s.chipRow}>
                 {debt.goals.map((g) => (
                   <View key={g.id} style={[s.goalChip, { borderColor: g.color }]}>

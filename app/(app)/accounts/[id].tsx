@@ -233,7 +233,11 @@ export default function AccountDetailScreen() {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Editar', 'Eliminar', 'Cancelar'],
+          options: [
+            t('accountDetail.edit'),
+            t('accountDetail.actions.deleteAccount'),
+            t('accountDetail.actions.cancel'),
+          ],
           cancelButtonIndex: 2,
           destructiveButtonIndex: 1,
         },
@@ -247,12 +251,16 @@ export default function AccountDetailScreen() {
       );
     } else {
       Alert.alert(
-        'Opciones',
+        t('accountDetail.moreOptions'),
         undefined,
         [
-          { text: 'Editar', onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
-          { text: 'Eliminar', style: 'destructive', onPress: handleDeleteAccount },
-          { text: 'Cancelar', style: 'cancel' },
+          { text: t('accountDetail.edit'), onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
+          {
+            text: t('accountDetail.actions.deleteAccount'),
+            style: 'destructive',
+            onPress: handleDeleteAccount,
+          },
+          { text: t('accountDetail.actions.cancel'), style: 'cancel' },
         ],
       );
     }

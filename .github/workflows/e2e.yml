@@ -1,4 +1,4 @@
-# Same as Rails E2E: comment-triggered workflows are read from the default branch YAML.
+# Comment-triggered workflows use the workflow file from the repo default branch until merged.
 name: Mobile E2E
 
 on:

@@ -124,14 +124,29 @@ export default function DashboardScreen() {
           />
         }
       >
-        {/* Top bar: logo + avatar */}
+        {/* Top bar: logo centered; spacer balances avatar width */}
         <View style={styles.topBar}>
-          <Image
-            source={require('../../assets/images/vittio_logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} />
+          <View style={styles.topBarSide} />
+          <View style={styles.topBarLogoWrap}>
+            <Image
+              source={
+                isDark
+                  ? require('../../assets/images/vittio_logo_dark_bg.png')
+                  : require('../../assets/images/vittio_logo.png')
+              }
+              style={[
+                styles.logo,
+                {
+                  width: Math.min(width - 72, Math.min(width * 0.66, 420)),
+                  height: 80,
+                },
+              ]}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.topBarSide}>
+            <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} />
+          </View>
         </View>
 
         {/* Month picker row */}
@@ -385,10 +400,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    height: 56,
+    paddingHorizontal: 14,
+    minHeight: 76,
+    paddingVertical: 6,
   },
-  logo: { height: 28, width: 100 },
+  topBarSide: {
+    width: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBarLogoWrap: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    flexShrink: 1,
+  },
   avatarCircle: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: '#4f46e5', alignItems: 'center', justifyContent: 'center',

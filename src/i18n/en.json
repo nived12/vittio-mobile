@@ -330,6 +330,8 @@
     "title": "Transaction",
     "edit": "Edit",
     "moreOptions": "More options",
+    "editComingSoonTitle": "Coming soon",
+    "editComingSoonMessage": "Editing will be available in a future update.",
     "back": "Transaction",
     "fields": {
       "category": "Category",
@@ -430,14 +432,15 @@
       "cancel": "Cancel",
       "success": "Account updated"
     },
-    "deleteModal": {
-      "title": "Delete Account?",
-      "message": "This will permanently delete the account and all {{count}} transactions. This cannot be undone.",
-      "confirm": "Delete Account and Transactions",
-      "cancel": "Keep Account",
-      "success": "Account deleted",
-      "error": "Couldn't delete account"
+    "deleteConfirm": {
+      "title": "Delete account?",
+      "message": "This will permanently delete this account. This cannot be undone.",
+      "messageWithTransactions": "This will permanently delete this account and all {{count}} related transactions. This cannot be undone.",
+      "confirm": "Delete account",
+      "cancel": "Cancel"
     },
+    "deleteSuccess": "Account deleted",
+    "deleteError": "Couldn't delete account",
     "actions": {
       "editAccount": "Edit Account",
       "deleteAccount": "Delete Account",
@@ -723,6 +726,7 @@
     "error": {
       "title": "Couldn't load debts"
     },
+    "cardPercentPaid": "{{percent}}% paid",
     "detail": {
       "percentPaidOff": "{{percent}}% paid off",
       "currentBalance": "Current Balance",
@@ -740,7 +744,8 @@
     "frequency": {
       "monthly": "Monthly",
       "weekly": "Weekly",
-      "biweekly": "Biweekly"
+      "biweekly": "Biweekly",
+      "semimonthly": "Semimonthly"
     },
     "addModal": {
       "titleAdd": "New Debt",

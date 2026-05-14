@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -324,6 +324,8 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
   const [receiptThumbnail, setReceiptThumbnail] = useState<string | null>(null);
   const [showReceiptReview, setShowReceiptReview] = useState(false);
+  const latestTranscriptRef = useRef('');
+  const lastParsedTranscriptRef = useRef('');
 
   // ── Smart categorization — committed merchant name (set on blur) ──
   const [committedMerchant, setCommittedMerchant] = useState('');
@@ -467,21 +469,48 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     }
   }, [categories]);
 
+  const parseVoiceTranscript = useCallback(async (transcript: string) => {
+    const text = transcript.trim();
+    if (!text) {
+      setAiState('idle');
+      return;
+    }
+    if (text === lastParsedTranscriptRef.current) {
+      setAiState('idle');
+      return;
+    }
+
+    try {
+      const result = await parseVoice(text);
+      applyAiResult(result);
+      lastParsedTranscriptRef.current = text;
+      setAiState('prefilled');
+      setTimeout(() => setAiState('idle'), 2000);
+    } catch (error: unknown) {
+      const response = (error as { response?: { status?: number; data?: { error?: { retry_after?: number } } } }).response;
+      if (response?.status === 429) {
+        const retryAfter = response.data?.error?.retry_after;
+        showToast(
+          retryAfter
+            ? `${t('aiInput.voice.rateLimited', { defaultValue: 'Demasiadas solicitudes. Intenta de nuevo pronto.' })} (${retryAfter}s)`
+            : t('aiInput.voice.rateLimited', { defaultValue: 'Demasiadas solicitudes. Intenta de nuevo pronto.' }),
+          'warning',
+        );
+      } else {
+        showToast(t('aiInput.voice.error'), 'error');
+      }
+      setAiState('idle');
+    }
+  }, [applyAiResult, showToast, t]);
+
   // ── Voice handlers ──
   useEffect(() => {
     if (!Voice) return;
-    Voice.onSpeechResults = async (e: SpeechResultsEvent) => {
-      const transcript = e.value?.[0] ?? '';
-      if (!transcript) { setAiState('idle'); return; }
-      try {
-        const result = await parseVoice(transcript);
-        applyAiResult(result);
-        setAiState('prefilled');
-        setTimeout(() => setAiState('idle'), 2000);
-      } catch {
-        showToast(t('aiInput.voice.error'), 'error');
-        setAiState('idle');
-      }
+    Voice.onSpeechResults = (e: SpeechResultsEvent) => {
+      latestTranscriptRef.current = (e.value?.[0] ?? '').trim();
+    };
+    Voice.onSpeechEnd = () => {
+      void parseVoiceTranscript(latestTranscriptRef.current);
     };
     Voice.onSpeechError = (_e: SpeechErrorEvent) => {
       showToast(t('aiInput.voice.error'), 'error');
@@ -490,7 +519,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     return () => {
       Voice.destroy().then(() => Voice.removeAllListeners());
     };
-  }, [applyAiResult, showToast, t]);
+  }, [parseVoiceTranscript, showToast, t]);
 
   const handleMicPress = useCallback(async () => {
     if (!Voice) {
@@ -514,6 +543,8 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
         return;
       }
       setMicPermissionDenied(false);
+      latestTranscriptRef.current = '';
+      lastParsedTranscriptRef.current = '';
       setAiState('recording');
       await Voice.start('es-MX');
     } catch {
@@ -671,7 +702,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
             <View style={styles.amountRow}>
               <TouchableOpacity
                 onPress={handleMicPress}
-                style={styles.aiButton}
+                style={[styles.aiButton, styles.aiButtonPrimary]}
                 accessibilityLabel={t('aiInput.voice.tap')}
                 hitSlop={8}
               >
@@ -680,7 +711,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 ) : (
                   <Ionicons
                     name={aiState === 'recording' ? 'mic' : 'mic-outline'}
-                    size={22}
+                    size={28}
                     color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
                   />
                 )}
@@ -710,11 +741,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
               <TouchableOpacity
                 onPress={handleCameraPress}
-                style={styles.aiButton}
+                style={[styles.aiButton, styles.aiButtonSecondary]}
                 accessibilityLabel={t('aiInput.camera.tap')}
                 hitSlop={8}
               >
-                <Ionicons name="camera-outline" size={22} color="#94a3b8" />
+                <Ionicons name="camera-outline" size={28} color="#94a3b8" />
               </TouchableOpacity>
             </View>
 
@@ -1300,10 +1331,20 @@ const styles = StyleSheet.create({
   },
   // AI input
   aiButton: {
-    width: 40,
-    height: 40,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  aiButtonPrimary: {
+    backgroundColor: '#eef2ff',
+    borderColor: '#c7d2fe',
+  },
+  aiButtonSecondary: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
   },
   amountInputWrapper: {
     flex: 1,

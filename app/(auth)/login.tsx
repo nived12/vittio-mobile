@@ -23,7 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
-import { Image } from 'react-native';
+import { Image, useWindowDimensions } from 'react-native';
 
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, isApiError } from '../../src/api/client';
@@ -54,7 +54,8 @@ type ErrorVariant =
 
 export default function LoginScreen() {
   const { t } = useTranslation();
-  const { theme } = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const { theme, isDark } = useTheme();
   const bg = theme.background;
   const textPrimary = theme.textPrimary;
   const textSecondary = theme.textSecondary;
@@ -273,8 +274,18 @@ export default function LoginScreen() {
           {/* ── Logo ── */}
           <Animated.View style={[styles.logoContainer, { opacity: logoOpacity }]}>
             <Image
-              source={require('../../assets/images/vittio_logo.png')}
-              style={styles.logoImage}
+              source={
+                isDark
+                  ? require('../../assets/images/vittio_logo_dark_bg.png')
+                  : require('../../assets/images/vittio_logo.png')
+              }
+              style={[
+                styles.logoImage,
+                {
+                  width: Math.min(windowWidth - 36, Math.min(windowWidth * 0.82, 420)),
+                  height: 132,
+                },
+              ]}
               resizeMode="contain"
               accessibilityLabel="Vittio"
             />
@@ -540,8 +551,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   logoImage: {
-    width: 180,
-    height: 60,
+    alignSelf: 'center',
   },
 
 
