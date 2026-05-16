@@ -15,6 +15,10 @@ export interface AuthUser {
   trial_ends_at: string | null;
   legal_version_accepted: string | null;
   consent_current: boolean;
+  ai_calls_used: number;
+  ai_calls_limit: number;
+  statement_files_used: number;
+  statement_files_limit: number;
 }
 
 interface AuthState {

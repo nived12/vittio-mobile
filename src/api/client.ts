@@ -21,7 +21,9 @@ interface QueueItem {
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
 let isRedirectingToConsent = false;
+let isRedirectingToPremium = false;
 export function resetConsentRedirect(): void { isRedirectingToConsent = false; }
+export function resetPremiumRedirect(): void { isRedirectingToPremium = false; }
 
 function processQueue(error: unknown, token: string | null): void {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -139,6 +141,20 @@ apiClient.interceptors.response.use(
         isRedirectingToConsent = true;
         const { router } = await import('expo-router');
         router.replace('/(auth)/consent' as Parameters<typeof router.replace>[0]);
+      }
+      return Promise.reject(error);
+    }
+
+    if (
+      error.response?.status === 402 ||
+      getApiErrorCode(error) === 'SUBSCRIPTION_REQUIRED'
+    ) {
+      if (!isRedirectingToPremium) {
+        isRedirectingToPremium = true;
+        const { router } = await import('expo-router');
+        router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
+        // Reset flag after navigation so future 402s can also redirect
+        setTimeout(() => { isRedirectingToPremium = false; }, 2000);
       }
       return Promise.reject(error);
     }

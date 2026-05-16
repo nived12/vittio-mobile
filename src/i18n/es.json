@@ -497,6 +497,8 @@
     "changePassword": "Cambiar Contraseña",
     "passwordChanged": "Contraseña actualizada",
     "passwordSaveError": "No se pudo actualizar la contraseña. Inténtalo de nuevo.",
+    "managePremium": "Gestionar Premium",
+    "upgradePremium": "Vittio Premium",
     "invalidCurrentPassword": "La contraseña actual es incorrecta",
     "oauthAccountPassword": "Esta cuenta usa Google. No es posible cambiar la contraseña.",
     "appearance": "APARIENCIA",

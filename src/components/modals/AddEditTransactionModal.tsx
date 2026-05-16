@@ -60,9 +60,12 @@ import { useCreateTransaction, useUpdateTransaction } from '../../hooks/useTrans
 import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useCategories } from '../../hooks/useCategories';
 import { useMerchantRule, useCreateMerchantRule } from '../../hooks/useMerchantRules';
+import { router } from 'expo-router';
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 import { useTheme } from '../../theme/ThemeContext';
 import { parseVoice, parseImage } from '../../api/transactions';
+import { PremiumBadge } from '../PremiumBadge';
 import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
 import type { Category } from '../../api/categories';
@@ -253,6 +256,8 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
+  const subscriptionStatus = useAuthStore((s) => s.user?.subscription_status ?? 'none');
+  const isPremiumLocked = subscriptionStatus !== 'active' && subscriptionStatus !== 'trial_active';
   const isEditMode = Boolean(transaction);
 
   // ── Dark mode ──
@@ -522,6 +527,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   }, [parseVoiceTranscript, showToast, t]);
 
   const handleMicPress = useCallback(async () => {
+    if (isPremiumLocked) {
+      onClose();
+      router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
+      return;
+    }
     if (!Voice) {
       showToast(t('aiInput.voice.requiresDevBuild'), 'warning');
       return;
@@ -555,6 +565,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
   // ── Camera handler ──
   const handleCameraPress = useCallback(async () => {
+    if (isPremiumLocked) {
+      onClose();
+      router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
+      return;
+    }
     Alert.alert(
       t('aiInput.camera.tap'),
       undefined,
@@ -700,22 +715,25 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
           >
             {/* Amount */}
             <View style={styles.amountRow}>
-              <TouchableOpacity
-                onPress={handleMicPress}
-                style={[styles.aiButton, styles.aiButtonPrimary]}
-                accessibilityLabel={t('aiInput.voice.tap')}
-                hitSlop={8}
-              >
-                {aiState === 'processing' ? (
-                  <ActivityIndicator size="small" color="#4f46e5" />
-                ) : (
-                  <Ionicons
-                    name={aiState === 'recording' ? 'mic' : 'mic-outline'}
-                    size={28}
-                    color={aiState === 'recording' ? '#e11d48' : '#4f46e5'}
-                  />
-                )}
-              </TouchableOpacity>
+              <View style={{ position: 'relative' }}>
+                <TouchableOpacity
+                  onPress={handleMicPress}
+                  style={[styles.aiButton, styles.aiButtonPrimary]}
+                  accessibilityLabel={t('aiInput.voice.tap')}
+                  hitSlop={8}
+                >
+                  {aiState === 'processing' ? (
+                    <ActivityIndicator size="small" color="#4f46e5" />
+                  ) : (
+                    <Ionicons
+                      name={aiState === 'recording' ? 'mic' : 'mic-outline'}
+                      size={28}
+                      color={isPremiumLocked ? '#94a3b8' : (aiState === 'recording' ? '#e11d48' : '#4f46e5')}
+                    />
+                  )}
+                </TouchableOpacity>
+                {isPremiumLocked && <PremiumBadge />}
+              </View>
 
               <View style={styles.amountInputWrapper}>
                 <Text style={[styles.currencyPrefix, { color: textSecondary }]}>$</Text>
@@ -739,14 +757,17 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 />
               </View>
 
-              <TouchableOpacity
-                onPress={handleCameraPress}
-                style={[styles.aiButton, styles.aiButtonSecondary]}
-                accessibilityLabel={t('aiInput.camera.tap')}
-                hitSlop={8}
-              >
-                <Ionicons name="camera-outline" size={28} color="#94a3b8" />
-              </TouchableOpacity>
+              <View style={{ position: 'relative' }}>
+                <TouchableOpacity
+                  onPress={handleCameraPress}
+                  style={[styles.aiButton, styles.aiButtonSecondary]}
+                  accessibilityLabel={t('aiInput.camera.tap')}
+                  hitSlop={8}
+                >
+                  <Ionicons name="camera-outline" size={28} color="#94a3b8" />
+                </TouchableOpacity>
+                {isPremiumLocked && <PremiumBadge />}
+              </View>
             </View>
 
             {/* AI state labels */}

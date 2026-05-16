@@ -497,6 +497,8 @@
     "changePassword": "Change Password",
     "passwordChanged": "Password updated",
     "passwordSaveError": "Couldn't update password. Please try again.",
+    "managePremium": "Manage Premium",
+    "upgradePremium": "Vittio Premium",
     "invalidCurrentPassword": "Current password is incorrect",
     "oauthAccountPassword": "This account uses Google Sign-In. Password change is not available.",
     "appearance": "APPEARANCE",
