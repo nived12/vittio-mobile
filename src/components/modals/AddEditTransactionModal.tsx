@@ -62,8 +62,8 @@ import { useCategories } from '../../hooks/useCategories';
 import { useMerchantRule, useCreateMerchantRule } from '../../hooks/useMerchantRules';
 import { router } from 'expo-router';
 import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
 import { useTheme } from '../../theme/ThemeContext';
+import { useIsPremiumLocked } from '../../hooks/useIsPremiumLocked';
 import { parseVoice, parseImage } from '../../api/transactions';
 import { PremiumBadge } from '../PremiumBadge';
 import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
@@ -256,8 +256,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
-  const subscriptionStatus = useAuthStore((s) => s.user?.subscription_status ?? 'none');
-  const isPremiumLocked = subscriptionStatus !== 'active' && subscriptionStatus !== 'trial_active';
+  const isPremiumLocked = useIsPremiumLocked();
   const isEditMode = Boolean(transaction);
 
   // ── Dark mode ──

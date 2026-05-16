@@ -957,5 +957,44 @@
   },
   "errors": {
     "sessionExpired": "Your session has expired. Please log in again."
+  },
+  "premium": {
+    "headerTitle": "Vittio Premium",
+    "backButton": "Go back",
+    "trial": {
+      "daysRemaining_one": "{{count}} day remaining in your free trial",
+      "daysRemaining_other": "{{count}} days remaining in your free trial",
+      "ending": "Your free trial is about to end"
+    },
+    "bannerExpired": "Your free trial has ended",
+    "bannerActive": "You are a Premium user ✓",
+    "usageTitle": "TRIAL USAGE",
+    "usageStatements": "Bank statements",
+    "usageAi": "AI uses (voice + camera)",
+    "heroTitle": "Unlock the full potential of Vittio",
+    "heroSubtitle": "Import statements, use AI, and much more.",
+    "features": [
+      "Import bank statements (PDF/CSV)",
+      "Voice transaction entry",
+      "Receipt scanning with camera",
+      "Personalized AI assistant (coming soon)"
+    ],
+    "monthly": {
+      "label": "MONTHLY",
+      "unit": "MXN/mo",
+      "cta": "Subscribe"
+    },
+    "annual": {
+      "label": "ANNUAL",
+      "unit": "MXN/mo",
+      "total": "$1,188 MXN/yr",
+      "cta": "Save $600/yr",
+      "savingsBadge": "-33%"
+    },
+    "ivaNote": "VAT included · Cancel anytime",
+    "manageBtn": "Manage subscription",
+    "toastSuccess": "Welcome to Premium! Your subscription is now active.",
+    "toastCheckoutError": "Could not open the payment process. Please try again.",
+    "toastPortalError": "Could not open the subscription portal."
   }
 }

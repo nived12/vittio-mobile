@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { Crown } from 'phosphor-react-native';
+import { colors } from '../theme/colors';
 
 interface PremiumBadgeProps {
   style?: ViewStyle;
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#d97706',
+    backgroundColor: colors.warning,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,

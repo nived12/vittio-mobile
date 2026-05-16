@@ -957,5 +957,44 @@
   },
   "errors": {
     "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo."
+  },
+  "premium": {
+    "headerTitle": "Vittio Premium",
+    "backButton": "Volver",
+    "trial": {
+      "daysRemaining_one": "{{count}} día restante en tu prueba gratuita",
+      "daysRemaining_other": "{{count}} días restantes en tu prueba gratuita",
+      "ending": "Tu prueba gratuita está por terminar"
+    },
+    "bannerExpired": "Tu prueba gratuita ha terminado",
+    "bannerActive": "Ya eres usuario Premium ✓",
+    "usageTitle": "USO DE PRUEBA",
+    "usageStatements": "Estados de cuenta",
+    "usageAi": "Usos de IA (voz + cámara)",
+    "heroTitle": "Desbloquea todo el potencial de Vittio",
+    "heroSubtitle": "Importa estados de cuenta, usa IA y mucho más.",
+    "features": [
+      "Importar estados de cuenta (PDF/CSV)",
+      "Entrada de transacciones por voz",
+      "Escaneo de recibos con cámara",
+      "Asistente IA personalizado (próximamente)"
+    ],
+    "monthly": {
+      "label": "MENSUAL",
+      "unit": "MXN/mes",
+      "cta": "Suscribirse"
+    },
+    "annual": {
+      "label": "ANUAL",
+      "unit": "MXN/mes",
+      "total": "$1,188 MXN/año",
+      "cta": "Ahorra $600/año",
+      "savingsBadge": "-33%"
+    },
+    "ivaNote": "IVA incluido · Cancela cuando quieras",
+    "manageBtn": "Gestionar suscripción",
+    "toastSuccess": "¡Bienvenido a Premium! Tu suscripción ya está activa.",
+    "toastCheckoutError": "No se pudo abrir el proceso de pago. Intenta de nuevo.",
+    "toastPortalError": "No se pudo abrir el portal de suscripción."
   }
 }

@@ -11,6 +11,7 @@ import { Toast } from '../../src/components/ui/Toast';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme/ThemeContext';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
@@ -26,6 +27,7 @@ export default function AppLayout() {
   const dismissToast = useUIStore((s) => s.dismissToast);
   const user = useAuthStore((s) => s.user);
   const requireConfirmed = useRequireConfirmed();
+  const insets = useSafeAreaInsets();
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
   const { theme } = useTheme();
@@ -189,7 +191,7 @@ export default function AppLayout() {
         onClose={closeStatementUpload}
       />
       <View
-        style={{ position: 'absolute', bottom: 90, left: 16, right: 16, gap: 8 }}
+        style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}
         pointerEvents="box-none"
       >
         {toasts.map((t) => (

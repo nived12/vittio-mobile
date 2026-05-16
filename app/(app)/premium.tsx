@@ -11,26 +11,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { CaretLeft, Check } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { createCheckoutSession, fetchPortalUrl, fetchSubscriptionStatus } from '../../src/api/subscription';
+import { authApi } from '../../src/api/auth';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useTheme } from '../../src/theme/ThemeContext';
+import { colors } from '../../src/theme/colors';
 import { spacing, textStyles } from '../../src/theme';
 
 // ── UsageRow ───────────────────────────────────────────────────────────────
 
-function UsageRow({ label, used, limit }: { label: string; used: number; limit: number }) {
+function UsageRow({
+  label, used, limit, trackBg,
+}: { label: string; used: number; limit: number; trackBg: string }) {
   const pct   = limit > 0 ? Math.min(used / limit, 1) : 0;
-  const color = pct >= 1 ? '#e11d48' : pct >= 0.8 ? '#d97706' : '#4f46e5';
+  const color = pct >= 1 ? colors.negative : pct >= 0.8 ? colors.warning : colors.primary;
   return (
     <View style={styles.usageRow}>
       <View style={styles.usageHeader}>
         <Text style={styles.usageLabel}>{label}</Text>
         <Text style={[styles.usageCount, { color }]}>{used}/{limit}</Text>
       </View>
-      <View style={styles.usageTrack}>
-        <View style={[styles.usageFill, { width: `${pct * 100}%` as any, backgroundColor: color }]} />
+      <View style={[styles.usageTrack, { backgroundColor: trackBg }]}>
+        <View style={[styles.usageFill, { width: `${pct * 100}%` as `${number}%`, backgroundColor: color }]} />
       </View>
     </View>
   );
@@ -38,23 +43,21 @@ function UsageRow({ label, used, limit }: { label: string; used: number; limit: 
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+// SUCCESS_URL and CANCEL_URL are intentionally web URLs pointing to the Rails app.
+// WebBrowser.openBrowserAsync resolves when the user closes the in-app browser,
+// at which point the app polls fetchSubscriptionStatus() to detect payment success.
+// A custom URL scheme is not required for this flow.
 const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
 const _appBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
 const SUCCESS_URL = `${_appBase}/subscription?success=1`;
 const CANCEL_URL  = `${_appBase}/subscription`;
 
-const FEATURES = [
-  'Importar estados de cuenta (PDF/CSV)',
-  'Entrada de transacciones por voz',
-  'Escaneo de recibos con cámara',
-  'Asistente IA personalizado (próximamente)',
-];
-
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function PremiumScreen() {
-  const user    = useAuthStore((s) => s.user);
+  const { t } = useTranslation();
   const setUser = useAuthStore((s) => s.setUser);
+  const user    = useAuthStore((s) => s.user);
   const { showToast } = useUIStore();
   const { theme, isDark } = useTheme();
 
@@ -66,6 +69,15 @@ export default function PremiumScreen() {
   const textPrimary   = isDark ? theme.textPrimary : '#0f172a';
   const textSecondary = isDark ? theme.textSecondary : '#64748b';
   const borderCol     = isDark ? theme.border      : '#e2e8f0';
+  const usageTrackBg  = isDark ? theme.border      : '#e2e8f0';
+
+  // Banner colors — dark-mode aware
+  const trialBannerBg    = isDark ? '#78350f' : '#fef3c7';
+  const trialBannerText  = isDark ? '#fde68a' : '#92400e';
+  const expiredBannerBg  = isDark ? '#7f1d1d' : '#fee2e2';
+  const expiredBannerText = isDark ? '#fecaca' : '#991b1b';
+  const activeBannerBg   = isDark ? '#064e3b' : '#d1fae5';
+  const activeBannerText = isDark ? '#6ee7b7' : '#065f46';
 
   const status      = user?.subscription_status ?? 'none';
   const isActive    = status === 'active';
@@ -78,6 +90,8 @@ export default function PremiumScreen() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   })();
 
+  const features = t('premium.features', { returnObjects: true }) as string[];
+
   async function handleSubscribe(interval: 'month' | 'year') {
     setLoadingInterval(interval);
     try {
@@ -89,12 +103,14 @@ export default function PremiumScreen() {
       // Browser closed — check if payment succeeded
       const subscriptionStatus = await fetchSubscriptionStatus();
       if (subscriptionStatus.status === 'active') {
-        if (user) setUser({ ...user, subscription_status: 'active' });
-        showToast('¡Bienvenido a Premium! Tu suscripción ya está activa.', 'success');
+        // Refresh the full user profile so usage counters are also up-to-date
+        const freshUser = await authApi.me();
+        setUser(freshUser);
+        showToast(t('premium.toastSuccess'), 'success');
         router.replace('/(app)');
       }
     } catch {
-      showToast('No se pudo abrir el proceso de pago. Intenta de nuevo.', 'error');
+      showToast(t('premium.toastCheckoutError'), 'error');
     } finally {
       setLoadingInterval(null);
     }
@@ -108,7 +124,7 @@ export default function PremiumScreen() {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
       });
     } catch {
-      showToast('No se pudo abrir el portal de suscripción.', 'error');
+      showToast(t('premium.toastPortalError'), 'error');
     } finally {
       setLoadingPortal(false);
     }
@@ -123,11 +139,11 @@ export default function PremiumScreen() {
           hitSlop={8}
           style={styles.backBtn}
           accessibilityRole="button"
-          accessibilityLabel="Volver"
+          accessibilityLabel={t('premium.backButton')}
         >
           <CaretLeft size={24} color={textPrimary} weight="bold" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textPrimary }]}>Vittio Premium</Text>
+        <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('premium.headerTitle')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -138,53 +154,59 @@ export default function PremiumScreen() {
       >
         {/* Status banner */}
         {isOnTrial && (
-          <View style={styles.trialBanner}>
-            <Text style={styles.trialBannerText}>
+          <View style={[styles.banner, { backgroundColor: trialBannerBg }]}>
+            <Text style={[styles.bannerText, { color: trialBannerText }]}>
               {trialDaysLeft > 0
-                ? `${trialDaysLeft} día${trialDaysLeft !== 1 ? 's' : ''} restantes en tu prueba gratuita`
-                : 'Tu prueba gratuita está por terminar'}
+                ? t('premium.trial.daysRemaining', { count: trialDaysLeft })
+                : t('premium.trial.ending')}
             </Text>
           </View>
         )}
         {!isOnTrial && !isActive && (
-          <View style={styles.expiredBanner}>
-            <Text style={styles.expiredBannerText}>Tu prueba gratuita ha terminado</Text>
+          <View style={[styles.banner, { backgroundColor: expiredBannerBg }]}>
+            <Text style={[styles.bannerText, { color: expiredBannerText }]}>
+              {t('premium.bannerExpired')}
+            </Text>
           </View>
         )}
         {isActive && (
-          <View style={styles.activeBanner}>
-            <Text style={styles.activeBannerText}>Ya eres usuario Premium ✓</Text>
+          <View style={[styles.banner, { backgroundColor: activeBannerBg }]}>
+            <Text style={[styles.bannerText, { color: activeBannerText, fontWeight: '600' }]}>
+              {t('premium.bannerActive')}
+            </Text>
           </View>
         )}
 
         {/* Trial usage bars */}
         {isOnTrial && user && (
           <View style={[styles.usageCard, { backgroundColor: surface, borderColor: borderCol }]}>
-            <Text style={[styles.usageTitle, { color: textSecondary }]}>USO DE PRUEBA</Text>
+            <Text style={[styles.usageTitle, { color: textSecondary }]}>{t('premium.usageTitle')}</Text>
             <UsageRow
-              label="Estados de cuenta"
+              label={t('premium.usageStatements')}
               used={user.statement_files_used}
               limit={user.statement_files_limit}
+              trackBg={usageTrackBg}
             />
             <UsageRow
-              label="Usos de IA (voz + cámara)"
+              label={t('premium.usageAi')}
               used={user.ai_calls_used}
               limit={user.ai_calls_limit}
+              trackBg={usageTrackBg}
             />
           </View>
         )}
 
         {/* Hero */}
         <Text style={[styles.heroTitle, { color: textPrimary }]}>
-          Desbloquea todo el potencial de Vittio
+          {t('premium.heroTitle')}
         </Text>
         <Text style={[styles.heroSubtitle, { color: textSecondary }]}>
-          Importa estados de cuenta, usa IA y mucho más.
+          {t('premium.heroSubtitle')}
         </Text>
 
         {/* Feature list */}
         <View style={[styles.featureCard, { backgroundColor: surface, borderColor: borderCol }]}>
-          {FEATURES.map((feature) => (
+          {features.map((feature) => (
             <View key={feature} style={styles.featureRow}>
               <View style={styles.featureIconWrap}>
                 <Check size={16} color="#10b981" weight="bold" />
@@ -204,14 +226,14 @@ export default function PremiumScreen() {
               disabled={loadingInterval !== null || loadingPortal}
               activeOpacity={0.8}
             >
-              <Text style={[styles.planLabel, { color: textSecondary }]}>MENSUAL</Text>
+              <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
               <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
-              <Text style={[styles.planUnit, { color: textSecondary }]}>MXN/mes</Text>
-              <View style={[styles.planCta, { borderColor: '#4f46e5' }]}>
+              <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
+              <View style={[styles.planCta, { borderColor: colors.primary }]}>
                 {loadingInterval === 'month' ? (
-                  <ActivityIndicator size="small" color="#4f46e5" />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Text style={styles.planCtaText}>Suscribirse</Text>
+                  <Text style={styles.planCtaText}>{t('premium.monthly.cta')}</Text>
                 )}
               </View>
             </TouchableOpacity>
@@ -224,17 +246,17 @@ export default function PremiumScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.savingsBadge}>
-                <Text style={styles.savingsBadgeText}>-33%</Text>
+                <Text style={styles.savingsBadgeText}>{t('premium.annual.savingsBadge')}</Text>
               </View>
-              <Text style={styles.planLabelAnnual}>ANUAL</Text>
+              <Text style={styles.planLabelAnnual}>{t('premium.annual.label')}</Text>
               <Text style={styles.planPriceAnnual}>$99</Text>
-              <Text style={styles.planUnitAnnual}>MXN/mes</Text>
-              <Text style={styles.planAnnualTotal}>$1,188 MXN/año</Text>
+              <Text style={styles.planUnitAnnual}>{t('premium.annual.unit')}</Text>
+              <Text style={styles.planAnnualTotal}>{t('premium.annual.total')}</Text>
               <View style={styles.planCtaAnnual}>
                 {loadingInterval === 'year' ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                  <Text style={styles.planCtaAnnualText}>Ahorra $600/año</Text>
+                  <Text style={styles.planCtaAnnualText}>{t('premium.annual.cta')}</Text>
                 )}
               </View>
             </TouchableOpacity>
@@ -244,7 +266,7 @@ export default function PremiumScreen() {
         {/* IVA note */}
         {!isActive && (
           <Text style={[styles.ivaNote, { color: textSecondary }]}>
-            IVA incluido · Cancela cuando quieras
+            {t('premium.ivaNote')}
           </Text>
         )}
 
@@ -257,10 +279,10 @@ export default function PremiumScreen() {
             activeOpacity={0.8}
           >
             {loadingPortal ? (
-              <ActivityIndicator size="small" color="#4f46e5" />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
-              <Text style={[styles.manageBtnText, { color: '#4f46e5' }]}>
-                Gestionar suscripción
+              <Text style={[styles.manageBtnText, { color: colors.primary }]}>
+                {t('premium.manageBtn')}
               </Text>
             )}
           </TouchableOpacity>
@@ -290,12 +312,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
 
-  trialBanner:      { backgroundColor: '#fef3c7', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, marginBottom: spacing.md },
-  trialBannerText:  { color: '#92400e', fontSize: 14, fontWeight: '500', textAlign: 'center' },
-  expiredBanner:    { backgroundColor: '#fee2e2', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, marginBottom: spacing.md },
-  expiredBannerText: { color: '#991b1b', fontSize: 14, fontWeight: '500', textAlign: 'center' },
-  activeBanner:     { backgroundColor: '#d1fae5', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, marginBottom: spacing.md },
-  activeBannerText: { color: '#065f46', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+  banner:     { borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, marginBottom: spacing.md },
+  bannerText: { fontSize: 14, fontWeight: '500', textAlign: 'center' },
 
   heroTitle:    { ...textStyles.headingMd, textAlign: 'center', marginBottom: spacing.sm },
   heroSubtitle: { ...textStyles.bodyLg, textAlign: 'center', marginBottom: spacing.lg },
@@ -319,8 +337,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     padding: spacing.md,
     alignItems: 'center',
-    backgroundColor: '#4f46e5',
-    borderColor: '#4f46e5',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
     position: 'relative',
   },
   planLabel:       { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, marginBottom: 8 },
@@ -340,7 +358,7 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: 'center',
   },
-  planCtaText:    { color: '#4f46e5', fontSize: 13, fontWeight: '600' },
+  planCtaText:    { color: colors.primary, fontSize: 13, fontWeight: '600' },
   planCtaAnnual: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: 8,
@@ -380,6 +398,6 @@ const styles = StyleSheet.create({
   usageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   usageLabel:  { fontSize: 13, fontWeight: '500' },
   usageCount:  { fontSize: 13, fontWeight: '600' },
-  usageTrack:  { height: 4, borderRadius: 2, backgroundColor: '#e2e8f0', overflow: 'hidden' },
+  usageTrack:  { height: 4, borderRadius: 2, overflow: 'hidden' },
   usageFill:   { height: 4, borderRadius: 2 },
 });
