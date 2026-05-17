@@ -995,6 +995,10 @@
     "manageBtn": "Manage subscription",
     "toastSuccess": "Welcome to Premium! Your subscription is now active.",
     "toastCheckoutError": "Could not open the payment process. Please try again.",
+    "toastProcessing": "Payment received — activating your subscription shortly.",
+    "toastSwitched": "Plan updated — your balance has been prorated.",
+    "switchToAnnual": "Switch to Annual · Save 33%",
+    "switchToMonthly": "Switch to Monthly",
     "toastPortalError": "Could not open the subscription portal."
   }
 }

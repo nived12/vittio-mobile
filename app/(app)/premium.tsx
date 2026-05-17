@@ -14,7 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { CaretLeft, Check } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
-import { createCheckoutSession, fetchPortalUrl, fetchSubscriptionStatus } from '../../src/api/subscription';
+import { CheckoutResult, createCheckoutSession, fetchPortalUrl, fetchSubscriptionStatus } from '../../src/api/subscription';
 import { authApi } from '../../src/api/auth';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -43,14 +43,25 @@ function UsageRow({
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-// SUCCESS_URL and CANCEL_URL are intentionally web URLs pointing to the Rails app.
-// WebBrowser.openBrowserAsync resolves when the user closes the in-app browser,
-// at which point the app polls fetchSubscriptionStatus() to detect payment success.
-// A custom URL scheme is not required for this flow.
+// SUCCESS_URL points to a public Rails page (no auth required) so the in-app browser
+// shows "Payment successful" instead of the web login page after Stripe redirects.
+// CANCEL_URL points to the subscription page — it will redirect to login (fine, user cancelled).
+// After browser close the app retries fetchSubscriptionStatus() to account for webhook delay.
 const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
 const _appBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
-const SUCCESS_URL = `${_appBase}/subscription?success=1`;
+const SUCCESS_URL = `${_appBase}/checkout/success`;
 const CANCEL_URL  = `${_appBase}/subscription`;
+
+// Stripe webhooks can take 2-5 seconds to process after the browser closes.
+// Poll up to 5 times with 1.5s delays before giving up and navigating home anyway.
+async function pollUntilActive(attempts = 5, delayMs = 1500): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    const s = await fetchSubscriptionStatus();
+    if (s.status === 'active') return true;
+    if (i < attempts - 1) await new Promise<void>((r) => setTimeout(r, delayMs));
+  }
+  return false;
+}
 
 // ── Screen ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +94,7 @@ export default function PremiumScreen() {
   const isActive    = status === 'active';
   const isOnTrial   = status === 'trial_active';
   const trialEndsAt = user?.trial_ends_at ?? null;
+  const currentInterval = user?.subscription_interval ?? null;
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return 0;
@@ -96,19 +108,30 @@ export default function PremiumScreen() {
     setLoadingInterval(interval);
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      const url = await createCheckoutSession(interval, SUCCESS_URL, CANCEL_URL);
-      await WebBrowser.openBrowserAsync(url, {
-        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-      });
-      // Browser closed — check if payment succeeded
-      const subscriptionStatus = await fetchSubscriptionStatus();
-      if (subscriptionStatus.status === 'active') {
-        // Refresh the full user profile so usage counters are also up-to-date
+      const result: CheckoutResult = await createCheckoutSession(interval, SUCCESS_URL, CANCEL_URL);
+
+      if (result.kind === 'switched') {
+        // Direct plan swap — no browser session needed
         const freshUser = await authApi.me();
         setUser(freshUser);
-        showToast(t('premium.toastSuccess'), 'success');
+        showToast(t('premium.toastSwitched'), 'success');
         router.replace('/(app)');
+        return;
       }
+
+      // New subscription — open Stripe Checkout in browser
+      await WebBrowser.openBrowserAsync(result.url, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      });
+      // Browser closed — poll for active status (webhook may take a few seconds)
+      const isActive  = await pollUntilActive();
+      const freshUser = await authApi.me();
+      setUser(freshUser);
+      showToast(
+        isActive ? t('premium.toastSuccess') : t('premium.toastProcessing'),
+        isActive ? 'success' : 'info',
+      );
+      router.replace('/(app)');
     } catch {
       showToast(t('premium.toastCheckoutError'), 'error');
     } finally {
@@ -216,55 +239,82 @@ export default function PremiumScreen() {
           ))}
         </View>
 
-        {/* Plan cards */}
-        {!isActive && (
+        {/* Plan cards — shown to non-subscribers (both cards) and active subscribers (switch card only) */}
+        {(!isActive || currentInterval === 'month') && (
           <View style={styles.planRow}>
-            {/* Monthly */}
-            <TouchableOpacity
-              style={[styles.planCard, { backgroundColor: surface, borderColor: borderCol }]}
-              onPress={() => handleSubscribe('month')}
-              disabled={loadingInterval !== null || loadingPortal}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
-              <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
-              <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
-              <View style={[styles.planCta, { borderColor: colors.primary }]}>
-                {loadingInterval === 'month' ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <Text style={styles.planCtaText}>{t('premium.monthly.cta')}</Text>
-                )}
-              </View>
-            </TouchableOpacity>
+            {/* Monthly — hidden for active monthly subscribers */}
+            {!isActive && (
+              <TouchableOpacity
+                style={[styles.planCard, { backgroundColor: surface, borderColor: borderCol }]}
+                onPress={() => handleSubscribe('month')}
+                disabled={loadingInterval !== null || loadingPortal}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
+                <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
+                <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
+                <View style={[styles.planCta, { borderColor: colors.primary }]}>
+                  {loadingInterval === 'month' ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Text style={styles.planCtaText}>{t('premium.monthly.cta')}</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
 
-            {/* Annual — highlighted */}
-            <TouchableOpacity
-              style={styles.planCardAnnual}
-              onPress={() => handleSubscribe('year')}
-              disabled={loadingInterval !== null || loadingPortal}
-              activeOpacity={0.8}
-            >
-              <View style={styles.savingsBadge}>
-                <Text style={styles.savingsBadgeText}>{t('premium.annual.savingsBadge')}</Text>
-              </View>
-              <Text style={styles.planLabelAnnual}>{t('premium.annual.label')}</Text>
-              <Text style={styles.planPriceAnnual}>$99</Text>
-              <Text style={styles.planUnitAnnual}>{t('premium.annual.unit')}</Text>
-              <Text style={styles.planAnnualTotal}>{t('premium.annual.total')}</Text>
-              <View style={styles.planCtaAnnual}>
-                {loadingInterval === 'year' ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <Text style={styles.planCtaAnnualText}>{t('premium.annual.cta')}</Text>
-                )}
-              </View>
-            </TouchableOpacity>
+            {/* Annual — highlighted; shown to all non-subscribers and active monthly subscribers */}
+            {(!isActive || currentInterval === 'month') && (
+              <TouchableOpacity
+                style={styles.planCardAnnual}
+                onPress={() => handleSubscribe('year')}
+                disabled={loadingInterval !== null || loadingPortal}
+                activeOpacity={0.8}
+              >
+                <View style={styles.savingsBadge}>
+                  <Text style={styles.savingsBadgeText}>{t('premium.annual.savingsBadge')}</Text>
+                </View>
+                <Text style={styles.planLabelAnnual}>{t('premium.annual.label')}</Text>
+                <Text style={styles.planPriceAnnual}>$99</Text>
+                <Text style={styles.planUnitAnnual}>{t('premium.annual.unit')}</Text>
+                <Text style={styles.planAnnualTotal}>{t('premium.annual.total')}</Text>
+                <View style={styles.planCtaAnnual}>
+                  {loadingInterval === 'year' ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Text style={styles.planCtaAnnualText}>
+                      {isActive ? t('premium.switchToAnnual') : t('premium.annual.cta')}
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
-        {/* IVA note */}
-        {!isActive && (
+        {/* Switch to monthly — shown only to active annual subscribers */}
+        {isActive && currentInterval === 'year' && (
+          <TouchableOpacity
+            style={[styles.planCard, { backgroundColor: surface, borderColor: borderCol, flex: 0, width: '100%' }]}
+            onPress={() => handleSubscribe('month')}
+            disabled={loadingInterval !== null || loadingPortal}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
+            <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
+            <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
+            <View style={[styles.planCta, { borderColor: colors.primary }]}>
+              {loadingInterval === 'month' ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={styles.planCtaText}>{t('premium.switchToMonthly')}</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* IVA note — shown whenever plan cards are visible */}
+        {(!isActive || currentInterval !== null) && (
           <Text style={[styles.ivaNote, { color: textSecondary }]}>
             {t('premium.ivaNote')}
           </Text>

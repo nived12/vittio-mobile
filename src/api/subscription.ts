@@ -19,17 +19,22 @@ export async function fetchSubscriptionStatus(): Promise<SubscriptionStatus> {
   return res.data.data;
 }
 
+export type CheckoutResult =
+  | { kind: 'checkout'; url: string }
+  | { kind: 'switched' };
+
 /** POST /api/v1/subscription/checkout */
 export async function createCheckoutSession(
   interval: 'month' | 'year',
   successUrl: string,
   cancelUrl: string,
-): Promise<string> {
-  const res = await apiClient.post<{ data: { checkout_url: string } }>(
+): Promise<CheckoutResult> {
+  const res = await apiClient.post<{ data: { checkout_url?: string; switched?: boolean } }>(
     '/subscription/checkout',
     { interval, success_url: successUrl, cancel_url: cancelUrl },
   );
-  return res.data.data.checkout_url;
+  if (res.data.data?.switched) return { kind: 'switched' };
+  return { kind: 'checkout', url: res.data.data.checkout_url! };
 }
 
 /** GET /api/v1/subscription/portal */

@@ -12,6 +12,7 @@ export interface AuthUser {
   confirmed: boolean;
   avatar_url: string | null;
   subscription_status: string;
+  subscription_interval: 'month' | 'year' | null;
   trial_ends_at: string | null;
   legal_version_accepted: string | null;
   consent_current: boolean;
