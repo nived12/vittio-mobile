@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { CaretLeft, CaretRight, Crown } from 'phosphor-react-native';
+import { CaretLeft, CaretRight, Crown, Sparkle } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
@@ -155,6 +155,20 @@ export default function ProfileScreen() {
               </View>
               <CaretRight size={16} color={mutedCol} weight="regular" />
             </TouchableOpacity>
+
+            <View style={[styles.menuDivider, { backgroundColor: borderCol }]} />
+
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => router.push('/(app)/assistant')}
+              accessibilityRole="button"
+            >
+              <View style={styles.menuRowLeft}>
+                <Sparkle size={18} color="#4f46e5" weight="fill" />
+                <Text style={[styles.menuRowLabel, { color: textPrimary }]}>{t('navigation.assistant')}</Text>
+              </View>
+              <CaretRight size={16} color={mutedCol} weight="regular" />
+            </TouchableOpacity>
           </View>
 
           <View style={{ height: 40 }} />
@@ -269,5 +283,9 @@ const styles = StyleSheet.create({
   menuRowLabel: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  menuDivider: {
+    height: 1,
+    marginVertical: 4,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActionSheetIOS, Alert, Platform, TouchableOpacity, View } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
@@ -41,18 +41,20 @@ export default function AppLayout() {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: [t('navigation.fab.cancel'), t('navigation.fab.newTransaction'), t('navigation.fab.uploadStatement')],
+          options: [t('navigation.fab.cancel'), t('navigation.fab.newTransaction'), t('navigation.fab.uploadStatement'), t('navigation.fab.aiAssistant')],
           cancelButtonIndex: 0,
         },
         (idx) => {
           if (idx === 1) requireConfirmed(() => setShowAddTransaction(true));
           if (idx === 2) requireConfirmed(() => openStatementUpload());
+          if (idx === 3) router.push('/(app)/assistant');
         },
       );
     } else {
       Alert.alert(t('navigation.fab.options'), '', [
         { text: t('navigation.fab.newTransaction'), onPress: () => requireConfirmed(() => setShowAddTransaction(true)) },
         { text: t('navigation.fab.uploadStatement'), onPress: () => requireConfirmed(() => openStatementUpload()) },
+        { text: t('navigation.fab.aiAssistant'), onPress: () => router.push('/(app)/assistant') },
         { text: t('navigation.fab.cancel'), style: 'cancel' },
       ]);
     }
@@ -180,6 +182,9 @@ export default function AppLayout() {
 
         {/* Hide premium from tab bar — accessible via profile */}
         <Tabs.Screen name="premium" options={{ href: null }} />
+
+        {/* Hide assistant from tab bar — accessible via profile / FAB long-press */}
+        <Tabs.Screen name="assistant" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal

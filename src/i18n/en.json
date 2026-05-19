@@ -600,10 +600,12 @@
     "financesTab": "Finances tab",
     "addTransaction": "Add transaction",
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
+    "assistant": "VITTBOT AI",
     "fab": {
       "cancel": "Cancel",
       "newTransaction": "New transaction",
       "uploadStatement": "Upload bank statement",
+      "aiAssistant": "VITTBOT AI",
       "options": "Options"
     }
   },
@@ -1000,5 +1002,36 @@
     "switchToAnnual": "Switch to Annual · Save 33%",
     "switchToMonthly": "Switch to Monthly",
     "toastPortalError": "Could not open the subscription portal."
+  },
+  "assistant": {
+    "headerTitle": "VITTBOT AI",
+    "newChat": "New chat",
+    "history": "History",
+    "send": "Send",
+    "inputPlaceholder": "Ask anything about your finances…",
+    "typing": "Vittio is thinking…",
+    "disclaimer": "Vittio provides educational guidance only — not financial, legal, or tax advice.",
+    "emptyTitle": "Your personal finance coach",
+    "emptySubtitle": "Ask me anything about your spending, savings, or goals.",
+    "limitTitle": "Message limit reached",
+    "limitSubtitle": "You've used all your AI messages for this period.",
+    "limitCta": "Upgrade to Premium",
+    "historyTitle": "Past conversations",
+    "historyEmpty": "No conversations yet",
+    "deleteConversation": "Delete conversation",
+    "deleteConfirm": "Are you sure you want to delete this conversation?",
+    "usageLabel": "AI messages",
+    "nearLimitNudge": "You've used {{pct}}% of your AI messages this month. Your quota resets in about a month.",
+    "nextBestAction": "Suggested next step",
+    "quickReplies": {
+      "monthChanges": "What changed this month and why?",
+      "cutSpending": "Where can I cut spending?",
+      "vsLastMonth": "How am I doing vs last month?",
+      "savingsPlan": "Give me a 7-day savings plan"
+    },
+    "errors": {
+      "send": "Could not send message. Please try again.",
+      "load": "Could not load conversation."
+    }
   }
 }

@@ -600,10 +600,12 @@
     "financesTab": "Pestaña Finanzas",
     "addTransaction": "Agregar transacción",
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
+    "assistant": "VITTBOT AI",
     "fab": {
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "uploadStatement": "Subir estado de cuenta",
+      "aiAssistant": "VITTBOT AI",
       "options": "Opciones"
     }
   },
@@ -1000,5 +1002,36 @@
     "switchToAnnual": "Cambiar a Anual · Ahorra 33%",
     "switchToMonthly": "Cambiar a Mensual",
     "toastPortalError": "No se pudo abrir el portal de suscripción."
+  },
+  "assistant": {
+    "headerTitle": "VITTBOT AI",
+    "newChat": "Nueva conversación",
+    "history": "Historial",
+    "send": "Enviar",
+    "inputPlaceholder": "Pregunta lo que quieras sobre tus finanzas…",
+    "typing": "Vittio está pensando…",
+    "disclaimer": "Vittio ofrece orientación educativa únicamente — no es asesoramiento financiero, legal ni fiscal.",
+    "emptyTitle": "Tu coach de finanzas personales",
+    "emptySubtitle": "Pregúntame cualquier cosa sobre tus gastos, ahorros u objetivos.",
+    "limitTitle": "Límite de mensajes alcanzado",
+    "limitSubtitle": "Has usado todos tus mensajes de IA para este período.",
+    "limitCta": "Actualizar a Premium",
+    "historyTitle": "Conversaciones anteriores",
+    "historyEmpty": "Aún no hay conversaciones",
+    "deleteConversation": "Eliminar conversación",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar esta conversación?",
+    "usageLabel": "Mensajes de IA",
+    "nearLimitNudge": "Has usado el {{pct}}% de tus mensajes de IA este mes. Tu cuota se renueva en aproximadamente un mes.",
+    "nextBestAction": "Siguiente paso sugerido",
+    "quickReplies": {
+      "monthChanges": "¿Qué cambió este mes y por qué?",
+      "cutSpending": "¿Dónde puedo recortar gastos?",
+      "vsLastMonth": "¿Cómo voy vs. el mes pasado?",
+      "savingsPlan": "Dame un plan de ahorro de 7 días"
+    },
+    "errors": {
+      "send": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+      "load": "No se pudo cargar la conversación."
+    }
   }
 }
