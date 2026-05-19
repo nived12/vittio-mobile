@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
-import { CaretLeft, Check } from 'phosphor-react-native';
+import { ChevronLeft, Check } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { CheckoutResult, createCheckoutSession, fetchPortalUrl, fetchSubscriptionStatus } from '../../src/api/subscription';
 import { authApi } from '../../src/api/auth';
@@ -24,14 +24,14 @@ import { spacing, textStyles } from '../../src/theme';
 // ── UsageRow ───────────────────────────────────────────────────────────────
 
 function UsageRow({
-  label, used, limit, trackBg,
-}: { label: string; used: number; limit: number; trackBg: string }) {
+  label, used, limit, trackBg, labelColor,
+}: { label: string; used: number; limit: number; trackBg: string; labelColor?: string }) {
   const pct   = limit > 0 ? Math.min(used / limit, 1) : 0;
   const color = pct >= 1 ? colors.negative : pct >= 0.8 ? colors.warning : colors.primary;
   return (
     <View style={styles.usageRow}>
       <View style={styles.usageHeader}>
-        <Text style={styles.usageLabel}>{label}</Text>
+        <Text style={[styles.usageLabel, labelColor ? { color: labelColor } : undefined]}>{label}</Text>
         <Text style={[styles.usageCount, { color }]}>{used}/{limit}</Text>
       </View>
       <View style={[styles.usageTrack, { backgroundColor: trackBg }]}>
@@ -49,8 +49,10 @@ function UsageRow({
 // After browser close the app retries fetchSubscriptionStatus() to account for webhook delay.
 const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
 const _appBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
-const SUCCESS_URL = `${_appBase}/checkout/success`;
-const CANCEL_URL  = `${_appBase}/subscription`;
+const SUCCESS_URL       = `${_appBase}/checkout/success`;
+const CANCEL_URL        = `${_appBase}/subscription`;
+const MONTHLY_PRICE_MXN = 149;
+const ANNUAL_PRICE_MXN  = 99;
 
 // Stripe webhooks can take 2-5 seconds to process after the browser closes.
 // Poll up to 5 times with 1.5s delays before giving up and navigating home anyway.
@@ -102,7 +104,8 @@ export default function PremiumScreen() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   })();
 
-  const features = t('premium.features', { returnObjects: true }) as string[];
+  const raw = t('premium.features', { returnObjects: true });
+  const features: string[] = Array.isArray(raw) ? raw : [];
 
   async function handleSubscribe(interval: 'month' | 'year') {
     setLoadingInterval(interval);
@@ -124,12 +127,12 @@ export default function PremiumScreen() {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
       });
       // Browser closed — poll for active status (webhook may take a few seconds)
-      const isActive  = await pollUntilActive();
-      const freshUser = await authApi.me();
+      const isNowActive = await pollUntilActive();
+      const freshUser   = await authApi.me();
       setUser(freshUser);
       showToast(
-        isActive ? t('premium.toastSuccess') : t('premium.toastProcessing'),
-        isActive ? 'success' : 'info',
+        isNowActive ? t('premium.toastSuccess') : t('premium.toastProcessing'),
+        isNowActive ? 'success' : 'info',
       );
       router.replace('/(app)');
     } catch {
@@ -146,6 +149,9 @@ export default function PremiumScreen() {
       await WebBrowser.openBrowserAsync(url, {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
       });
+      // Refresh state after portal closes — user may have cancelled or changed plan
+      const freshUser = await authApi.me();
+      setUser(freshUser);
     } catch {
       showToast(t('premium.toastPortalError'), 'error');
     } finally {
@@ -164,7 +170,7 @@ export default function PremiumScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('premium.backButton')}
         >
-          <CaretLeft size={24} color={textPrimary} weight="bold" />
+          <ChevronLeft size={24} color={textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('premium.headerTitle')}</Text>
         <View style={styles.headerSpacer} />
@@ -209,12 +215,14 @@ export default function PremiumScreen() {
               used={user.statement_files_used}
               limit={user.statement_files_limit}
               trackBg={usageTrackBg}
+              labelColor={textPrimary}
             />
             <UsageRow
               label={t('premium.usageAi')}
               used={user.ai_calls_used}
               limit={user.ai_calls_limit}
               trackBg={usageTrackBg}
+              labelColor={textPrimary}
             />
           </View>
         )}
@@ -231,8 +239,8 @@ export default function PremiumScreen() {
         <View style={[styles.featureCard, { backgroundColor: surface, borderColor: borderCol }]}>
           {features.map((feature) => (
             <View key={feature} style={styles.featureRow}>
-              <View style={styles.featureIconWrap}>
-                <Check size={16} color="#10b981" weight="bold" />
+              <View style={[styles.featureIconWrap, { backgroundColor: isDark ? 'rgba(16,185,129,0.15)' : '#d1fae5' }]}>
+                <Check size={16} color="#10b981" />
               </View>
               <Text style={[styles.featureText, { color: textPrimary }]}>{feature}</Text>
             </View>
@@ -251,7 +259,7 @@ export default function PremiumScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
-                <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
+                <Text style={[styles.planPrice, { color: textPrimary }]}>${MONTHLY_PRICE_MXN}</Text>
                 <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
                 <View style={[styles.planCta, { borderColor: colors.primary }]}>
                   {loadingInterval === 'month' ? (
@@ -275,7 +283,7 @@ export default function PremiumScreen() {
                   <Text style={styles.savingsBadgeText}>{t('premium.annual.savingsBadge')}</Text>
                 </View>
                 <Text style={styles.planLabelAnnual}>{t('premium.annual.label')}</Text>
-                <Text style={styles.planPriceAnnual}>$99</Text>
+                <Text style={styles.planPriceAnnual}>${ANNUAL_PRICE_MXN}</Text>
                 <Text style={styles.planUnitAnnual}>{t('premium.annual.unit')}</Text>
                 <Text style={styles.planAnnualTotal}>{t('premium.annual.total')}</Text>
                 <View style={styles.planCtaAnnual}>
@@ -370,7 +378,7 @@ const styles = StyleSheet.create({
 
   featureCard:    { borderRadius: 16, borderWidth: 1, padding: spacing.md, marginBottom: spacing.lg },
   featureRow:     { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
-  featureIconWrap: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#d1fae5', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  featureIconWrap: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   featureText:    { flex: 1, fontSize: 14, lineHeight: 20 },
 
   planRow:  { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },

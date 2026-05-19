@@ -154,7 +154,8 @@ apiClient.interceptors.response.use(
         const { router } = await import('expo-router');
         router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
         // Reset flag after navigation so future 402s can also redirect
-        setTimeout(() => { isRedirectingToPremium = false; }, 2000);
+        const PREMIUM_REDIRECT_DEBOUNCE_MS = 2000;
+        setTimeout(() => { isRedirectingToPremium = false; }, PREMIUM_REDIRECT_DEBOUNCE_MS);
       }
       return Promise.reject(error);
     }

@@ -34,7 +34,9 @@ export async function createCheckoutSession(
     { interval, success_url: successUrl, cancel_url: cancelUrl },
   );
   if (res.data.data?.switched) return { kind: 'switched' };
-  return { kind: 'checkout', url: res.data.data.checkout_url! };
+  const url = res.data.data.checkout_url;
+  if (!url) throw new Error('Missing checkout_url in response');
+  return { kind: 'checkout', url };
 }
 
 /** GET /api/v1/subscription/portal */

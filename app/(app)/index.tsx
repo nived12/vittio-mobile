@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, Check } from 'lucide-react-native';
+import { ChevronDown, Check, Crown } from 'lucide-react-native';
 import { resolveBankAccountName } from '../../src/utils/displayNames';
 import { format, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
@@ -34,11 +34,26 @@ import {
   ChartBarSkeleton,
 } from '../../src/components/ui/SkeletonLoader';
 
-function AvatarCircle({ initials, onPress }: { initials: string; onPress: () => void }) {
+function AvatarCircle({
+  initials, onPress, isPremium, avatarUrl,
+}: { initials: string; onPress: () => void; isPremium?: boolean; avatarUrl?: string | null }) {
+  const [imgError, setImgError] = React.useState(false);
+  const showImage = !!avatarUrl && !imgError;
   return (
-    <TouchableOpacity onPress={onPress} style={styles.avatarCircle} accessibilityRole="button">
-      <Text style={styles.avatarInitials}>{initials}</Text>
-    </TouchableOpacity>
+    <View style={{ position: 'relative' }}>
+      <TouchableOpacity onPress={onPress} style={styles.avatarCircle} accessibilityRole="button">
+        {showImage ? (
+          <Image source={{ uri: avatarUrl! }} style={styles.avatarImage} onError={() => setImgError(true)} />
+        ) : (
+          <Text style={styles.avatarInitials}>{initials}</Text>
+        )}
+      </TouchableOpacity>
+      {isPremium && (
+        <View style={styles.crownBadge}>
+          <Crown size={9} color="#ffffff" />
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -53,7 +68,8 @@ export default function DashboardScreen() {
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const initials = [user?.first_name?.[0], user?.last_name?.[0]].filter(Boolean).join('').toUpperCase() || '?';
+  const initials   = [user?.first_name?.[0], user?.last_name?.[0]].filter(Boolean).join('').toUpperCase() || '?';
+  const isPremium  = user?.subscription_status === 'active';
 
   const { data, isLoading, isError, refetch } = useDashboard(selectedMonth);
   const cardWidth = width - 32;
@@ -145,7 +161,7 @@ export default function DashboardScreen() {
             />
           </View>
           <View style={styles.topBarSide}>
-            <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} />
+            <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} isPremium={isPremium} avatarUrl={user?.avatar_url} />
           </View>
         </View>
 
@@ -422,8 +438,23 @@ const styles = StyleSheet.create({
   avatarCircle: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: '#4f46e5', alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImage: { width: 36, height: 36, borderRadius: 18 },
   avatarInitials: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
+  crownBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#d97706',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+  },
   monthPickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
