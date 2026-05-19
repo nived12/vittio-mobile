@@ -221,7 +221,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       const anyErr = err as { response?: { data?: { error?: { code?: string } } } };
       const code = anyErr?.response?.data?.error?.code;
       if (code === 'SUBSCRIPTION_REQUIRED') {
-        Alert.alert(t('errors.SUBSCRIPTION_REQUIRED'), '', [{ text: t('common.ok') }]);
+        router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
       } else {
         showToast(t('errors.generic'), 'error');
       }

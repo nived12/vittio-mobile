@@ -33,7 +33,7 @@ i18n
     lng:              detectLocale(),
     fallbackLng:      'es',
     interpolation: {
-      escapeValue: false, // React already escapes by default
+      escapeValue: false,
     },
     compatibilityJSON: 'v3',
   });

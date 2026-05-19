@@ -7,9 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
+import { Toast } from '../../src/components/ui/Toast';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme/ThemeContext';
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
@@ -21,8 +23,11 @@ export default function AppLayout() {
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
+  const toasts = useUIStore((s) => s.toasts);
+  const dismissToast = useUIStore((s) => s.dismissToast);
   const user = useAuthStore((s) => s.user);
   const requireConfirmed = useRequireConfirmed();
+  const insets = useSafeAreaInsets();
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
   const { theme } = useTheme();
@@ -172,6 +177,9 @@ export default function AppLayout() {
 
         {/* Hide notification-preferences from tab bar */}
         <Tabs.Screen name="notification-preferences" options={{ href: null }} />
+
+        {/* Hide premium from tab bar — accessible via profile */}
+        <Tabs.Screen name="premium" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal
@@ -182,6 +190,20 @@ export default function AppLayout() {
         visible={showUploadStatement}
         onClose={closeStatementUpload}
       />
+      <View
+        style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}
+        pointerEvents="box-none"
+      >
+        {toasts.map((t) => (
+          <Toast
+            key={t.id}
+            message={t.message}
+            variant={t.variant}
+            action={t.action}
+            onDismiss={() => dismissToast(t.id)}
+          />
+        ))}
+      </View>
     </>
   );
 }

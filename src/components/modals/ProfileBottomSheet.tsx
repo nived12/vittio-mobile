@@ -19,7 +19,7 @@ import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Bell, Camera, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, Camera, Crown, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from '../../i18n';
@@ -58,6 +58,7 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
+  const subscriptionStatus = useAuthStore((s) => s.user?.subscription_status ?? 'none');
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
   const locale = useUIStore((s) => s.locale);
@@ -151,6 +152,11 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
     } finally {
       setUploadingAvatar(false);
     }
+  }
+
+  function handlePremium() {
+    onClose();
+    router.push('/(app)/premium');
   }
 
   function handleEditProfile() {
@@ -249,6 +255,21 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
         >
           <User size={20} color={textSecondary} />
           <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('profile.editProfile')}</Text>
+        </TouchableOpacity>
+
+        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
+
+        {/* Premium */}
+        <TouchableOpacity
+          style={styles.actionRow}
+          onPress={handlePremium}
+          accessibilityRole="button"
+          accessibilityLabel={t('premium.headerTitle')}
+        >
+          <Crown size={20} color="#d97706" />
+          <Text style={[styles.actionLabel, { color: textPrimary }]}>
+            {subscriptionStatus === 'active' ? t('settings.managePremium') : t('premium.headerTitle')}
+          </Text>
         </TouchableOpacity>
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />

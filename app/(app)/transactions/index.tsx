@@ -27,6 +27,7 @@ import {
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import { useIsPremiumLocked } from '../../../src/hooks/useIsPremiumLocked';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
@@ -291,6 +292,7 @@ export default function TransactionsScreen() {
   const showToast = useUIStore((s) => s.showToast);
   const recurringBannerDismissedAt = useUIStore((s) => s.recurringBannerDismissedAt);
   const dismissRecurringBanner = useUIStore((s) => s.dismissRecurringBanner);
+  const isPremiumLocked = useIsPremiumLocked();
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -559,7 +561,13 @@ export default function TransactionsScreen() {
             shouldShowRecurringBanner ? (
               <TouchableOpacity
                 style={styles.recurringBanner}
-                onPress={() => setShowRecurringSheet(true)}
+                onPress={() => {
+                  if (isPremiumLocked) {
+                    router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
+                  } else {
+                    setShowRecurringSheet(true);
+                  }
+                }}
                 activeOpacity={0.8}
               >
                 <Ionicons name="repeat-outline" size={20} color="#4f46e5" />
