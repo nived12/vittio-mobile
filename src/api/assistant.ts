@@ -26,6 +26,8 @@ export interface AssistantUsageSnapshot {
   limit: number;
   remaining: number;
   resets_at: string | null;
+  /** Set only on the response that crosses an 80/90/95 threshold for premium users. */
+  threshold_crossed?: 80 | 90 | 95;
 }
 
 export interface ChatResponse {

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,17 +27,40 @@ import { spacing, textStyles } from '../../src/theme';
 
 function UsageRow({
   label, used, limit, trackBg, labelColor,
-}: { label: string; used: number; limit: number; trackBg: string; labelColor?: string }) {
-  const pct   = limit > 0 ? Math.min(used / limit, 1) : 0;
-  const color = pct >= 1 ? colors.negative : pct >= 0.8 ? colors.warning : colors.primary;
+}: {
+  label: string;
+  used: number;
+  limit: number;
+  trackBg: string;
+  labelColor?: string;
+}) {
+  const pct      = limit > 0 ? Math.min(used / limit, 1) : 0;
+  const pctRound = Math.round(pct * 100);
+  const color    = pct >= 1 ? colors.negative : pct >= 0.8 ? colors.warning : colors.primary;
+  const fillAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fillAnim, {
+      toValue: pct,
+      duration: 320,
+      easing: Easing.bezier(0.32, 0.72, 0, 1),
+      useNativeDriver: false,
+    }).start();
+  }, [pct, fillAnim]);
+
+  const fillWidth = fillAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
   return (
     <View style={styles.usageRow}>
       <View style={styles.usageHeader}>
         <Text style={[styles.usageLabel, labelColor ? { color: labelColor } : undefined]}>{label}</Text>
-        <Text style={[styles.usageCount, { color }]}>{used}/{limit}</Text>
+        <Text style={[styles.usagePercent, { color }]}>{pctRound}%</Text>
       </View>
       <View style={[styles.usageTrack, { backgroundColor: trackBg }]}>
-        <View style={[styles.usageFill, { width: `${pct * 100}%` as `${number}%`, backgroundColor: color }]} />
+        <Animated.View style={[styles.usageFill, { width: fillWidth, backgroundColor: color }]} />
       </View>
     </View>
   );
@@ -452,10 +477,10 @@ const styles = StyleSheet.create({
 
   usageCard:  { borderRadius: 12, borderWidth: 1, padding: spacing.md, marginBottom: spacing.md, gap: 12 },
   usageTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, marginBottom: 4 },
-  usageRow:   { gap: 6 },
-  usageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  usageRow:    { gap: 6 },
+  usageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   usageLabel:  { fontSize: 13, fontWeight: '500' },
-  usageCount:  { fontSize: 13, fontWeight: '600' },
-  usageTrack:  { height: 4, borderRadius: 2, overflow: 'hidden' },
-  usageFill:   { height: 4, borderRadius: 2 },
+  usagePercent: { fontSize: 15, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  usageTrack:  { height: 6, borderRadius: 999, overflow: 'hidden' },
+  usageFill:   { height: 6, borderRadius: 999 },
 });

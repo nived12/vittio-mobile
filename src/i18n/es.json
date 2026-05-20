@@ -600,12 +600,15 @@
     "financesTab": "Pestaña Finanzas",
     "addTransaction": "Agregar transacción",
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
-    "assistant": "VITTBOT AI",
+    "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
+      "newTransactionSubtitle": "Voz, foto o ingreso manual",
       "uploadStatement": "Subir estado de cuenta",
-      "aiAssistant": "VITTBOT AI",
+      "uploadStatementSubtitle": "Importa un PDF",
+      "aiAssistant": "Vittbot",
+      "aiAssistantSubtitle": "Pregunta lo que sea de tus finanzas",
       "options": "Opciones"
     }
   },
@@ -1004,7 +1007,7 @@
     "toastPortalError": "No se pudo abrir el portal de suscripción."
   },
   "assistant": {
-    "headerTitle": "VITTBOT AI",
+    "headerTitle": "Vittbot",
     "newChat": "Nueva conversación",
     "history": "Historial",
     "send": "Enviar",
@@ -1013,15 +1016,23 @@
     "disclaimer": "Vittio ofrece orientación educativa únicamente — no es asesoramiento financiero, legal ni fiscal.",
     "emptyTitle": "Tu coach de finanzas personales",
     "emptySubtitle": "Pregúntame cualquier cosa sobre tus gastos, ahorros u objetivos.",
-    "limitTitle": "Límite de mensajes alcanzado",
-    "limitSubtitle": "Has usado todos tus mensajes de IA para este período.",
+    "limitTitle": "Has llegado al límite mensual de tu asistente",
+    "limitSubtitleTrial": "Actualiza a Premium para seguir conversando.",
+    "limitSubtitlePremium": "Tu cuota se renueva en tu próxima fecha de facturación.",
     "limitCta": "Actualizar a Premium",
+    "limitCtaPremium": "Administrar suscripción",
     "historyTitle": "Conversaciones anteriores",
     "historyEmpty": "Aún no hay conversaciones",
     "deleteConversation": "Eliminar conversación",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar esta conversación?",
     "usageLabel": "Mensajes de IA",
-    "nearLimitNudge": "Has usado el {{pct}}% de tus mensajes de IA este mes. Tu cuota se renueva en aproximadamente un mes.",
+    "nearLimitTrial": "Estás cerca de tu límite de uso gratuito.",
+    "tryPremium": "Probar Premium",
+    "quotaNotice": {
+      "80": "Estás al 80% de tu uso mensual de IA.",
+      "90": "Estás al 90% de tu uso mensual de IA.",
+      "95": "Estás al 95% de tu uso mensual de IA."
+    },
     "nextBestAction": "Siguiente paso sugerido",
     "quickReplies": {
       "monthChanges": "¿Qué cambió este mes y por qué?",

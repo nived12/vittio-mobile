@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActionSheetIOS, Alert, Platform, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
+import { FabActionSheet, FabAction } from '../../src/components/ui/FabActionSheet';
 import { Toast } from '../../src/components/ui/Toast';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -19,6 +20,7 @@ import { useTheme } from '../../src/theme/ThemeContext';
 export default function AppLayout() {
   const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showFabSheet, setShowFabSheet] = useState(false);
   const showUploadStatement = useUIStore((s) => s.showStatementUpload);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
@@ -38,27 +40,38 @@ export default function AppLayout() {
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [t('navigation.fab.cancel'), t('navigation.fab.newTransaction'), t('navigation.fab.uploadStatement'), t('navigation.fab.aiAssistant')],
-          cancelButtonIndex: 0,
-        },
-        (idx) => {
-          if (idx === 1) requireConfirmed(() => setShowAddTransaction(true));
-          if (idx === 2) requireConfirmed(() => openStatementUpload());
-          if (idx === 3) router.push('/(app)/assistant');
-        },
-      );
-    } else {
-      Alert.alert(t('navigation.fab.options'), '', [
-        { text: t('navigation.fab.newTransaction'), onPress: () => requireConfirmed(() => setShowAddTransaction(true)) },
-        { text: t('navigation.fab.uploadStatement'), onPress: () => requireConfirmed(() => openStatementUpload()) },
-        { text: t('navigation.fab.aiAssistant'), onPress: () => router.push('/(app)/assistant') },
-        { text: t('navigation.fab.cancel'), style: 'cancel' },
-      ]);
-    }
+    setShowFabSheet(true);
   }
+
+  const fabActions: FabAction[] = [
+    {
+      key: 'newTransaction',
+      icon: 'plus',
+      iconColor: '#4f46e5',
+      iconBg: '#eef2ff',
+      title: t('navigation.fab.newTransaction'),
+      subtitle: t('navigation.fab.newTransactionSubtitle'),
+      onPress: () => requireConfirmed(() => setShowAddTransaction(true)),
+    },
+    {
+      key: 'uploadStatement',
+      icon: 'upload',
+      iconColor: '#0891b2',
+      iconBg: '#ecfeff',
+      title: t('navigation.fab.uploadStatement'),
+      subtitle: t('navigation.fab.uploadStatementSubtitle'),
+      onPress: () => requireConfirmed(() => openStatementUpload()),
+    },
+    {
+      key: 'aiAssistant',
+      icon: 'bot',
+      iconColor: '#4f46e5',
+      iconBg: '#eef2ff',
+      title: t('navigation.fab.aiAssistant'),
+      subtitle: t('navigation.fab.aiAssistantSubtitle'),
+      onPress: () => router.push('/(app)/assistant'),
+    },
+  ];
 
   return (
     <>
@@ -194,6 +207,11 @@ export default function AppLayout() {
       <StatementUploadModal
         visible={showUploadStatement}
         onClose={closeStatementUpload}
+      />
+      <FabActionSheet
+        visible={showFabSheet}
+        onClose={() => setShowFabSheet(false)}
+        actions={fabActions}
       />
       <View
         style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}

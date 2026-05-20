@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  Easing,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -17,7 +19,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
-import { CaretLeft, ClockCounterClockwise, PaperPlaneTilt, Plus, Sparkle, Trash } from 'phosphor-react-native';
+import { CaretLeft, ClockCounterClockwise, PaperPlaneTilt, Plus, Trash } from 'phosphor-react-native';
+import { BotMessageSquare } from 'lucide-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
@@ -25,6 +28,7 @@ import {
   AssistantConversation,
   AssistantUsageSnapshot,
   deleteConversation,
+  getAssistantUsage,
   getConversation,
   listConversations,
   sendChatMessage,
@@ -246,13 +250,61 @@ export default function AssistantScreen() {
   const [isSending, setIsSending]       = useState(false);
   const [usage, setUsage]               = useState<AssistantUsageSnapshot | null>(null);
   const [showHistory, setShowHistory]   = useState(false);
+  const [toastThreshold, setToastThreshold] = useState<80 | 90 | 95 | null>(null);
+  const toastAnim = useRef(new Animated.Value(0)).current;
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAtLimit = usage != null && usage.remaining === 0;
   const canSend   = !isSending && inputText.trim().length > 0 && !isAtLimit;
+  const isTrial   = usage?.plan === 'trial';
 
   function scrollToBottom() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
   }
+
+  function showQuotaToast(threshold: 80 | 90 | 95) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToastThreshold(threshold);
+    toastAnim.setValue(0);
+    Animated.timing(toastAnim, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.bezier(0.32, 0.72, 0, 1),
+      useNativeDriver: true,
+    }).start();
+    toastTimer.current = setTimeout(() => {
+      Animated.timing(toastAnim, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.bezier(0.32, 0.72, 0, 1),
+        useNativeDriver: true,
+      }).start(() => setToastThreshold(null));
+    }, 6000);
+  }
+
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
+
+  // Pre-fetch the usage snapshot on mount so the trial pill / premium toast
+  // surfaces before the user spends a message to discover they're near the cap.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await getAssistantUsage();
+        if (cancelled) return;
+        setUsage(snap);
+        if (snap.threshold_crossed) showQuotaToast(snap.threshold_crossed);
+      } catch {
+        // Silent fail — UI is still usable without the pre-fetched snapshot.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSend(text?: string) {
     const msg = (text ?? inputText).trim();
@@ -287,6 +339,9 @@ export default function AssistantScreen() {
 
       setConvId(result.conversation.id);
       setUsage(result.usage);
+      if (result.usage.threshold_crossed) {
+        showQuotaToast(result.usage.threshold_crossed);
+      }
 
       setMessages((prev) => {
         const withoutTyping = prev.filter((m) => m.id !== 'typing');
@@ -313,6 +368,9 @@ export default function AssistantScreen() {
       const detail = await getConversation(conv.id);
       setConvId(conv.id);
       setUsage(detail.usage);
+      if (detail.usage.threshold_crossed) {
+        showQuotaToast(detail.usage.threshold_crossed);
+      }
       setMessages(
         detail.messages.map((m) => ({
           id: m.id,
@@ -351,7 +409,7 @@ export default function AssistantScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Sparkle size={18} color={colors.brand.primary} weight="fill" />
+          <BotMessageSquare size={18} color={colors.brand.primary} strokeWidth={2.2} />
           <Text style={[styles.headerTitle, { color: textPrimary }]}>{t('assistant.headerTitle')}</Text>
         </View>
 
@@ -375,13 +433,50 @@ export default function AssistantScreen() {
         </View>
       </View>
 
-      {/* Near-limit nudge — only shown at ≥80% usage, no counter displayed */}
-      {usage != null && usage.limit > 0 && usage.used / usage.limit >= 0.8 && usage.remaining > 0 && (
-        <View style={[styles.nudgeBanner, { backgroundColor: `${colors.warning}14`, borderBottomColor: `${colors.warning}30` }]}>
-          <Text style={[styles.nudgeText, { color: colors.warning }]}>
-            {t('assistant.nearLimitNudge', { pct: Math.round((usage.used / usage.limit) * 100) })}
-          </Text>
+      {/* Trial-only quiet pill at ≥80% — pill's presence is the signal, no number shown */}
+      {isTrial && usage != null && usage.limit > 0 && usage.used / usage.limit >= 0.8 && usage.remaining > 0 && (
+        <View style={styles.trialPillWrap}>
+          <View style={[styles.trialPill, { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }]}>
+            <BotMessageSquare size={14} color={colors.brand.primary} strokeWidth={2.2} />
+            <Text style={[styles.trialPillText, { color: '#475569' }]}>
+              {t('assistant.nearLimitTrial')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/premium')}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.trialPillCta, { color: colors.brand.primary }]}>
+                {t('assistant.tryPremium')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      )}
+
+      {/* Premium escalating toast — fires once per crossed threshold per billing month */}
+      {toastThreshold != null && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.quotaToast,
+            {
+              opacity: toastAnim,
+              transform: [
+                {
+                  translateY: toastAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-12, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <BotMessageSquare size={14} color="#a5b4fc" strokeWidth={2.2} />
+          <Text style={styles.quotaToastText}>
+            {t(`assistant.quotaNotice.${toastThreshold}`)}
+          </Text>
+        </Animated.View>
       )}
 
       {/* Chat area */}
@@ -401,7 +496,7 @@ export default function AssistantScreen() {
           {showEmpty ? (
             <View style={styles.emptyState}>
               <View style={[styles.emptyIconWrap, { backgroundColor: `${colors.brand.primary}18` }]}>
-                <Sparkle size={36} color={colors.brand.primary} weight="fill" />
+                <BotMessageSquare size={36} color={colors.brand.primary} strokeWidth={2} />
               </View>
               <Text style={[styles.emptyTitle, { color: textPrimary }]}>{t('assistant.emptyTitle')}</Text>
               <Text style={[styles.emptySubtitle, { color: textSecondary }]}>{t('assistant.emptySubtitle')}</Text>
@@ -442,17 +537,21 @@ export default function AssistantScreen() {
           </ScrollView>
         )}
 
-        {/* Limit wall */}
+        {/* Limit wall — uniform indigo card for both trial and premium */}
         {isAtLimit && (
-          <View style={[styles.limitBanner, { backgroundColor: `${colors.negative}12`, borderColor: `${colors.negative}30` }]}>
-            <Text style={[styles.limitTitle, { color: colors.negative }]}>{t('assistant.limitTitle')}</Text>
-            <Text style={[styles.limitSubtitle, { color: textSecondary }]}>{t('assistant.limitSubtitle')}</Text>
+          <View style={styles.limitWall}>
+            <Text style={styles.limitWallTitle}>{t('assistant.limitTitle')}</Text>
+            <Text style={styles.limitWallSubtitle}>
+              {isTrial ? t('assistant.limitSubtitleTrial') : t('assistant.limitSubtitlePremium')}
+            </Text>
             <TouchableOpacity
-              style={styles.limitCta}
+              style={styles.limitWallCta}
               onPress={() => router.push('/(app)/premium')}
               accessibilityRole="button"
             >
-              <Text style={styles.limitCtaText}>{t('assistant.limitCta')}</Text>
+              <Text style={styles.limitWallCtaText}>
+                {isTrial ? t('assistant.limitCta') : t('assistant.limitCtaPremium')}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -537,13 +636,49 @@ const styles = StyleSheet.create({
   headerTitle: { ...textStyles.displayMd, fontFamily: 'Inter_600SemiBold' },
   headerActions: { flexDirection: 'row', gap: 2 },
 
-  // Near-limit nudge
-  nudgeBanner: {
+  // Trial quiet pill
+  trialPillWrap: {
     paddingHorizontal: spacing.screenPaddingH,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
+    paddingTop: 8,
   },
-  nudgeText: { ...textStyles.bodySm, textAlign: 'center' },
+  trialPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+  },
+  trialPillText: { ...textStyles.bodySm, flex: 1, fontFamily: 'Inter_500Medium' },
+  trialPillCta: { ...textStyles.bodySm, fontFamily: 'Inter_600SemiBold' },
+
+  // Premium escalating toast
+  quotaToast: {
+    position: 'absolute',
+    top: 8,
+    left: spacing.screenPaddingH,
+    right: spacing.screenPaddingH,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 10,
+    zIndex: 10,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  quotaToastText: {
+    ...textStyles.bodySm,
+    color: '#f8fafc',
+    fontFamily: 'Inter_500Medium',
+    flex: 1,
+  },
 
   // Messages
   messageList: {
@@ -601,25 +736,38 @@ const styles = StyleSheet.create({
   },
   chipText: { ...textStyles.bodySm, fontFamily: 'Inter_500Medium' },
 
-  // Limit banner
-  limitBanner: {
+  // Limit wall — uniform indigo card
+  limitWall: {
     margin: spacing.screenPaddingH,
-    padding: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 6,
+    padding: spacing.lg,
+    borderRadius: 16,
+    backgroundColor: colors.brand.primary,
+    gap: 8,
     alignItems: 'center',
   },
-  limitTitle: { ...textStyles.displayMd, fontFamily: 'Inter_600SemiBold' },
-  limitSubtitle: { ...textStyles.bodySm, textAlign: 'center', opacity: 0.8 },
-  limitCta: {
-    marginTop: 4,
-    backgroundColor: colors.brand.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+  limitWallTitle: {
+    ...textStyles.displayMd,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#ffffff',
+    textAlign: 'center',
   },
-  limitCtaText: { color: '#ffffff', fontFamily: 'Inter_600SemiBold', fontSize: 14 },
+  limitWallSubtitle: {
+    ...textStyles.bodySm,
+    color: '#e0e7ff',
+    textAlign: 'center',
+  },
+  limitWallCta: {
+    marginTop: 8,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 22,
+    paddingVertical: 11,
+    borderRadius: 22,
+  },
+  limitWallCtaText: {
+    color: colors.brand.primary,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+  },
 
   // Composer
   composer: {

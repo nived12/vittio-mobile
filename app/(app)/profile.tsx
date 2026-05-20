@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { CaretLeft, CaretRight, Crown, Sparkle } from 'phosphor-react-native';
+import { CaretLeft } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
@@ -23,7 +23,6 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const { showToast } = useUIStore();
   const user = useAuthStore((s) => s.user);
-  const subscriptionStatus = useAuthStore((s) => s.user?.subscription_status ?? 'none');
   const { theme, isDark } = useTheme();
   const bg = isDark ? theme.background : '#f8fafc';
   const surface = isDark ? theme.surface : '#ffffff';
@@ -140,37 +139,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Premium / Subscription row */}
-          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol, marginTop: spacing.md }]}>
-            <TouchableOpacity
-              style={styles.menuRow}
-              onPress={() => router.push('/(app)/premium')}
-              accessibilityRole="button"
-            >
-              <View style={styles.menuRowLeft}>
-                <Crown size={18} color="#d97706" weight="fill" />
-                <Text style={[styles.menuRowLabel, { color: textPrimary }]}>
-                  {subscriptionStatus === 'active' ? t('settings.managePremium') : t('settings.upgradePremium')}
-                </Text>
-              </View>
-              <CaretRight size={16} color={mutedCol} weight="regular" />
-            </TouchableOpacity>
-
-            <View style={[styles.menuDivider, { backgroundColor: borderCol }]} />
-
-            <TouchableOpacity
-              style={styles.menuRow}
-              onPress={() => router.push('/(app)/assistant')}
-              accessibilityRole="button"
-            >
-              <View style={styles.menuRowLeft}>
-                <Sparkle size={18} color="#4f46e5" weight="fill" />
-                <Text style={[styles.menuRowLabel, { color: textPrimary }]}>{t('navigation.assistant')}</Text>
-              </View>
-              <CaretRight size={16} color={mutedCol} weight="regular" />
-            </TouchableOpacity>
-          </View>
-
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -268,24 +236,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: '#ffffff',
-  },
-  menuRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  menuRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  menuRowLabel: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  menuDivider: {
-    height: 1,
-    marginVertical: 4,
   },
 });

@@ -600,12 +600,15 @@
     "financesTab": "Finances tab",
     "addTransaction": "Add transaction",
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
-    "assistant": "VITTBOT AI",
+    "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancel",
       "newTransaction": "New transaction",
+      "newTransactionSubtitle": "Voice, photo, or manual entry",
       "uploadStatement": "Upload bank statement",
-      "aiAssistant": "VITTBOT AI",
+      "uploadStatementSubtitle": "Drop in a PDF to import it",
+      "aiAssistant": "Vittbot",
+      "aiAssistantSubtitle": "Ask anything about your finances",
       "options": "Options"
     }
   },
@@ -1004,7 +1007,7 @@
     "toastPortalError": "Could not open the subscription portal."
   },
   "assistant": {
-    "headerTitle": "VITTBOT AI",
+    "headerTitle": "Vittbot",
     "newChat": "New chat",
     "history": "History",
     "send": "Send",
@@ -1013,15 +1016,23 @@
     "disclaimer": "Vittio provides educational guidance only — not financial, legal, or tax advice.",
     "emptyTitle": "Your personal finance coach",
     "emptySubtitle": "Ask me anything about your spending, savings, or goals.",
-    "limitTitle": "Message limit reached",
-    "limitSubtitle": "You've used all your AI messages for this period.",
+    "limitTitle": "You've reached your monthly assistant limit",
+    "limitSubtitleTrial": "Upgrade to Premium to keep chatting.",
+    "limitSubtitlePremium": "Your quota resets on your next billing date.",
     "limitCta": "Upgrade to Premium",
+    "limitCtaPremium": "Manage subscription",
     "historyTitle": "Past conversations",
     "historyEmpty": "No conversations yet",
     "deleteConversation": "Delete conversation",
     "deleteConfirm": "Are you sure you want to delete this conversation?",
     "usageLabel": "AI messages",
-    "nearLimitNudge": "You've used {{pct}}% of your AI messages this month. Your quota resets in about a month.",
+    "nearLimitTrial": "You're close to your free usage limit.",
+    "tryPremium": "Try Premium",
+    "quotaNotice": {
+      "80": "You're at 80% of your monthly AI usage.",
+      "90": "You're at 90% of your monthly AI usage.",
+      "95": "You're at 95% of your monthly AI usage."
+    },
     "nextBestAction": "Suggested next step",
     "quickReplies": {
       "monthChanges": "What changed this month and why?",
