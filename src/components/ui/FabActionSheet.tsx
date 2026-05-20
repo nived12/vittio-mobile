@@ -16,15 +16,27 @@ import { BotMessageSquare } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../theme';
 
+export type FabActionTint = 'indigo' | 'cyan';
+
 export interface FabAction {
   key: 'newTransaction' | 'uploadStatement' | 'aiAssistant';
   icon: 'plus' | 'upload' | 'bot';
-  iconColor: string;
-  iconBg: string;
+  tint: FabActionTint;
   title: string;
   subtitle: string;
   onPress: () => void;
 }
+
+const TINTS: Record<FabActionTint, { fg: { light: string; dark: string }; bg: { light: string; dark: string } }> = {
+  indigo: {
+    fg: { light: '#4f46e5', dark: '#a5b4fc' },
+    bg: { light: '#eef2ff', dark: 'rgba(99, 102, 241, 0.18)' },
+  },
+  cyan: {
+    fg: { light: '#0891b2', dark: '#67e8f9' },
+    bg: { light: '#ecfeff', dark: 'rgba(6, 182, 212, 0.18)' },
+  },
+};
 
 interface FabActionSheetProps {
   visible: boolean;
@@ -87,7 +99,11 @@ export function FabActionSheet({ visible, onClose, actions }: FabActionSheetProp
         >
           <SafeAreaView edges={['bottom']}>
             <View style={[styles.card, { backgroundColor: surface }]}>
-              {actions.map((action, idx) => (
+              {actions.map((action, idx) => {
+                const tint = TINTS[action.tint];
+                const iconFg = isDark ? tint.fg.dark : tint.fg.light;
+                const iconBg = isDark ? tint.bg.dark : tint.bg.light;
+                return (
                 <React.Fragment key={action.key}>
                   {idx > 0 && <View style={[styles.divider, { backgroundColor: border }]} />}
                   <TouchableOpacity
@@ -99,8 +115,8 @@ export function FabActionSheet({ visible, onClose, actions }: FabActionSheetProp
                     accessibilityRole="button"
                     accessibilityLabel={action.title}
                   >
-                    <View style={[styles.iconSquare, { backgroundColor: action.iconBg }]}>
-                      {renderIcon(action.icon, action.iconColor)}
+                    <View style={[styles.iconSquare, { backgroundColor: iconBg }]}>
+                      {renderIcon(action.icon, iconFg)}
                     </View>
                     <View style={styles.rowText}>
                       <Text style={[styles.rowTitle, { color: textPrimary }]}>{action.title}</Text>
@@ -110,7 +126,8 @@ export function FabActionSheet({ visible, onClose, actions }: FabActionSheetProp
                     </View>
                   </TouchableOpacity>
                 </React.Fragment>
-              ))}
+                );
+              })}
             </View>
 
             <TouchableOpacity

@@ -1028,6 +1028,8 @@
     "usageLabel": "AI messages",
     "nearLimitTrial": "You're close to your free usage limit.",
     "tryPremium": "Try Premium",
+    "messageCount_one": "{{count}} message",
+    "messageCount_other": "{{count}} messages",
     "quotaNotice": {
       "80": "You're at 80% of your monthly AI usage.",
       "90": "You're at 90% of your monthly AI usage.",

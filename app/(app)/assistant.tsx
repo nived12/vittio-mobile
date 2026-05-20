@@ -202,7 +202,7 @@ function HistoryModal({
                     {item.title}
                   </Text>
                   <Text style={[styles.historyRowMeta, { color: textSecondary }]}>
-                    {item.message_count} msgs
+                    {t('assistant.messageCount', { count: item.message_count })}
                     {item.last_message_at
                       ? ` · ${new Date(item.last_message_at).toLocaleDateString()}`
                       : ''}
@@ -436,9 +436,9 @@ export default function AssistantScreen() {
       {/* Trial-only quiet pill at ≥80% — pill's presence is the signal, no number shown */}
       {isTrial && usage != null && usage.limit > 0 && usage.used / usage.limit >= 0.8 && usage.remaining > 0 && (
         <View style={styles.trialPillWrap}>
-          <View style={[styles.trialPill, { backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }]}>
+          <View style={[styles.trialPill, { backgroundColor: surface, borderColor }]}>
             <BotMessageSquare size={14} color={colors.brand.primary} strokeWidth={2.2} />
-            <Text style={[styles.trialPillText, { color: '#475569' }]}>
+            <Text style={[styles.trialPillText, { color: textSecondary }]}>
               {t('assistant.nearLimitTrial')}
             </Text>
             <TouchableOpacity
@@ -491,7 +491,6 @@ export default function AssistantScreen() {
           contentContainerStyle={[styles.messageList, showEmpty && styles.messageListEmpty]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={scrollToBottom}
         >
           {showEmpty ? (
             <View style={styles.emptyState}>

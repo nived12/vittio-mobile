@@ -47,8 +47,7 @@ export default function AppLayout() {
     {
       key: 'newTransaction',
       icon: 'plus',
-      iconColor: '#4f46e5',
-      iconBg: '#eef2ff',
+      tint: 'indigo',
       title: t('navigation.fab.newTransaction'),
       subtitle: t('navigation.fab.newTransactionSubtitle'),
       onPress: () => requireConfirmed(() => setShowAddTransaction(true)),
@@ -56,8 +55,7 @@ export default function AppLayout() {
     {
       key: 'uploadStatement',
       icon: 'upload',
-      iconColor: '#0891b2',
-      iconBg: '#ecfeff',
+      tint: 'cyan',
       title: t('navigation.fab.uploadStatement'),
       subtitle: t('navigation.fab.uploadStatementSubtitle'),
       onPress: () => requireConfirmed(() => openStatementUpload()),
@@ -65,8 +63,7 @@ export default function AppLayout() {
     {
       key: 'aiAssistant',
       icon: 'bot',
-      iconColor: '#4f46e5',
-      iconBg: '#eef2ff',
+      tint: 'indigo',
       title: t('navigation.fab.aiAssistant'),
       subtitle: t('navigation.fab.aiAssistantSubtitle'),
       onPress: () => router.push('/(app)/assistant'),
