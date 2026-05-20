@@ -68,13 +68,25 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// ── Response interceptor — handle 401 with token refresh ──────────────────
+// ── Response interceptor — handle 401 with token refresh + threshold toasts ─
 
 apiClient.interceptors.response.use(
   (response) => {
     if (__DEV__) {
       console.log(`[API] ${response.status} ${response.config.url}`);
     }
+
+    const threshold = response.data?.meta?.usage?.threshold_crossed as number | undefined;
+    if (threshold) {
+      Promise.all([
+        import('../stores/uiStore'),
+        import('../i18n/index'),
+      ]).then(([{ useUIStore }, { default: i18n }]) => {
+        const message = i18n.t(`assistant.quotaNotice.${threshold}`);
+        useUIStore.getState().showToast(message, 'warning');
+      });
+    }
+
     return response;
   },
   async (error: AxiosError) => {
