@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
-import { FabActionSheet, FabAction } from '../../src/components/ui/FabActionSheet';
+import { FabSpeedDial, FabAction } from '../../src/components/ui/FabSpeedDial';
 import { Toast } from '../../src/components/ui/Toast';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -30,6 +30,20 @@ export default function AppLayout() {
   const user = useAuthStore((s) => s.user);
   const requireConfirmed = useRequireConfirmed();
   const insets = useSafeAreaInsets();
+
+  const fabIconRotation = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(fabIconRotation, {
+      toValue: showFabSheet ? 1 : 0,
+      tension: 200,
+      friction: 18,
+      useNativeDriver: true,
+    }).start();
+  }, [showFabSheet]);
+  const iconRotate = fabIconRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '45deg'],
+  });
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
   const { theme } = useTheme();
@@ -126,6 +140,10 @@ export default function AppLayout() {
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <TouchableOpacity
                   onPress={() => {
+                    if (showFabSheet) {
+                      setShowFabSheet(false);
+                      return;
+                    }
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     requireConfirmed(() => setShowAddTransaction(true));
                   }}
@@ -148,7 +166,9 @@ export default function AppLayout() {
                   accessibilityRole="button"
                   accessibilityHint={t('navigation.addTransactionHint')}
                 >
-                  <Ionicons name="add" size={28} color="#ffffff" />
+                  <Animated.View style={{ transform: [{ rotate: iconRotate }] }}>
+                    <Ionicons name="add" size={28} color="#ffffff" />
+                  </Animated.View>
                 </TouchableOpacity>
               </View>
             ),
@@ -205,7 +225,7 @@ export default function AppLayout() {
         visible={showUploadStatement}
         onClose={closeStatementUpload}
       />
-      <FabActionSheet
+      <FabSpeedDial
         visible={showFabSheet}
         onClose={() => setShowFabSheet(false)}
         actions={fabActions}

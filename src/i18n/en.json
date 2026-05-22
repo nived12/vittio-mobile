@@ -1016,7 +1016,7 @@
     "disclaimer": "Vittio provides educational guidance only — not financial, legal, or tax advice.",
     "emptyTitle": "Your personal finance coach",
     "emptySubtitle": "Ask me anything about your spending, savings, or goals.",
-    "limitTitle": "You've reached your monthly assistant limit",
+    "limitTitle": "You've reached your free usage limit of your assistant",
     "limitSubtitleTrial": "Upgrade to Premium to keep chatting.",
     "limitSubtitlePremium": "Your quota resets on your next billing date.",
     "limitCta": "Upgrade to Premium",
@@ -1041,6 +1041,17 @@
       "cutSpending": "Where can I cut spending?",
       "vsLastMonth": "How am I doing vs last month?",
       "savingsPlan": "Give me a 7-day savings plan"
+    },
+    "suggestionChips": {
+      "monthly_breakdown": "How much did I spend this month?",
+      "net_worth_overview": "What is my net worth?",
+      "largest_expenses": "What are my 5 largest expenses this month?",
+      "total_debt_summary": "How much do I owe in total?",
+      "savings_overview": "What is my savings status?",
+      "goals_overview": "What is my goals status?",
+      "month_vs_previous": "How does my spending compare to last month?",
+      "recurring_overview": "What are my recurring payments?",
+      "previous_month_income": "How much income did I receive last month?"
     },
     "errors": {
       "send": "Could not send message. Please try again.",

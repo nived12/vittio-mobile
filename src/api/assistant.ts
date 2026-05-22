@@ -51,6 +51,7 @@ export async function sendChatMessage(params: {
   message: string;
   conversation_id?: string;
   locale?: string;
+  suggestion_key?: string;
 }): Promise<ChatResponse> {
   const res = await apiClient.post<{
     data: Omit<ChatResponse, 'usage'>;

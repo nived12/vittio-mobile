@@ -21,7 +21,6 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { CaretLeft, ClockCounterClockwise, PaperPlaneTilt, Plus, Trash } from 'phosphor-react-native';
 import { BotMessageSquare } from 'lucide-react-native';
-import { useAuthStore } from '../../src/stores/authStore';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
 import {
@@ -44,14 +43,24 @@ interface LocalMessage {
   created_at: string;
 }
 
-// ── Quick-reply chips ──────────────────────────────────────────────────────
+// ── Suggestion chips (deterministic shortcuts, $0, no LLM) ────────────────
 
-const QUICK_REPLY_KEYS = [
-  'monthChanges',
-  'cutSpending',
-  'vsLastMonth',
-  'savingsPlan',
-] as const;
+interface SuggestionChip {
+  key: string;
+  dot: string;
+}
+
+const SUGGESTION_CHIPS: SuggestionChip[] = [
+  { key: 'monthly_breakdown',     dot: '#4f46e5' },
+  { key: 'net_worth_overview',    dot: '#7c3aed' },
+  { key: 'largest_expenses',      dot: '#e11d48' },
+  { key: 'total_debt_summary',    dot: '#e11d48' },
+  { key: 'savings_overview',      dot: '#10b981' },
+  { key: 'goals_overview',        dot: '#d97706' },
+  { key: 'month_vs_previous',     dot: '#0891b2' },
+  { key: 'recurring_overview',    dot: '#4f46e5' },
+  { key: 'previous_month_income', dot: '#10b981' },
+];
 
 // ── Typing indicator ───────────────────────────────────────────────────────
 
@@ -229,7 +238,6 @@ function HistoryModal({
 
 export default function AssistantScreen() {
   const { t, i18n } = useTranslation();
-  const user = useAuthStore((s) => s.user);
   const { theme, isDark } = useTheme();
 
   const bg           = isDark ? theme.background      : '#f8fafc';
@@ -237,9 +245,6 @@ export default function AssistantScreen() {
   const textPrimary  = isDark ? theme.textPrimary      : '#0f172a';
   const textSecondary = isDark ? theme.textSecondary   : '#64748b';
   const borderColor  = isDark ? theme.border           : '#e2e8f0';
-
-  const isPremium =
-    user?.subscription_status === 'active' || user?.subscription_status === 'trial_active';
 
   const scrollRef   = useRef<ScrollView>(null);
   const inputRef    = useRef<TextInput>(null);
@@ -335,6 +340,63 @@ export default function AssistantScreen() {
         message: msg,
         conversation_id: conversationId ?? undefined,
         locale: i18n.language,
+      });
+
+      setConvId(result.conversation.id);
+      setUsage(result.usage);
+      if (result.usage.threshold_crossed) {
+        showQuotaToast(result.usage.threshold_crossed);
+      }
+
+      setMessages((prev) => {
+        const withoutTyping = prev.filter((m) => m.id !== 'typing');
+        const assistantMsg: LocalMessage = {
+          id: result.assistant_message.id,
+          role: 'assistant',
+          content: result.assistant_message.content,
+          next_best_action: result.assistant_message.next_best_action,
+          created_at: result.assistant_message.created_at,
+        };
+        return [...withoutTyping, assistantMsg];
+      });
+      scrollToBottom();
+    } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== 'typing'));
+      Alert.alert(t('assistant.errors.send'));
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  async function handleSuggestion(chip: SuggestionChip) {
+    const text = t(`assistant.suggestionChips.${chip.key}`);
+    if (!text || isSending || isAtLimit) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsSending(true);
+
+    const userMsg: LocalMessage = {
+      id: `u-${Date.now()}`,
+      role: 'user',
+      content: text,
+      created_at: new Date().toISOString(),
+    };
+    const typingMsg: LocalMessage = {
+      id: 'typing',
+      role: 'typing',
+      content: '',
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, userMsg, typingMsg]);
+    scrollToBottom();
+
+    try {
+      const result = await sendChatMessage({
+        message: text,
+        conversation_id: conversationId ?? undefined,
+        locale: i18n.language,
+        suggestion_key: chip.key,
       });
 
       setConvId(result.conversation.id);
@@ -498,7 +560,25 @@ export default function AssistantScreen() {
                 <BotMessageSquare size={36} color={colors.brand.primary} strokeWidth={2} />
               </View>
               <Text style={[styles.emptyTitle, { color: textPrimary }]}>{t('assistant.emptyTitle')}</Text>
-              <Text style={[styles.emptySubtitle, { color: textSecondary }]}>{t('assistant.emptySubtitle')}</Text>
+
+              {/* Suggestion chips — deterministic shortcuts, wrapped layout matching web */}
+              {showQuickReplies && (
+                <View style={styles.chipsWrap}>
+                  {SUGGESTION_CHIPS.map((chip) => (
+                    <TouchableOpacity
+                      key={chip.key}
+                      style={[styles.chip, { backgroundColor: surface, borderColor }]}
+                      onPress={() => handleSuggestion(chip)}
+                      accessibilityRole="button"
+                    >
+                      <View style={[styles.chipDot, { backgroundColor: chip.dot }]} />
+                      <Text style={[styles.chipText, { color: textPrimary }]}>
+                        {t(`assistant.suggestionChips.${chip.key}`)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           ) : (
             messages.map((msg) => (
@@ -513,28 +593,6 @@ export default function AssistantScreen() {
           )}
         </ScrollView>
 
-        {/* Quick-reply chips */}
-        {showQuickReplies && isPremium && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.quickRepliesContent}
-            style={[styles.quickReplies, { borderTopColor: borderColor }]}
-          >
-            {QUICK_REPLY_KEYS.map((key) => (
-              <TouchableOpacity
-                key={key}
-                style={[styles.chip, { backgroundColor: surface, borderColor }]}
-                onPress={() => handleSend(t(`assistant.quickReplies.${key}`))}
-                accessibilityRole="button"
-              >
-                <Text style={[styles.chipText, { color: textPrimary }]}>
-                  {t(`assistant.quickReplies.${key}`)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
 
         {/* Limit wall — uniform indigo card for both trial and premium */}
         {isAtLimit && (
@@ -690,8 +748,8 @@ const styles = StyleSheet.create({
 
   // Empty state
   emptyState: { alignItems: 'center', gap: 12, paddingBottom: 40 },
-  emptyIconWrap: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { ...textStyles.displayMd, textAlign: 'center' },
+  emptyIconWrap: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { ...textStyles.displayMd, fontSize: 20, lineHeight: 28, textAlign: 'center', paddingHorizontal: 24 },
   emptySubtitle: { ...textStyles.bodyMd, textAlign: 'center', opacity: 0.7, paddingHorizontal: 20 },
 
   // Bubbles
@@ -720,18 +778,29 @@ const styles = StyleSheet.create({
   nextActionLabel: { ...textStyles.bodySm, textTransform: 'uppercase', letterSpacing: 0.4, fontSize: 10 },
   nextActionText: { ...textStyles.bodySm },
 
-  // Quick replies
-  quickReplies: { borderTopWidth: 1, maxHeight: 56 },
-  quickRepliesContent: {
-    paddingHorizontal: spacing.screenPaddingH,
-    paddingVertical: 8,
+  // Suggestion chips — wrapped, centered, matching web layout
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: spacing.screenPaddingH,
+    marginTop: 8,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 9,
+    borderRadius: 999,
     borderWidth: 1,
+  },
+  chipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    flexShrink: 0,
   },
   chipText: { ...textStyles.bodySm, fontFamily: 'Inter_500Medium' },
 

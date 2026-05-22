@@ -1016,7 +1016,7 @@
     "disclaimer": "Vittio ofrece orientación educativa únicamente — no es asesoramiento financiero, legal ni fiscal.",
     "emptyTitle": "Tu coach de finanzas personales",
     "emptySubtitle": "Pregúntame cualquier cosa sobre tus gastos, ahorros u objetivos.",
-    "limitTitle": "Has llegado al límite mensual de tu asistente",
+    "limitTitle": "Has llegado al límite gratuito de tu asistente",
     "limitSubtitleTrial": "Actualiza a Premium para seguir conversando.",
     "limitSubtitlePremium": "Tu cuota se renueva en tu próxima fecha de facturación.",
     "limitCta": "Actualizar a Premium",
@@ -1041,6 +1041,17 @@
       "cutSpending": "¿Dónde puedo recortar gastos?",
       "vsLastMonth": "¿Cómo voy vs. el mes pasado?",
       "savingsPlan": "Dame un plan de ahorro de 7 días"
+    },
+    "suggestionChips": {
+      "monthly_breakdown": "¿Cuánto gasté este mes?",
+      "net_worth_overview": "¿Cuánto es mi patrimonio neto?",
+      "largest_expenses": "¿Cuáles son mis 5 mayores gastos del mes?",
+      "total_debt_summary": "¿Cuánto debo en total?",
+      "savings_overview": "¿Cuál es el estado de mis ahorros?",
+      "goals_overview": "¿Cuál es el estado de mis metas?",
+      "month_vs_previous": "¿Cómo va mi gasto vs el mes pasado?",
+      "recurring_overview": "¿Cuáles son mis pagos recurrentes?",
+      "previous_month_income": "¿Cuánto recibí de ingresos el mes pasado?"
     },
     "errors": {
       "send": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
