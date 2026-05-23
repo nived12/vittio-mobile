@@ -25,6 +25,21 @@ let isRedirectingToPremium = false;
 export function resetConsentRedirect(): void { isRedirectingToConsent = false; }
 export function resetPremiumRedirect(): void { isRedirectingToPremium = false; }
 
+const SENSITIVE_KEYS = ['password', 'password_confirmation', 'current_password'];
+
+function redactSensitive(data: unknown): unknown {
+  if (data == null || typeof data !== 'object') return data;
+  const obj = data as Record<string, unknown>;
+  let copy: Record<string, unknown> | null = null;
+  for (const key of SENSITIVE_KEYS) {
+    if (key in obj) {
+      copy = copy ?? { ...obj };
+      copy[key] = '[REDACTED]';
+    }
+  }
+  return copy ?? data;
+}
+
 function processQueue(error: unknown, token: string | null): void {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
@@ -57,9 +72,10 @@ apiClient.interceptors.request.use(
     }
 
     if (__DEV__) {
+      const safeData = redactSensitive(config.data);
       console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, {
         params: config.params,
-        data:   config.data,
+        data:   safeData,
       });
     }
 
@@ -81,10 +97,14 @@ apiClient.interceptors.response.use(
       Promise.all([
         import('../stores/uiStore'),
         import('../i18n/index'),
-      ]).then(([{ useUIStore }, { default: i18n }]) => {
-        const message = i18n.t(`assistant.quotaNotice.${threshold}`);
-        useUIStore.getState().showToast(message, 'warning');
-      });
+      ])
+        .then(([{ useUIStore }, { default: i18n }]) => {
+          const message = i18n.t(`assistant.quotaNotice.${threshold}`);
+          useUIStore.getState().showToast(message, 'warning');
+        })
+        .catch((e) => {
+          if (__DEV__) console.warn('[API] threshold toast failed', e);
+        });
     }
 
     return response;

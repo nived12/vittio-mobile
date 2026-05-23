@@ -24,6 +24,8 @@ import { BotMessageSquare } from 'lucide-react-native';
 import Markdown from 'react-native-markdown-display';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
+import { safeOpenUrl } from '../../src/utils/url';
+import { useUIStore } from '../../src/stores/uiStore';
 import {
   AssistantConversation,
   AssistantUsageSnapshot,
@@ -111,7 +113,10 @@ function MessageBubble({
         {isUser ? (
           <Text style={[styles.bubbleText, styles.bubbleTextUser]}>{message.content}</Text>
         ) : (
-          <Markdown style={markdownStyles(textColor)}>{message.content}</Markdown>
+          <Markdown
+            style={markdownStyles(textColor)}
+            onLinkPress={(url) => safeOpenUrl(url)}
+          >{message.content}</Markdown>
         )}
       </View>
       {!isUser && typeof message.next_best_action === 'string' && message.next_best_action ? (
@@ -150,15 +155,39 @@ function HistoryModal({
   const { t } = useTranslation();
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!visible) return;
     setLoading(true);
-    listConversations()
-      .then((r) => setConversations(r.conversations))
+    setPage(1);
+    listConversations(1)
+      .then((r) => {
+        setConversations(r.conversations);
+        setTotalPages(r.pagination.pages);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [visible]);
+
+  async function handleLoadMore() {
+    if (loadingMore || page >= totalPages) return;
+    setLoadingMore(true);
+    try {
+      const next = page + 1;
+      const r = await listConversations(next);
+      setConversations((prev) => [...prev, ...r.conversations]);
+      setPage(next);
+      setTotalPages(r.pagination.pages);
+    } catch {
+      // Silent fail — user can tap again
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   async function handleDelete(id: string) {
     Alert.alert(
@@ -170,8 +199,15 @@ function HistoryModal({
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            await deleteConversation(id).catch(() => {});
-            setConversations((prev) => prev.filter((c) => c.id !== id));
+            setDeletingId(id);
+            try {
+              await deleteConversation(id);
+              setConversations((prev) => prev.filter((c) => c.id !== id));
+            } catch {
+              useUIStore.getState().showToast(t('assistant.errors.delete'), 'error');
+            } finally {
+              setDeletingId(null);
+            }
           },
         },
       ],
@@ -200,6 +236,20 @@ function HistoryModal({
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ paddingHorizontal: spacing.screenPaddingH, paddingTop: spacing.sm }}
             ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: borderColor }} />}
+            ListFooterComponent={
+              page < totalPages ? (
+                <TouchableOpacity
+                  onPress={handleLoadMore}
+                  disabled={loadingMore}
+                  accessibilityRole="button"
+                  style={styles.loadMoreBtn}
+                >
+                  <Text style={[styles.loadMoreText, { color: colors.brand.primary }]}>
+                    {loadingMore ? t('common.loading') : t('assistant.loadMore')}
+                  </Text>
+                </TouchableOpacity>
+              ) : null
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[styles.historyRow, { backgroundColor: surface }]}
@@ -222,6 +272,7 @@ function HistoryModal({
                 </View>
                 <TouchableOpacity
                   onPress={() => handleDelete(item.id)}
+                  disabled={deletingId === item.id}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="button"
                   accessibilityLabel={t('assistant.deleteConversation')}
@@ -261,6 +312,7 @@ export default function AssistantScreen() {
   const [toastThreshold, setToastThreshold] = useState<80 | 90 | 95 | null>(null);
   const toastAnim = useRef(new Animated.Value(0)).current;
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
 
   const isAtLimit = usage != null && usage.remaining === 0;
   const canSend   = !isSending && inputText.trim().length > 0 && !isAtLimit;
@@ -286,13 +338,17 @@ export default function AssistantScreen() {
         duration: 220,
         easing: Easing.bezier(0.32, 0.72, 0, 1),
         useNativeDriver: true,
-      }).start(() => setToastThreshold(null));
+      }).start(() => {
+        if (isMountedRef.current) setToastThreshold(null);
+      });
     }, 6000);
   }
 
   useEffect(() => () => {
+    isMountedRef.current = false;
     if (toastTimer.current) clearTimeout(toastTimer.current);
-  }, []);
+    toastAnim.stopAnimation();
+  }, [toastAnim]);
 
   // Pre-fetch the usage snapshot on mount so the trial pill / premium toast
   // surfaces before the user spends a message to discover they're near the cap.
@@ -920,4 +976,6 @@ const styles = StyleSheet.create({
   },
   historyRowTitle: { ...textStyles.bodyMd, fontFamily: 'Inter_500Medium' },
   historyRowMeta: { ...textStyles.bodySm, opacity: 0.6, marginTop: 2 },
+  loadMoreBtn: { paddingVertical: 16, alignItems: 'center' },
+  loadMoreText: { ...textStyles.bodyMd, fontFamily: 'Inter_500Medium' },
 });

@@ -1030,6 +1030,7 @@
     "tryPremium": "Try Premium",
     "messageCount_one": "{{count}} message",
     "messageCount_other": "{{count}} messages",
+    "loadMore": "Load more",
     "quotaNotice": {
       "80": "You're at 80% of your monthly AI usage.",
       "90": "You're at 90% of your monthly AI usage.",
@@ -1055,7 +1056,8 @@
     },
     "errors": {
       "send": "Could not send message. Please try again.",
-      "load": "Could not load conversation."
+      "load": "Could not load conversation.",
+      "delete": "Couldn't delete the conversation. Please try again."
     }
   }
 }
