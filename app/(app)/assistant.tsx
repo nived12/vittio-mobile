@@ -21,6 +21,7 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { CaretLeft, ClockCounterClockwise, PaperPlaneTilt, Plus, Trash } from 'phosphor-react-native';
 import { BotMessageSquare } from 'lucide-react-native';
+import Markdown from 'react-native-markdown-display';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { colors, spacing, textStyles } from '../../src/theme';
 import {
@@ -107,9 +108,11 @@ function MessageBubble({
             : [styles.bubbleAssistant, { backgroundColor: surfaceColor, borderColor }],
         ]}
       >
-        <Text style={[styles.bubbleText, isUser ? styles.bubbleTextUser : { color: textColor }]}>
-          {message.content}
-        </Text>
+        {isUser ? (
+          <Text style={[styles.bubbleText, styles.bubbleTextUser]}>{message.content}</Text>
+        ) : (
+          <Markdown style={markdownStyles(textColor)}>{message.content}</Markdown>
+        )}
       </View>
       {!isUser && typeof message.next_best_action === 'string' && message.next_best_action ? (
         <View style={[styles.nextActionWrap, { borderColor }]}>
@@ -452,7 +455,6 @@ export default function AssistantScreen() {
     setMessages([]);
     setConvId(null);
     setInputText('');
-    inputRef.current?.focus();
   }
 
   const showEmpty    = messages.length === 0;
@@ -668,6 +670,26 @@ export default function AssistantScreen() {
   );
 }
 
+// ── Markdown styles (assistant bubbles) ────────────────────────────────────
+
+const markdownStyles = (color: string) => ({
+  body:        { color, ...textStyles.bodyMd, lineHeight: 22 },
+  paragraph:   { color, marginTop: 0, marginBottom: 6 },
+  strong:      { color, fontFamily: 'Inter_600SemiBold' },
+  em:          { color, fontStyle: 'italic' as const },
+  bullet_list: { marginTop: 2, marginBottom: 2 },
+  ordered_list:{ marginTop: 2, marginBottom: 2 },
+  list_item:   { color, marginVertical: 1 },
+  bullet_list_icon: { color, marginLeft: 0, marginRight: 6, lineHeight: 22 },
+  ordered_list_icon: { color, marginLeft: 0, marginRight: 6, lineHeight: 22 },
+  code_inline: { color, backgroundColor: 'rgba(127,127,127,0.12)', borderRadius: 4, paddingHorizontal: 4 },
+  link:        { color: colors.brand.primary, textDecorationLine: 'underline' as const },
+  heading1:    { color, fontFamily: 'Inter_600SemiBold', fontSize: 18, marginTop: 4, marginBottom: 4 },
+  heading2:    { color, fontFamily: 'Inter_600SemiBold', fontSize: 16, marginTop: 4, marginBottom: 4 },
+  heading3:    { color, fontFamily: 'Inter_600SemiBold', fontSize: 15, marginTop: 4, marginBottom: 4 },
+  hr:          { backgroundColor: 'rgba(127,127,127,0.2)', height: 1, marginVertical: 6 },
+});
+
 // ── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -744,7 +766,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     gap: 10,
   },
-  messageListEmpty: { flex: 1, justifyContent: 'center' },
+  messageListEmpty: { flexGrow: 1, justifyContent: 'center', paddingBottom: 24 },
 
   // Empty state
   emptyState: { alignItems: 'center', gap: 12, paddingBottom: 40 },
