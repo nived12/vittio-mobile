@@ -1,0 +1,10 @@
+{
+  "data": {
+    "plan": "trial",
+    "used": 5,
+    "limit": 50,
+    "remaining": 45,
+    "resets_at": null
+  },
+  "meta": {}
+}

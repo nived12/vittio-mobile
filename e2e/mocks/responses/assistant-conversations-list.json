@@ -1,0 +1,21 @@
+{
+  "data": {
+    "conversations": [
+      {
+        "id": "conv-1",
+        "title": "Mis mayores gastos",
+        "locale": "es",
+        "last_message_at": "2026-05-22T10:00:00Z",
+        "message_count": 2
+      }
+    ]
+  },
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pages": 1,
+      "count": 1,
+      "page_size": 20
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "conversations": []
+  },
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pages": 1,
+      "count": 0,
+      "page_size": 20
+    }
+  }
+}

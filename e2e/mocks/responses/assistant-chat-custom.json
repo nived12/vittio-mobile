@@ -1,0 +1,39 @@
+{
+  "data": {
+    "conversation": {
+      "id": "conv-2",
+      "title": "Consulta",
+      "locale": "es",
+      "last_message_at": "2026-05-22T10:05:00Z",
+      "message_count": 2
+    },
+    "user_message": {
+      "id": "msg-user-2",
+      "role": "user",
+      "content": "Hola Vittbot",
+      "intent": null,
+      "is_deterministic": false,
+      "next_best_action": null,
+      "created_at": "2026-05-22T10:05:00Z"
+    },
+    "assistant_message": {
+      "id": "msg-asst-2",
+      "role": "assistant",
+      "content": "¡Hola! Soy **Vittbot**, tu asistente financiero. ¿En qué te puedo ayudar?",
+      "intent": null,
+      "is_deterministic": false,
+      "next_best_action": null,
+      "created_at": "2026-05-22T10:05:01Z"
+    },
+    "disclaimer": ""
+  },
+  "meta": {
+    "usage": {
+      "plan": "trial",
+      "used": 7,
+      "limit": 50,
+      "remaining": 43,
+      "resets_at": null
+    }
+  }
+}
