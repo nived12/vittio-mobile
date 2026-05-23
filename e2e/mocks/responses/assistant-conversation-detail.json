@@ -1,0 +1,40 @@
+{
+  "data": {
+    "conversation": {
+      "id": "conv-1",
+      "title": "Mis mayores gastos",
+      "locale": "es",
+      "last_message_at": "2026-05-22T10:00:00Z",
+      "message_count": 2
+    },
+    "messages": [
+      {
+        "id": "msg-user-1",
+        "role": "user",
+        "content": "¿Cuáles son mis 5 mayores gastos del mes?",
+        "intent": null,
+        "is_deterministic": true,
+        "next_best_action": null,
+        "created_at": "2026-05-22T10:00:00Z"
+      },
+      {
+        "id": "msg-asst-1",
+        "role": "assistant",
+        "content": "Tus 5 mayores gastos del mes:\n\n- **Uber - Centro** — $729.00\n- **CFE Luz** — $1,225.50",
+        "intent": "largest_expenses",
+        "is_deterministic": true,
+        "next_best_action": null,
+        "created_at": "2026-05-22T10:00:01Z"
+      }
+    ]
+  },
+  "meta": {
+    "usage": {
+      "plan": "trial",
+      "used": 6,
+      "limit": 50,
+      "remaining": 44,
+      "resets_at": null
+    }
+  }
+}

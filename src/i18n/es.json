@@ -600,10 +600,15 @@
     "financesTab": "Pestaña Finanzas",
     "addTransaction": "Agregar transacción",
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
+    "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
+      "newTransactionSubtitle": "Voz, foto o ingreso manual",
       "uploadStatement": "Subir estado de cuenta",
+      "uploadStatementSubtitle": "Importa un PDF",
+      "aiAssistant": "Vittbot",
+      "aiAssistantSubtitle": "Pregunta lo que sea de tus finanzas",
       "options": "Opciones"
     }
   },
@@ -1000,5 +1005,59 @@
     "switchToAnnual": "Cambiar a Anual · Ahorra 33%",
     "switchToMonthly": "Cambiar a Mensual",
     "toastPortalError": "No se pudo abrir el portal de suscripción."
+  },
+  "assistant": {
+    "headerTitle": "Vittbot",
+    "newChat": "Nueva conversación",
+    "history": "Historial",
+    "send": "Enviar",
+    "inputPlaceholder": "Pregunta lo que quieras sobre tus finanzas…",
+    "typing": "Vittio está pensando…",
+    "disclaimer": "Vittio ofrece orientación educativa únicamente — no es asesoramiento financiero, legal ni fiscal.",
+    "emptyTitle": "Tu coach de finanzas personales",
+    "emptySubtitle": "Pregúntame cualquier cosa sobre tus gastos, ahorros u objetivos.",
+    "limitTitle": "Has llegado al límite gratuito de tu asistente",
+    "limitSubtitleTrial": "Actualiza a Premium para seguir conversando.",
+    "limitSubtitlePremium": "Tu cuota se renueva en tu próxima fecha de facturación.",
+    "limitCta": "Actualizar a Premium",
+    "limitCtaPremium": "Administrar suscripción",
+    "historyTitle": "Conversaciones anteriores",
+    "historyEmpty": "Aún no hay conversaciones",
+    "deleteConversation": "Eliminar conversación",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar esta conversación?",
+    "usageLabel": "Mensajes de IA",
+    "nearLimitTrial": "Estás cerca de tu límite de uso gratuito.",
+    "tryPremium": "Probar Premium",
+    "messageCount_one": "{{count}} mensaje",
+    "messageCount_other": "{{count}} mensajes",
+    "loadMore": "Cargar más",
+    "quotaNotice": {
+      "80": "Estás al 80% de tu uso mensual de IA.",
+      "90": "Estás al 90% de tu uso mensual de IA.",
+      "95": "Estás al 95% de tu uso mensual de IA."
+    },
+    "nextBestAction": "Siguiente paso sugerido",
+    "quickReplies": {
+      "monthChanges": "¿Qué cambió este mes y por qué?",
+      "cutSpending": "¿Dónde puedo recortar gastos?",
+      "vsLastMonth": "¿Cómo voy vs. el mes pasado?",
+      "savingsPlan": "Dame un plan de ahorro de 7 días"
+    },
+    "suggestionChips": {
+      "monthly_breakdown": "¿Cuánto gasté este mes?",
+      "net_worth_overview": "¿Cuánto es mi patrimonio neto?",
+      "largest_expenses": "¿Cuáles son mis 5 mayores gastos del mes?",
+      "total_debt_summary": "¿Cuánto debo en total?",
+      "savings_overview": "¿Cuál es el estado de mis ahorros?",
+      "goals_overview": "¿Cuál es el estado de mis metas?",
+      "month_vs_previous": "¿Cómo va mi gasto vs el mes pasado?",
+      "recurring_overview": "¿Cuáles son mis pagos recurrentes?",
+      "previous_month_income": "¿Cuánto recibí de ingresos el mes pasado?"
+    },
+    "errors": {
+      "send": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+      "load": "No se pudo cargar la conversación.",
+      "delete": "No se pudo eliminar la conversación. Inténtalo de nuevo."
+    }
   }
 }

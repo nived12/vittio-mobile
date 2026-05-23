@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { ActionSheetIOS, Alert, Platform, TouchableOpacity, View } from 'react-native';
-import { Tabs } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, TouchableOpacity, View } from 'react-native';
+import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
+import { FabSpeedDial, FabAction } from '../../src/components/ui/FabSpeedDial';
 import { Toast } from '../../src/components/ui/Toast';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
@@ -19,6 +20,7 @@ import { useTheme } from '../../src/theme/ThemeContext';
 export default function AppLayout() {
   const { t } = useTranslation();
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showFabSheet, setShowFabSheet] = useState(false);
   const showUploadStatement = useUIStore((s) => s.showStatementUpload);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
@@ -29,6 +31,20 @@ export default function AppLayout() {
   const requireConfirmed = useRequireConfirmed();
   const insets = useSafeAreaInsets();
 
+  const fabIconRotation = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(fabIconRotation, {
+      toValue: showFabSheet ? 1 : 0,
+      tension: 200,
+      friction: 18,
+      useNativeDriver: true,
+    }).start();
+  }, [showFabSheet]);
+  const iconRotate = fabIconRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '45deg'],
+  });
+
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
   const { theme } = useTheme();
   const tabBarBg = theme.tabBarBg;
@@ -38,25 +54,35 @@ export default function AppLayout() {
 
   function handleFabLongPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [t('navigation.fab.cancel'), t('navigation.fab.newTransaction'), t('navigation.fab.uploadStatement')],
-          cancelButtonIndex: 0,
-        },
-        (idx) => {
-          if (idx === 1) requireConfirmed(() => setShowAddTransaction(true));
-          if (idx === 2) requireConfirmed(() => openStatementUpload());
-        },
-      );
-    } else {
-      Alert.alert(t('navigation.fab.options'), '', [
-        { text: t('navigation.fab.newTransaction'), onPress: () => requireConfirmed(() => setShowAddTransaction(true)) },
-        { text: t('navigation.fab.uploadStatement'), onPress: () => requireConfirmed(() => openStatementUpload()) },
-        { text: t('navigation.fab.cancel'), style: 'cancel' },
-      ]);
-    }
+    setShowFabSheet(true);
   }
+
+  const fabActions: FabAction[] = [
+    {
+      key: 'newTransaction',
+      icon: 'plus',
+      tint: 'indigo',
+      title: t('navigation.fab.newTransaction'),
+      subtitle: t('navigation.fab.newTransactionSubtitle'),
+      onPress: () => requireConfirmed(() => setShowAddTransaction(true)),
+    },
+    {
+      key: 'uploadStatement',
+      icon: 'upload',
+      tint: 'cyan',
+      title: t('navigation.fab.uploadStatement'),
+      subtitle: t('navigation.fab.uploadStatementSubtitle'),
+      onPress: () => requireConfirmed(() => openStatementUpload()),
+    },
+    {
+      key: 'aiAssistant',
+      icon: 'bot',
+      tint: 'indigo',
+      title: t('navigation.fab.aiAssistant'),
+      subtitle: t('navigation.fab.aiAssistantSubtitle'),
+      onPress: () => router.push('/(app)/assistant'),
+    },
+  ];
 
   return (
     <>
@@ -114,6 +140,10 @@ export default function AppLayout() {
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <TouchableOpacity
                   onPress={() => {
+                    if (showFabSheet) {
+                      setShowFabSheet(false);
+                      return;
+                    }
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     requireConfirmed(() => setShowAddTransaction(true));
                   }}
@@ -136,7 +166,9 @@ export default function AppLayout() {
                   accessibilityRole="button"
                   accessibilityHint={t('navigation.addTransactionHint')}
                 >
-                  <Ionicons name="add" size={28} color="#ffffff" />
+                  <Animated.View style={{ transform: [{ rotate: iconRotate }] }}>
+                    <Ionicons name="add" size={28} color="#ffffff" />
+                  </Animated.View>
                 </TouchableOpacity>
               </View>
             ),
@@ -180,6 +212,9 @@ export default function AppLayout() {
 
         {/* Hide premium from tab bar — accessible via profile */}
         <Tabs.Screen name="premium" options={{ href: null }} />
+
+        {/* Hide assistant from tab bar — accessible via profile / FAB long-press */}
+        <Tabs.Screen name="assistant" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal
@@ -189,6 +224,11 @@ export default function AppLayout() {
       <StatementUploadModal
         visible={showUploadStatement}
         onClose={closeStatementUpload}
+      />
+      <FabSpeedDial
+        visible={showFabSheet}
+        onClose={() => setShowFabSheet(false)}
+        actions={fabActions}
       />
       <View
         style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}

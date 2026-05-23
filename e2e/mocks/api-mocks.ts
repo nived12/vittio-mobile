@@ -29,6 +29,12 @@ export async function setupApiMocks(page: Page): Promise<void> {
   const bankAccounts = readFixture<unknown>("bank-accounts.json");
   const transactions = readFixture<{ list: unknown; summary: unknown }>("transactions.json");
 
+  const assistantUsage = readFixture<unknown>("assistant-usage.json");
+  const assistantConversationsEmpty = readFixture<unknown>("assistant-conversations-empty.json");
+  const assistantChatLargestExpenses = readFixture<unknown>("assistant-chat-largest-expenses.json");
+  const assistantChatCustom = readFixture<unknown>("assistant-chat-custom.json");
+  const assistantConversationDetail = readFixture<unknown>("assistant-conversation-detail.json");
+
   await page.route("**/*", (route) => {
     const method = route.request().method();
     const pathname = new URL(route.request().url()).pathname.toLowerCase();
@@ -50,7 +56,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.includes("/transactions/recurring_suggestions") ||
       pathname.endsWith("/transactions") ||
       pathname.endsWith("/categories") ||
-      pathname.endsWith("/user_settings");
+      pathname.endsWith("/user_settings") ||
+      pathname.includes("/assistant/");
 
     if (!isApiRequest) {
       return route.continue();
@@ -101,6 +108,27 @@ export async function setupApiMocks(page: Page): Promise<void> {
           notify_debt_reminders: true
         }
       });
+    }
+
+    // ── Assistant (Vittbot) ──────────────────────────────────────────────
+    if (pathname.endsWith("/assistant/usage")) {
+      return fulfillJson(route, assistantUsage);
+    }
+    if (pathname.endsWith("/assistant/conversations")) {
+      if (method === "GET") return fulfillJson(route, assistantConversationsEmpty);
+      return fulfillJson(route, { data: {} }, 201);
+    }
+    if (/\/assistant\/conversations\/[^/]+$/.test(pathname)) {
+      if (method === "DELETE") return fulfillJson(route, {}, 204);
+      return fulfillJson(route, assistantConversationDetail);
+    }
+    if (pathname.endsWith("/assistant/chat")) {
+      const body = route.request().postDataJSON?.() ?? null;
+      const suggestionKey = body && typeof body === "object" ? body.suggestion_key : null;
+      if (suggestionKey === "largest_expenses") {
+        return fulfillJson(route, assistantChatLargestExpenses);
+      }
+      return fulfillJson(route, assistantChatCustom);
     }
 
     return fulfillJson(route, { data: {} });

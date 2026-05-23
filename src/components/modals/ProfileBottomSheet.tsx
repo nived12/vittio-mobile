@@ -19,7 +19,7 @@ import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Bell, Camera, Crown, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from '../../i18n';
@@ -169,6 +169,11 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
     router.push('/(app)/categories');
   }
 
+  function handleAssistant() {
+    onClose();
+    router.push('/(app)/assistant');
+  }
+
   function handleNotifications() {
     onClose();
     router.push('/(app)/notification-preferences');
@@ -270,6 +275,19 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
           <Text style={[styles.actionLabel, { color: textPrimary }]}>
             {subscriptionStatus === 'active' ? t('settings.managePremium') : t('premium.headerTitle')}
           </Text>
+        </TouchableOpacity>
+
+        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
+
+        {/* Vittbot assistant */}
+        <TouchableOpacity
+          style={styles.actionRow}
+          onPress={handleAssistant}
+          accessibilityRole="button"
+          accessibilityLabel={t('navigation.assistant')}
+        >
+          <BotMessageSquare size={20} color="#4f46e5" strokeWidth={2.2} />
+          <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('navigation.assistant')}</Text>
         </TouchableOpacity>
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
