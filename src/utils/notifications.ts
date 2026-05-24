@@ -33,6 +33,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
   // Web is handled separately via ServiceWorker
   if (Platform.OS === 'web') return null;
 
+  // Android push is deferred until FCM (google-services.json + Firebase project)
+  // is configured. Skipping here avoids a noisy error log on Android builds.
+  if (Platform.OS === 'android') return null;
+
   const { status: existing } = await Notifications.getPermissionsAsync();
   let status = existing;
 

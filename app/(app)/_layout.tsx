@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, TouchableOpacity, View } from 'react-native';
+import { Animated, Platform, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -97,8 +97,6 @@ export default function AppLayout() {
             backgroundColor: tabBarBg,
             borderTopWidth: 1,
             borderTopColor: tabBarBorder,
-            height: 64,
-            paddingBottom: 10,
           },
           tabBarLabelStyle: {
             fontSize: 11,
@@ -231,7 +229,13 @@ export default function AppLayout() {
         actions={fabActions}
       />
       <View
-        style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}
+        style={{
+          position: 'absolute',
+          bottom: (Platform.OS === 'ios' ? 49 + insets.bottom : 56) + 16,
+          left: 16,
+          right: 16,
+          gap: 8,
+        }}
         pointerEvents="box-none"
       >
         {toasts.map((t) => (

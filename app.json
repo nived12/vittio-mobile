@@ -77,7 +77,8 @@
           "color": "#4f46e5",
           "iosDisplayInForeground": true
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
