@@ -33,8 +33,10 @@ export async function registerForPushNotifications(): Promise<string | null> {
   // Web is handled separately via ServiceWorker
   if (Platform.OS === 'web') return null;
 
-  // Android push is deferred until FCM (google-services.json + Firebase project)
-  // is configured. Skipping here avoids a noisy error log on Android builds.
+  // TODO(android-push): Android push is intentionally skipped — FCM is not yet
+  // configured (no Firebase project, no google-services.json registered in EAS).
+  // To enable: create the Firebase project for io.vitt.app, register
+  // google-services.json via `eas credentials`, then remove this guard.
   if (Platform.OS === 'android') return null;
 
   const { status: existing } = await Notifications.getPermissionsAsync();

@@ -233,6 +233,13 @@ const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v
 EXPO_PUBLIC_API_URL=http://192.168.1.x:3000/api/v1
 ```
 
+**Host resolution per target:**
+- **iOS Simulator** → `http://localhost:3000/api/v1` (shares host network)
+- **Android Emulator** → `http://10.0.2.2:3000/api/v1` (10.0.2.2 aliases the host loopback)
+- **Physical device (iOS or Android)** → your Mac's LAN IP, e.g. `http://192.168.1.x:3000/api/v1`. Phone and Mac must be on the same Wi-Fi.
+
+The defaults in `src/api/client.ts` cover the two simulators automatically; physical devices require `.env.local` with the LAN IP.
+
 ### Production
 The API endpoint is configured via Expo secrets or EAS environment variables.
 

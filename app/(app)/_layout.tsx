@@ -15,6 +15,13 @@ import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme/ThemeContext';
 
+// Default React Navigation bottom tab bar content heights per platform.
+// iOS: 49pt (UIKit standard) + safe-area inset for the home indicator.
+// Android: 56dp (Material standard); no inset needed since edge-to-edge is enabled.
+const TAB_BAR_CONTENT_HEIGHT_IOS = 49;
+const TAB_BAR_CONTENT_HEIGHT_ANDROID = 56;
+const TOAST_GAP_ABOVE_TAB_BAR = 16;
+
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
 export default function AppLayout() {
@@ -231,7 +238,10 @@ export default function AppLayout() {
       <View
         style={{
           position: 'absolute',
-          bottom: (Platform.OS === 'ios' ? 49 + insets.bottom : 56) + 16,
+          bottom:
+            (Platform.OS === 'ios'
+              ? TAB_BAR_CONTENT_HEIGHT_IOS + insets.bottom
+              : TAB_BAR_CONTENT_HEIGHT_ANDROID) + TOAST_GAP_ABOVE_TAB_BAR,
           left: 16,
           right: 16,
           gap: 8,
