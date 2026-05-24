@@ -3,7 +3,14 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from 'axios';
+import { Platform } from 'react-native';
 import { tokenStorage } from '../utils/tokenStorage';
+
+const devBaseURL = Platform.select({
+  ios: 'http://localhost:3000/api/v1',
+  android: 'http://10.0.2.2:3000/api/v1',
+  default: 'http://localhost:3000/api/v1',
+});
 
 // ── Concurrent-refresh queue ───────────────────────────────────────────────
 //
@@ -54,7 +61,7 @@ function processQueue(error: unknown, token: string | null): void {
 // ── Axios instance ─────────────────────────────────────────────────────────
 
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1',
+  baseURL: process.env['EXPO_PUBLIC_API_URL'] ?? devBaseURL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

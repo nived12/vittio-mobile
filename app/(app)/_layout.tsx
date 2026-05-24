@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, TouchableOpacity, View } from 'react-native';
+import { Animated, Platform, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +14,13 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/theme/ThemeContext';
+
+// Default React Navigation bottom tab bar content heights per platform.
+// iOS: 49pt (UIKit standard) + safe-area inset for the home indicator.
+// Android: 56dp (Material standard); no inset needed since edge-to-edge is enabled.
+const TAB_BAR_CONTENT_HEIGHT_IOS = 49;
+const TAB_BAR_CONTENT_HEIGHT_ANDROID = 56;
+const TOAST_GAP_ABOVE_TAB_BAR = 16;
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
@@ -97,8 +104,6 @@ export default function AppLayout() {
             backgroundColor: tabBarBg,
             borderTopWidth: 1,
             borderTopColor: tabBarBorder,
-            height: 64,
-            paddingBottom: 10,
           },
           tabBarLabelStyle: {
             fontSize: 11,
@@ -231,7 +236,16 @@ export default function AppLayout() {
         actions={fabActions}
       />
       <View
-        style={{ position: 'absolute', bottom: insets.bottom + 74, left: 16, right: 16, gap: 8 }}
+        style={{
+          position: 'absolute',
+          bottom:
+            (Platform.OS === 'ios'
+              ? TAB_BAR_CONTENT_HEIGHT_IOS + insets.bottom
+              : TAB_BAR_CONTENT_HEIGHT_ANDROID) + TOAST_GAP_ABOVE_TAB_BAR,
+          left: 16,
+          right: 16,
+          gap: 8,
+        }}
         pointerEvents="box-none"
       >
         {toasts.map((t) => (
