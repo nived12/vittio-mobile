@@ -4,7 +4,7 @@
     "rootDir": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests",
     "forbidOnly": false,
     "fullyParallel": false,
-    "globalSetup": null,
+    "globalSetup": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/global-setup.ts",
     "globalTeardown": null,
     "globalTimeout": 0,
     "grep": {},
@@ -14,22 +14,22 @@
       "ci": {
         "commitHref": "https://github.com/nived12/vittio-mobile/commit/ee9c5c8896824d1906e6a53c1eab89e2c7a11953",
         "commitHash": "ee9c5c8896824d1906e6a53c1eab89e2c7a11953",
-        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/26386252313"
+        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/26388446619"
       },
       "gitCommit": {
-        "shortHash": "75bdfff",
-        "hash": "75bdfffe650129ab96bc26df5c1277eb13ddf545",
-        "subject": "Phase 16 - Recurring transactions",
-        "body": "Phase 16 - Recurring transactions\n",
+        "shortHash": "609b59f",
+        "hash": "609b59f55df8035a7ee49d278d6b0e75bd8d4d83",
+        "subject": "Fix suggestions from CR",
+        "body": "Fix suggestions from CR\n",
         "author": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1779689502000
+          "time": 1779693353000
         },
         "committer": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1779689502000
+          "time": 1779693353000
         },
         "branch": "HEAD"
       },
@@ -45,22 +45,22 @@
           "ci": {
             "commitHref": "https://github.com/nived12/vittio-mobile/commit/ee9c5c8896824d1906e6a53c1eab89e2c7a11953",
             "commitHash": "ee9c5c8896824d1906e6a53c1eab89e2c7a11953",
-            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/26386252313"
+            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/26388446619"
           },
           "gitCommit": {
-            "shortHash": "75bdfff",
-            "hash": "75bdfffe650129ab96bc26df5c1277eb13ddf545",
-            "subject": "Phase 16 - Recurring transactions",
-            "body": "Phase 16 - Recurring transactions\n",
+            "shortHash": "609b59f",
+            "hash": "609b59f55df8035a7ee49d278d6b0e75bd8d4d83",
+            "subject": "Fix suggestions from CR",
+            "body": "Fix suggestions from CR\n",
             "author": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1779689502000
+              "time": 1779693353000
             },
             "committer": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1779689502000
+              "time": 1779693353000
             },
             "branch": "HEAD"
           },
@@ -107,9 +107,9 @@
     "version": "1.59.1",
     "workers": 1,
     "webServer": {
-      "command": "npx serve dist -p 8081 --no-clipboard",
+      "command": "npx serve dist -p 4173 --no-clipboard",
       "cwd": "..",
-      "url": "http://127.0.0.1:8081",
+      "url": "http://127.0.0.1:4173",
       "reuseExistingServer": false,
       "timeout": 90000
     }
@@ -137,12 +137,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2553,
+                  "duration": 2483,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:13.918Z",
+                  "startTime": "2026-05-25T07:19:06.578Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -186,12 +186,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2545,
+                      "duration": 2193,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-25T06:15:17.370Z",
+                      "startTime": "2026-05-25T07:19:09.266Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -220,12 +220,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2753,
+                      "duration": 2419,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-25T06:15:19.935Z",
+                      "startTime": "2026-05-25T07:19:11.470Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -254,12 +254,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2369,
+                      "duration": 2392,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-25T06:15:22.702Z",
+                      "startTime": "2026-05-25T07:19:13.901Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -288,12 +288,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2865,
+                      "duration": 2926,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-25T06:15:25.082Z",
+                      "startTime": "2026-05-25T07:19:16.305Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -322,12 +322,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2513,
+                      "duration": 2678,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-25T06:15:27.958Z",
+                      "startTime": "2026-05-25T07:19:19.245Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -366,12 +366,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1872,
+                  "duration": 1974,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:30.484Z",
+                  "startTime": "2026-05-25T07:19:21.940Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -408,12 +408,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2359,
+                  "duration": 2322,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:32.367Z",
+                  "startTime": "2026-05-25T07:19:23.928Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -450,12 +450,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1895,
+                  "duration": 1774,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:34.738Z",
+                  "startTime": "2026-05-25T07:19:26.264Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -492,12 +492,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2558,
+                  "duration": 2148,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:36.649Z",
+                  "startTime": "2026-05-25T07:19:28.052Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -526,12 +526,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2629,
+                  "duration": 2367,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:39.218Z",
+                  "startTime": "2026-05-25T07:19:30.213Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -545,8 +545,8 @@
           "column": 5
         },
         {
-          "title": "New recurring screen opens with form fields",
-          "ok": false,
+          "title": "New recurring modal opens with form fields",
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -559,119 +559,21 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 18144,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts:26:50",
-                    "location": {
-                      "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                      "column": 50,
-                      "line": 26
-                    },
-                    "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m test(\u001b[32m\"New recurring screen opens with form fields\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 25 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/recurring/new\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Name|^Nombre/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Amount|^Monto/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Frequency|^Frecuencia/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                        "column": 50,
-                        "line": 26
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n\n\n  24 | test(\"New recurring screen opens with form fields\", async ({ page }) => {\n  25 |   await page.goto(\"/recurring/new\");\n> 26 |   await expect(page.getByText(/^Name|^Nombre/i)).toBeVisible();\n     |                                                  ^\n  27 |   await expect(page.getByText(/^Amount|^Monto/i)).toBeVisible();\n  28 |   await expect(page.getByText(/^Frequency|^Frecuencia/i)).toBeVisible();\n  29 | });\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts:26:50"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 2356,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:15:41.860Z",
+                  "startTime": "2026-05-25T07:19:32.594Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "screenshot",
-                      "contentType": "image/png",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium/test-failed-1.png"
-                    },
-                    {
-                      "name": "video",
-                      "contentType": "video/webm",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium/video.webm"
-                    },
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium/error-context.md"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                    "column": 50,
-                    "line": 26
-                  }
-                },
-                {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 18772,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts:26:50",
-                    "location": {
-                      "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                      "column": 50,
-                      "line": 26
-                    },
-                    "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m test(\u001b[32m\"New recurring screen opens with form fields\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 25 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/recurring/new\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Name|^Nombre/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Amount|^Monto/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/^Frequency|^Frecuencia/i\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                        "column": 50,
-                        "line": 26
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/^Name|^Nombre/i)\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/^Name|^Nombre/i)\u001b[22m\n\n\n  24 | test(\"New recurring screen opens with form fields\", async ({ page }) => {\n  25 |   await page.goto(\"/recurring/new\");\n> 26 |   await expect(page.getByText(/^Name|^Nombre/i)).toBeVisible();\n     |                                                  ^\n  27 |   await expect(page.getByText(/^Amount|^Monto/i)).toBeVisible();\n  28 |   await expect(page.getByText(/^Frequency|^Frecuencia/i)).toBeVisible();\n  29 | });\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts:26:50"
-                    }
-                  ],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 1,
-                  "startTime": "2026-05-25T06:16:00.677Z",
-                  "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "screenshot",
-                      "contentType": "image/png",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium-retry1/test-failed-1.png"
-                    },
-                    {
-                      "name": "video",
-                      "contentType": "video/webm",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium-retry1/video.webm"
-                    },
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium-retry1/error-context.md"
-                    },
-                    {
-                      "name": "trace",
-                      "contentType": "application/zip",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/recurring-New-recurring-screen-opens-with-form-fields-chromium-retry1/trace.zip"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/recurring.spec.ts",
-                    "column": 50,
-                    "line": 26
-                  }
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
-          "id": "f84c9309ee23b83fa7f3-1c1a36b527b058a211be",
+          "id": "f84c9309ee23b83fa7f3-f32c28697a8e7c61620d",
           "file": "recurring.spec.ts",
           "line": 24,
           "column": 5
@@ -689,15 +591,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2586,
+                  "duration": 2126,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:16:20.417Z",
+                  "startTime": "2026-05-25T07:19:34.964Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -707,7 +609,7 @@
           ],
           "id": "f84c9309ee23b83fa7f3-5437476cb5b30d939e26",
           "file": "recurring.spec.ts",
-          "line": 31,
+          "line": 36,
           "column": 5
         }
       ]
@@ -731,15 +633,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2532,
+                  "duration": 2142,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-05-25T06:16:23.101Z",
+                  "startTime": "2026-05-25T07:19:37.105Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -757,11 +659,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-25T06:15:12.295Z",
-    "duration": 73427.197,
-    "expected": 13,
+    "startTime": "2026-05-25T07:19:05.016Z",
+    "duration": 34300.152,
+    "expected": 14,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
