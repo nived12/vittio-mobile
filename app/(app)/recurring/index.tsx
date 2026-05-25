@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, MagnifyingGlass, Plus } from 'phosphor-react-native';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
+import type { ThemeTokens } from '../../../src/theme/colors';
 import type { RecurringSeries } from '../../../src/api/recurring';
 import {
   recurringKeys,
@@ -17,14 +18,7 @@ import {
   useDeleteRecurring,
 } from '../../../src/hooks/useRecurring';
 import { AddEditRecurringModal } from '../../../src/components/modals/AddEditRecurringModal';
-
-function formatCurrency(amount: number, locale: string) {
-  return new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', {
-    style: 'currency',
-    currency: 'MXN',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import { formatCurrency, formatDisplayDate } from '../../../src/utils/format';
 
 export default function RecurringScreen() {
   const { t } = useTranslation();
@@ -72,7 +66,12 @@ export default function RecurringScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
+        >
           <ArrowLeft size={24} color={textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: textPrimary }]}>{t('recurring.title')}</Text>
@@ -172,7 +171,7 @@ export default function RecurringScreen() {
                   surface={surface}
                   textPrimary={textPrimary}
                   textMuted={textMuted}
-                  onPress={() => router.push(`/(app)/recurring/${s.id}` as never)}
+                  onPress={() => router.push({ pathname: '/(app)/recurring/[id]', params: { id: String(s.id) } })}
                 />
               ))
             )}
@@ -180,12 +179,12 @@ export default function RecurringScreen() {
 
           {paused.length > 0 && (
             <Section title={t('recurring.paused')} textPrimary={textPrimary}>
-              {paused.map((s) => <SeriesRow key={s.id} series={s} locale={locale} surface={surface} textPrimary={textPrimary} textMuted={textMuted} onPress={() => router.push(`/(app)/recurring/${s.id}` as never)} />)}
+              {paused.map((s) => <SeriesRow key={s.id} series={s} locale={locale} surface={surface} textPrimary={textPrimary} textMuted={textMuted} onPress={() => router.push({ pathname: '/(app)/recurring/[id]', params: { id: String(s.id) } })} />)}
             </Section>
           )}
           {cancelled.length > 0 && (
             <Section title={t('recurring.cancelled')} textPrimary={textPrimary}>
-              {cancelled.map((s) => <SeriesRow key={s.id} series={s} locale={locale} surface={surface} textPrimary={textPrimary} textMuted={textMuted} onPress={() => router.push(`/(app)/recurring/${s.id}` as never)} />)}
+              {cancelled.map((s) => <SeriesRow key={s.id} series={s} locale={locale} surface={surface} textPrimary={textPrimary} textMuted={textMuted} onPress={() => router.push({ pathname: '/(app)/recurring/[id]', params: { id: String(s.id) } })} />)}
             </Section>
           )}
         </ScrollView>
@@ -209,25 +208,48 @@ function Section({ title, textPrimary, children }: { title: string; textPrimary:
   );
 }
 
-function SeriesRow({ series, locale, surface, textPrimary, textMuted, onPress }: any) {
+interface SeriesRowProps {
+  series: RecurringSeries;
+  locale: string;
+  surface: string;
+  textPrimary: string;
+  textMuted: string;
+  onPress: () => void;
+}
+
+function SeriesRow({ series, locale, surface, textPrimary, textMuted, onPress }: SeriesRowProps) {
   const { t } = useTranslation();
   return (
     <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={[styles.row, { backgroundColor: surface }]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[styles.rowTitle, { color: textPrimary }]} numberOfLines={1}>{series.name}</Text>
         <Text style={[styles.rowSubtitle, { color: textMuted }]}>
-          {t(`recurring.frequencies.${series.frequency}`)} · {series.next_due_date}
+          {t(`recurring.frequencies.${series.frequency}`)} · {formatDisplayDate(series.next_due_date, locale)}
         </Text>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
-        <Text style={[styles.rowAmount, { color: textPrimary }]}>{formatCurrency(series.expected_amount, locale)}</Text>
-        <Text style={[styles.rowMonthly, { color: textMuted }]}>{formatCurrency(series.monthly_estimate, locale)}/mes</Text>
+        <Text style={[styles.rowAmount, { color: textPrimary }]}>{formatCurrency(series.expected_amount, locale, { maximumFractionDigits: 0 })}</Text>
+        <Text style={[styles.rowMonthly, { color: textMuted }]}>
+          {formatCurrency(series.monthly_estimate, locale, { maximumFractionDigits: 0 })}{t('recurring.monthly_suffix')}
+        </Text>
       </View>
     </TouchableOpacity>
   );
 }
 
-function UpcomingRow({ series, locale, surface, textPrimary, textMuted, isDark, theme, onConfirm, onSkip }: any) {
+interface UpcomingRowProps {
+  series: RecurringSeries;
+  locale: string;
+  surface: string;
+  textPrimary: string;
+  textMuted: string;
+  isDark: boolean;
+  theme: ThemeTokens;
+  onConfirm: () => void;
+  onSkip: () => void;
+}
+
+function UpcomingRow({ series, locale, surface, textPrimary, textMuted, isDark, theme, onConfirm, onSkip }: UpcomingRowProps) {
   const { t } = useTranslation();
   const skipBg = isDark ? theme.surfaceElevated : '#e2e8f0';
   return (
@@ -235,9 +257,9 @@ function UpcomingRow({ series, locale, surface, textPrimary, textMuted, isDark, 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <View style={{ flex: 1 }}>
           <Text style={[styles.rowTitle, { color: textPrimary }]} numberOfLines={1}>{series.name}</Text>
-          <Text style={[styles.rowSubtitle, { color: textMuted }]}>{series.next_due_date}</Text>
+          <Text style={[styles.rowSubtitle, { color: textMuted }]}>{formatDisplayDate(series.next_due_date, locale)}</Text>
         </View>
-        <Text style={[styles.rowAmount, { color: textPrimary }]}>{formatCurrency(series.expected_amount, locale)}</Text>
+        <Text style={[styles.rowAmount, { color: textPrimary }]}>{formatCurrency(series.expected_amount, locale, { maximumFractionDigits: 0 })}</Text>
       </View>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.positive ?? '#10b981' }]} onPress={onConfirm}>
@@ -251,20 +273,32 @@ function UpcomingRow({ series, locale, surface, textPrimary, textMuted, isDark, 
   );
 }
 
-function DetectedRow({ series, locale, textPrimary, textMuted, isDark, theme, onPromote, onDismiss }: any) {
+interface DetectedRowProps {
+  series: RecurringSeries;
+  locale: string;
+  textPrimary: string;
+  textMuted: string;
+  isDark: boolean;
+  theme: ThemeTokens;
+  onPromote: () => void;
+  onDismiss: () => void;
+}
+
+function DetectedRow({ series, locale, textPrimary, textMuted, isDark, theme, onPromote, onDismiss }: DetectedRowProps) {
   const { t } = useTranslation();
   const detectedBg = isDark ? 'rgba(217, 119, 6, 0.12)' : '#fef3c7';
   const dismissBorder = isDark ? theme.border : '#cbd5e1';
+  const promoteBg = theme.primary ?? '#4f46e5';
   return (
     <View style={[styles.detectedRow, { backgroundColor: detectedBg }]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[styles.rowTitle, { color: textPrimary }]} numberOfLines={1}>{series.name}</Text>
         <Text style={[styles.rowSubtitle, { color: textMuted }]}>
-          {t(`recurring.frequencies.${series.frequency}`)} · {formatCurrency(series.expected_amount, locale)} · {series.confidence_score}/100
+          {t(`recurring.frequencies.${series.frequency}`)} · {formatCurrency(series.expected_amount, locale, { maximumFractionDigits: 0 })} · {series.confidence_score}/100
         </Text>
       </View>
       <View style={{ flexDirection: 'row', gap: 6 }}>
-        <TouchableOpacity style={[styles.smallBtn, { backgroundColor: '#4f46e5' }]} onPress={onPromote}>
+        <TouchableOpacity style={[styles.smallBtn, { backgroundColor: promoteBg }]} onPress={onPromote}>
           <Text style={[styles.smallBtnText, { color: '#ffffff' }]}>{t('recurring.actions.promote')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.smallBtn, { borderWidth: 1, borderColor: dismissBorder }]}

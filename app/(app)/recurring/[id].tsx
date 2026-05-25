@@ -12,12 +12,7 @@ import {
   useDeleteRecurring,
 } from '../../../src/hooks/useRecurring';
 import { AddEditRecurringModal } from '../../../src/components/modals/AddEditRecurringModal';
-
-function formatCurrency(amount: number, locale: string) {
-  return new Intl.NumberFormat(locale === 'es' ? 'es-MX' : 'en-US', {
-    style: 'currency', currency: 'MXN',
-  }).format(amount);
-}
+import { formatCurrency, formatDisplayDate } from '../../../src/utils/format';
 
 export default function RecurringDetailScreen() {
   const { t } = useTranslation();
@@ -46,7 +41,7 @@ export default function RecurringDetailScreen() {
       t('recurring.actions.delete') + '?',
       [
         { text: t('common.cancel', { defaultValue: 'Cancel' }), style: 'cancel' },
-        { text: t('recurring.actions.delete'), style: 'destructive', onPress: () => deleteMutation.mutate(numericId, { onSuccess: () => router.back() }) },
+        { text: t('recurring.actions.delete'), style: 'destructive', onPress: () => deleteMutation.mutate(numericId, { onSuccess: () => router.replace('/(app)/recurring') }) },
       ]
     );
   };
@@ -62,7 +57,12 @@ export default function RecurringDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
+        >
           <ArrowLeft size={24} color={textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: textPrimary }]} numberOfLines={1}>{series.name}</Text>
@@ -76,7 +76,7 @@ export default function RecurringDetailScreen() {
           <Text style={[styles.label, { color: textMuted }]}>{t(`recurring.frequencies.${series.frequency}`)}</Text>
           <Text style={[styles.amount, { color: textPrimary }]}>{formatCurrency(series.expected_amount, locale)}</Text>
           <Text style={[styles.label, { color: textMuted, marginTop: 6 }]}>
-            {t('recurring.next_due_label', { defaultValue: 'Next due' })}: {series.next_due_date}
+            {t('recurring.next_due_label')}: {formatDisplayDate(series.next_due_date, locale)}
           </Text>
         </View>
 

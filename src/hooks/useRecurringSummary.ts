@@ -11,7 +11,7 @@ export function useRecurringSummary() {
   const { data } = useQuery({
     queryKey: recurringKeys.list(),
     queryFn: () => fetchRecurring(),
-    staleTime: 60_000,
+    staleTime: 30_000,
   });
 
   return {

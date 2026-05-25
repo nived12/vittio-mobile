@@ -19,20 +19,10 @@ import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import { useCreateRecurring, useUpdateRecurring } from '../../hooks/useRecurring';
 import type { RecurringFrequency, RecurringSeries, RecurringTxType } from '../../api/recurring';
+import { formatDisplayDate, toISODate } from '../../utils/format';
 
 const FREQUENCIES: RecurringFrequency[] = ['weekly', 'biweekly', 'monthly', 'quarterly', 'annual'];
 const TX_TYPES: RecurringTxType[] = ['fixed_expense', 'variable_expense', 'income'];
-
-function toISODate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDisplayDate(d: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
-}
 
 interface Props {
   visible: boolean;
@@ -44,7 +34,6 @@ export function AddEditRecurringModal({ visible, onClose, series }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
-  const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(series);
   const { theme, isDark } = useTheme();
   const sheetBg       = isDark ? theme.surface         : '#ffffff';
@@ -136,7 +125,13 @@ export function AddEditRecurringModal({ visible, onClose, series }: Props) {
           <Text style={[s.title, { color: textPrimary }]}>
             {isEdit ? t('recurring.addModal.titleEdit') : t('recurring.addModal.titleAdd')}
           </Text>
-          <TouchableOpacity onPress={onClose} style={s.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={s.closeBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close', { defaultValue: 'Close' })}
+          >
             <X size={20} color={textSecondary} />
           </TouchableOpacity>
         </View>
@@ -213,8 +208,10 @@ export function AddEditRecurringModal({ visible, onClose, series }: Props) {
               style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]}
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t('recurring.fields.next_due_date')}
             >
-              <Text style={[s.inputText, { color: textPrimary }]}>{formatDisplayDate(nextDue, displayLocale)}</Text>
+              <Text style={[s.inputText, { color: textPrimary }]}>{formatDisplayDate(nextDue, locale)}</Text>
               <Calendar size={16} color="#94a3b8" />
             </TouchableOpacity>
             {showDatePicker && (
@@ -257,7 +254,7 @@ const s = StyleSheet.create({
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#e11d48', marginTop: 4 },
   segRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  segPill: { flexGrow: 1, flexBasis: 0, minWidth: 80, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
+  segPill: { flexGrow: 1, flexBasis: 0, minWidth: 80, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
   segPillActive: { backgroundColor: '#4f46e5' },
   segText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
   segTextActive: { color: '#fff' },

@@ -19,19 +19,9 @@ import { useCreateGoal, useUpdateGoal } from '../../hooks/useGoals';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Goal } from '../../api/goals';
+import { formatDisplayDate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
-
-function toISODate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDisplayDate(d: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
-}
 
 interface Props {
   visible: boolean;
@@ -43,7 +33,6 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
-  const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(goal);
   const { theme, isDark } = useTheme();
   const sheetBg       = isDark ? theme.surface         : '#ffffff';
@@ -189,7 +178,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('goals.addModal.startDateLabel')}</Text>
             <TouchableOpacity style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]} onPress={() => setShowStartPicker(true)} activeOpacity={0.7}>
-              <Text style={[s.inputText, { color: textPrimary }]}>{formatDisplayDate(startDate, displayLocale)}</Text>
+              <Text style={[s.inputText, { color: textPrimary }]}>{formatDisplayDate(startDate, locale)}</Text>
               <Calendar size={16} color="#94a3b8" />
             </TouchableOpacity>
             {showStartPicker && (
@@ -204,7 +193,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
             <TouchableOpacity style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }, errors.deadline && s.inputError]}
               onPress={() => setShowDeadlinePicker(true)} activeOpacity={0.7}>
               <Text style={deadline ? [s.inputText, { color: textPrimary }] : s.placeholder}>
-                {deadline ? formatDisplayDate(deadline, displayLocale) : t('goals.addModal.deadlinePlaceholder')}
+                {deadline ? formatDisplayDate(deadline, locale) : t('goals.addModal.deadlinePlaceholder')}
               </Text>
               <Calendar size={16} color="#94a3b8" />
             </TouchableOpacity>

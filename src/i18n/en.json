@@ -1076,6 +1076,8 @@
     "new": "New recurring",
     "edit": "Edit recurring",
     "scan": "Scan for recurring",
+    "next_due_label": "Next due",
+    "monthly_suffix": "/mo",
     "toastScanned": "Scan complete. {{count}} pattern(s) detected.",
     "actions": {
       "confirm": "Confirm",

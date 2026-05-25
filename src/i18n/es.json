@@ -1076,6 +1076,8 @@
     "new": "Nuevo recurrente",
     "edit": "Editar recurrente",
     "scan": "Buscar recurrentes",
+    "next_due_label": "Próximo vencimiento",
+    "monthly_suffix": "/mes",
     "toastScanned": "Análisis completo. {{count}} patrón(es) detectado(s).",
     "actions": {
       "confirm": "Confirmar",
