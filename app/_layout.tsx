@@ -1,11 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
 
-// Suppress verbose logs in production — console.error is intentionally preserved
-// so crash-level errors still surface. Replace with Sentry in Phase 14.
+// Suppress noisy logs in production — console.error preserved so Sentry also
+// captures it via its default breadcrumbs integration.
 if (!__DEV__) {
   console.log = () => {};
   console.warn = () => {};
 }
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  enabled: !__DEV__,
+  tracesSampleRate: 0.1,
+  debug: false,
+});
 import { AppState, AppStateStatus } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -80,7 +88,7 @@ const queryClient = new QueryClient({
 
 // ── Root layout ────────────────────────────────────────────────────────────
 
-export default function RootLayout() {
+function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -203,3 +211,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);
