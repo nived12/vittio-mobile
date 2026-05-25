@@ -504,7 +504,8 @@
     "appearance": "APPEARANCE",
     "schemeSystem": "System",
     "schemeLight": "Light",
-    "schemeDark": "Dark"
+    "schemeDark": "Dark",
+    "privacySection": "PRIVACY"
   },
   "categories": {
     "title": "Categories",
@@ -1132,6 +1133,17 @@
       "titleEdit": "Edit recurring",
       "saveButton": "Create",
       "saveChangesButton": "Save changes"
+    }
+  },
+  "analytics": {
+    "notice": {
+      "title": "We collect anonymous usage data",
+      "body": "We track a few actions (sign-up, statement uploads, categorizations, assistant messages) to understand how the app is used and improve it. No personal financial data is shared. You can opt out any time in Settings.",
+      "cta": "Got it"
+    },
+    "toggle": {
+      "label": "Analytics & improvements",
+      "description": "Anonymous usage events help us improve the app. No financial data is shared."
     }
   }
 }

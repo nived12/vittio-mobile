@@ -29,7 +29,9 @@
     "production": {
       "android": { "buildType": "app-bundle" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.vitt.io/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.vitt.io/api/v1",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://cfd1c45e6347c8356eb3c29ef207db13@o4511452040265728.ingest.us.sentry.io/4511452067528704",
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_vkvkuojCbx9S8KeHEZhtXa864Je2cY2auf9oaNqwx8wu"
       }
     }
   },

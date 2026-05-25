@@ -60,6 +60,7 @@ module.exports = () => ({
     },
     scheme: 'vittio',
     plugins: [
+      '@sentry/react-native',
       'expo-router',
       'expo-secure-store',
       'expo-system-ui',
