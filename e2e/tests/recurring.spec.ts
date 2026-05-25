@@ -21,11 +21,16 @@ test("scan button is present and does not crash on no-detection result", async (
   await expect(page.getByText(/Monthly total|Total mensual/i)).toBeVisible();
 });
 
-test("New recurring screen opens with form fields", async ({ page }) => {
-  await page.goto("/recurring/new");
-  await expect(page.getByText(/^Name|^Nombre/i)).toBeVisible();
-  await expect(page.getByText(/^Amount|^Monto/i)).toBeVisible();
-  await expect(page.getByText(/^Frequency|^Frecuencia/i)).toBeVisible();
+test("New recurring modal opens with form fields", async ({ page }) => {
+  await page.goto("/recurring");
+  await expect(page.getByText(/Monthly total|Total mensual/i)).toBeVisible();
+
+  await page.getByRole("button", { name: /new recurring|nuevo recurrente/i }).click();
+
+  await expect(page.getByText(/New recurring|Nuevo recurrente/i)).toBeVisible();
+  await expect(page.getByText(/^Name$|^Nombre$/i)).toBeVisible();
+  await expect(page.getByText(/^Amount$|^Monto$/i)).toBeVisible();
+  await expect(page.getByText(/^Frequency$|^Frecuencia$/i)).toBeVisible();
 });
 
 test("Transactions header shows the 'Recurrentes' chip when active count > 0", async ({ page }) => {

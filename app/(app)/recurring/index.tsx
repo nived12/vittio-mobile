@@ -76,7 +76,12 @@ export default function RecurringScreen() {
           <ArrowLeft size={24} color={textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: textPrimary }]}>{t('recurring.title')}</Text>
-        <TouchableOpacity onPress={() => setShowAddModal(true)} hitSlop={8}>
+        <TouchableOpacity
+          onPress={() => setShowAddModal(true)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('recurring.new')}
+        >
           <Plus size={24} color="#4f46e5" />
         </TouchableOpacity>
       </View>

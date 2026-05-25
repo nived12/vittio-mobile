@@ -36,7 +36,16 @@ Regression tests for Expo **web** export (`dist/`). API traffic is mocked in Pla
    npm run e2e:report
    ```
 
-`e2e/playwright.config.ts` starts `npx serve dist -p 8081 --no-clipboard` with `cwd` at the app root (parent of `e2e/`) and waits up to 90s for `http://127.0.0.1:8081`.
+`e2e/playwright.config.ts` starts `npx serve dist -p 4173 --no-clipboard` on **`http://127.0.0.1:4173`** (not Expo’s default `:8081`, so a running `expo start --web` cannot be mistaken for the E2E static export). `global-setup.ts` fails fast if `dist/index.html` is missing.
+
+### Troubleshooting `ERR_CONNECTION_REFUSED` / `ERR_EMPTY_RESPONSE`
+
+These errors mean the browser could not reach the E2E static server — not that a screen assertion failed.
+
+1. Build first: `npm run e2e:build`
+2. Run tests: `npm run e2e` (Playwright starts `serve` on port **4173**)
+3. Do **not** point Playwright at `expo start --web` (`:8081`); the dev server is not the exported `dist/` bundle and may stop mid-run.
+4. If tests still fail, check nothing else is bound to **4173**: `lsof -i :4173`
 
 ## On-demand CI
 
