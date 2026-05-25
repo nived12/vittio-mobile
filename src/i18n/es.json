@@ -1083,13 +1083,22 @@
       "confirm": "Confirmar",
       "skip": "Omitir",
       "edit": "Editar",
-      "pause": "Pausar",
+      "pause": "Pausar temporalmente",
       "resume": "Reanudar",
-      "cancel": "Cancelar",
-      "delete": "Eliminar",
+      "cancel": "Terminar suscripción",
+      "restore": "Reactivar",
+      "delete": "Eliminar permanentemente",
       "promote": "Sí, es recurrente",
       "dismiss": "No es recurrente",
       "create": "Crear"
+    },
+    "action_hints": {
+      "pause": "Detiene los recordatorios. Puedes reanudarla cuando quieras.",
+      "cancel": "Marca esta serie como terminada. Puedes reactivarla más tarde.",
+      "delete": "Elimina la serie y desvincula sus transacciones. No se puede deshacer."
+    },
+    "show": {
+      "cancelled_on": "Terminada el {{date}}"
     },
     "types": {
       "fixed_expense": "Gasto fijo",

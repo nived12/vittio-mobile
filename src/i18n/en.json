@@ -1083,13 +1083,22 @@
       "confirm": "Confirm",
       "skip": "Skip",
       "edit": "Edit",
-      "pause": "Pause",
+      "pause": "Pause temporarily",
       "resume": "Resume",
-      "cancel": "Cancel",
-      "delete": "Delete",
+      "cancel": "End subscription",
+      "restore": "Reactivate",
+      "delete": "Delete permanently",
       "promote": "Yes, it's recurring",
       "dismiss": "Not recurring",
       "create": "Create"
+    },
+    "action_hints": {
+      "pause": "Stops reminders. You can resume any time.",
+      "cancel": "Marks this as ended. You can reactivate later.",
+      "delete": "Removes this series and unlinks its transactions. Cannot be undone."
+    },
+    "show": {
+      "cancelled_on": "Ended on {{date}}"
     },
     "types": {
       "fixed_expense": "Fixed expense",

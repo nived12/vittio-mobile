@@ -93,29 +93,48 @@ export default function RecurringDetailScreen() {
 
         <View style={{ gap: 8, marginTop: 16 }}>
           {series.status === 'active' && (
-            <TouchableOpacity style={[styles.btn, { backgroundColor: surfaceElev, borderColor: borderCol }]} onPress={() => updateMutation.mutate({ status: 'paused' })}>
-              <Text style={[styles.btnText, { color: textPrimary }]}>{t('recurring.actions.pause')}</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity style={[styles.btn, { backgroundColor: surfaceElev, borderColor: borderCol }]} onPress={() => updateMutation.mutate({ status: 'paused' })}>
+                <Text style={[styles.btnText, { color: textPrimary }]}>{t('recurring.actions.pause')}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.hint, { color: textMuted }]}>{t('recurring.action_hints.pause')}</Text>
+            </>
           )}
           {series.status === 'paused' && (
             <TouchableOpacity style={[styles.btn, { backgroundColor: primary, borderColor: primary }]} onPress={() => updateMutation.mutate({ status: 'active' })}>
               <Text style={[styles.btnText, { color: '#fff' }]}>{t('recurring.actions.resume')}</Text>
             </TouchableOpacity>
           )}
+          {series.status === 'cancelled' && (
+            <>
+              <TouchableOpacity style={[styles.btn, { backgroundColor: primary, borderColor: primary }]} onPress={() => updateMutation.mutate({ status: 'active' })}>
+                <Text style={[styles.btnText, { color: '#fff' }]}>{t('recurring.actions.restore')}</Text>
+              </TouchableOpacity>
+              {series.cancelled_at && (
+                <Text style={[styles.hint, { color: textMuted }]}>
+                  {t('recurring.show.cancelled_on', { date: new Date(series.cancelled_at).toLocaleDateString(locale === 'es' ? 'es-MX' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) })}
+                </Text>
+              )}
+            </>
+          )}
           {series.status !== 'cancelled' && (
-            <TouchableOpacity
-              style={[styles.btn, { backgroundColor: surface, borderColor: negative }]}
-              onPress={() => updateMutation.mutate({ status: 'cancelled' })}
-            >
-              <Text style={[styles.btnText, { color: negative }]}>{t('recurring.actions.cancel')}</Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                style={[styles.btn, { backgroundColor: surface, borderColor: negative }]}
+                onPress={() => updateMutation.mutate({ status: 'cancelled' })}
+              >
+                <Text style={[styles.btnText, { color: negative }]}>{t('recurring.actions.cancel')}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.hint, { color: textMuted }]}>{t('recurring.action_hints.cancel')}</Text>
+            </>
           )}
           <TouchableOpacity
-            style={[styles.btn, { backgroundColor: surface, borderColor: negative }]}
+            style={[styles.btn, { backgroundColor: negative, borderColor: negative, marginTop: 8 }]}
             onPress={onDelete}
           >
-            <Text style={[styles.btnText, { color: negative }]}>{t('recurring.actions.delete')}</Text>
+            <Text style={[styles.btnText, { color: '#fff' }]}>{t('recurring.actions.delete')}</Text>
           </TouchableOpacity>
+          <Text style={[styles.hint, { color: textMuted }]}>{t('recurring.action_hints.delete')}</Text>
         </View>
       </ScrollView>
 
@@ -141,4 +160,5 @@ const styles = StyleSheet.create({
   statValue: { fontFamily: 'Inter_700Bold', fontSize: 18, marginTop: 4 },
   btn: { paddingVertical: 12, borderRadius: 12, alignItems: 'center', borderWidth: 1 },
   btnText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  hint: { fontFamily: 'Inter_400Regular', fontSize: 11, paddingHorizontal: 4, textAlign: 'center' },
 });
