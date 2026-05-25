@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
+import PostHog from 'posthog-react-native';
 
 // Suppress noisy logs in production — console.error preserved so Sentry also
 // captures it via its default breadcrumbs integration.
@@ -14,6 +15,10 @@ Sentry.init({
   tracesSampleRate: 0.1,
   debug: false,
 });
+
+export const analytics = process.env.EXPO_PUBLIC_POSTHOG_KEY
+  ? new PostHog(process.env.EXPO_PUBLIC_POSTHOG_KEY, { host: 'https://eu.i.posthog.com' })
+  : null;
 import { AppState, AppStateStatus } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -30,9 +35,11 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
+import { AnalyticsPrivacyNotice, OPT_OUT_KEY } from '../src/components/AnalyticsPrivacyNotice';
 import { registerForPushNotifications } from '../src/utils/notifications';
 import { ThemeProvider } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
@@ -114,13 +121,15 @@ function RootLayout() {
         Inter_600SemiBold,
         Inter_700Bold,
       });
-      await Promise.all([
+      const [optedOut] = await Promise.all([
+        AsyncStorage.getItem(OPT_OUT_KEY),
         hydrate(),
         hydrateLocale(),
         hydrateBiometricLock(),
         hydrateColorScheme(),
         hydrateCelebrationState(),
       ]);
+      if (optedOut === 'true') analytics?.optOut();
     }
     prepare();
   }, [hydrate, hydrateLocale, hydrateBiometricLock, hydrateColorScheme, hydrateCelebrationState]);
@@ -205,6 +214,7 @@ function RootLayout() {
             {showLock && (
               <BiometricLockScreen onUnlock={() => setShowLock(false)} />
             )}
+            {isAuthenticated && <AnalyticsPrivacyNotice />}
           </QueryClientProvider>
         </ThemeProvider>
       </SafeAreaProvider>

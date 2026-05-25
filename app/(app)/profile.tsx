@@ -18,6 +18,7 @@ import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
+import { AnalyticsToggleRow } from '../../src/components/AnalyticsPrivacyNotice';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -137,6 +138,13 @@ export default function ProfileScreen() {
                 {updateUserMutation.isPending ? t('common.loading') : t('settings.saveProfile')}
               </Text>
             </TouchableOpacity>
+          </View>
+
+          <View style={{ height: spacing.lg }} />
+
+          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.privacySection')}</Text>
+            <AnalyticsToggleRow />
           </View>
 
           <View style={{ height: 40 }} />

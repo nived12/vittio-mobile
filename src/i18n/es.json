@@ -504,7 +504,8 @@
     "appearance": "APARIENCIA",
     "schemeSystem": "Sistema",
     "schemeLight": "Claro",
-    "schemeDark": "Oscuro"
+    "schemeDark": "Oscuro",
+    "privacySection": "PRIVACIDAD"
   },
   "categories": {
     "title": "Categorías",
@@ -1132,6 +1133,17 @@
       "titleEdit": "Editar recurrente",
       "saveButton": "Crear",
       "saveChangesButton": "Guardar cambios"
+    }
+  },
+  "analytics": {
+    "notice": {
+      "title": "Recopilamos datos de uso anónimos",
+      "body": "Registramos algunas acciones (registro, subida de estados de cuenta, categorizaciones, mensajes al asistente) para entender cómo se usa la app y mejorarla. No se comparte información financiera personal. Puedes desactivarlo en Configuración en cualquier momento.",
+      "cta": "Entendido"
+    },
+    "toggle": {
+      "label": "Análisis y mejoras",
+      "description": "Los eventos de uso anónimos nos ayudan a mejorar la app. No se comparte información financiera."
     }
   }
 }
