@@ -1135,6 +1135,39 @@
       "saveChangesButton": "Guardar cambios"
     }
   },
+  "account": {
+    "dangerZone": "Zona de peligro",
+    "deleteAccount": "Eliminar cuenta",
+    "deleteAccountHint": "Abre el proceso para eliminar permanentemente tu cuenta",
+    "deleteTitle": "Eliminar cuenta",
+    "deleteSubtitle": "Esta acción es permanente y cerrará tu sesión en todos los dispositivos.",
+    "willBeDeleted": "Se eliminará:",
+    "willBeRetained": "Se conservará:",
+    "deleteItems": {
+      "transactions": "Transacciones y estados de cuenta",
+      "bankAccounts": "Cuentas bancarias",
+      "goalsEtc": "Metas, ahorros, deudas",
+      "recurring": "Series recurrentes",
+      "assistant": "Conversaciones con el asistente"
+    },
+    "retainItems": {
+      "legalConsent": "Registro de aceptación de Términos (5 años, LFPDPPP Art. 14)"
+    },
+    "subscriptionWarning": "Tu suscripción Premium será cancelada automáticamente.",
+    "continueToDelete": "Continuar con eliminación",
+    "confirmTitle": "Confirma tu decisión",
+    "confirmSubtitle": "Escribe ELIMINAR para confirmar.",
+    "confirmPlaceholder": "Escribe ELIMINAR",
+    "confirmInputLabel": "Campo de confirmación",
+    "confirmInputHint": "Escribe ELIMINAR para habilitar el botón de eliminación",
+    "confirmButton": "Eliminar mi cuenta",
+    "confirmButtonA11y": "Eliminar mi cuenta permanentemente",
+    "successToast": "Tu cuenta ha sido eliminada",
+    "errorTitle": "No se pudo eliminar tu cuenta",
+    "errorBody": "Ocurrió un error de red. Tu cuenta no fue modificada.",
+    "back": "Atrás",
+    "cancelNav": "Cancelar"
+  },
   "analytics": {
     "notice": {
       "title": "Recopilamos datos de uso anónimos",

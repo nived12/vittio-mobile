@@ -19,6 +19,7 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { AnalyticsToggleRow } from '../../src/components/AnalyticsPrivacyNotice';
+import { CaretRight } from 'phosphor-react-native';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -147,6 +148,22 @@ export default function ProfileScreen() {
             <AnalyticsToggleRow />
           </View>
 
+          <View style={{ height: spacing.lg }} />
+
+          <View style={[styles.card, styles.dangerCard]}>
+            <Text style={styles.dangerLabel}>{t('account.dangerZone')}</Text>
+            <TouchableOpacity
+              style={styles.dangerRow}
+              onPress={() => router.push('/(app)/delete-account')}
+              accessibilityRole="button"
+              accessibilityLabel={t('account.deleteAccount')}
+              accessibilityHint={t('account.deleteAccountHint')}
+            >
+              <Text style={styles.dangerRowText}>{t('account.deleteAccount')}</Text>
+              <CaretRight size={18} color="#ef4444" weight="regular" />
+            </TouchableOpacity>
+          </View>
+
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -244,5 +261,27 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: '#ffffff',
+  },
+  dangerCard: {
+    borderColor: '#fee2e2',
+  },
+  dangerLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#ef4444',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  dangerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  dangerRowText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+    color: '#ef4444',
   },
 });

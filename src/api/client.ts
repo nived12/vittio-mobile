@@ -122,12 +122,18 @@ apiClient.interceptors.response.use(
     };
 
     // Only attempt refresh on 401 responses that haven't already been retried.
-    // Skip refresh for the /refresh endpoint itself to prevent infinite loops.
-    const isRefreshEndpoint = originalRequest.url?.includes('/refresh');
+    // Skip refresh for endpoints where 401 is the expected failure mode
+    // (login/signup) — otherwise we'd swallow INVALID_CREDENTIALS and surface
+    // a misleading network/refresh error.
+    const url = originalRequest.url ?? '';
+    const skipsRefresh =
+      url.includes('/refresh') ||
+      url.includes('/login') ||
+      url.includes('/signup');
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !isRefreshEndpoint
+      !skipsRefresh
     ) {
       if (isRefreshing) {
         // Queue this request — it will be retried once the ongoing refresh finishes

@@ -80,6 +80,9 @@ export async function setupApiMocks(page: Page): Promise<void> {
       if (method === "GET") return fulfillJson(route, bankAccounts);
       return fulfillJson(route, { data: {} }, 201);
     }
+    if (pathname.endsWith("/user") && method === "DELETE") {
+      return route.fulfill({ status: 204, headers: corsHeaders });
+    }
     if (pathname.includes("/transactions/summary")) {
       return fulfillJson(route, transactions.summary);
     }
