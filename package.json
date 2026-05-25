@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
     "e2e:build": "EXPO_PUBLIC_E2E=1 expo export --platform web",
+    "e2e:serve": "serve dist -p 4173 --no-clipboard",
     "e2e": "playwright test --config=e2e/playwright.config.ts",
     "e2e:report": "playwright show-report e2e/playwright-report"
   },

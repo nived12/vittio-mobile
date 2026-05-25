@@ -1059,5 +1059,79 @@
       "load": "No se pudo cargar la conversación.",
       "delete": "No se pudo eliminar la conversación. Inténtalo de nuevo."
     }
+  },
+  "recurring": {
+    "title": "Recurrentes",
+    "subtitle": "Suscripciones y pagos programados",
+    "monthly_total": "Total mensual",
+    "annual_total": "Total anual",
+    "upcoming": "Próximos (7 días)",
+    "detected": "Detectados — revisar",
+    "detected_subtitle": "Encontramos estos patrones. Confírmalos para gestionarlos.",
+    "active": "Activos",
+    "paused": "Pausados",
+    "cancelled": "Cancelados",
+    "empty_active": "Aún no tienes pagos recurrentes activos.",
+    "empty_upcoming": "Nada por pagar esta semana.",
+    "new": "Nuevo recurrente",
+    "edit": "Editar recurrente",
+    "scan": "Buscar recurrentes",
+    "next_due_label": "Próximo vencimiento",
+    "monthly_suffix": "/mes",
+    "toastScanned": "Análisis completo. {{count}} patrón(es) detectado(s).",
+    "actions": {
+      "confirm": "Confirmar",
+      "skip": "Omitir",
+      "edit": "Editar",
+      "pause": "Pausar temporalmente",
+      "resume": "Reanudar",
+      "cancel": "Terminar suscripción",
+      "restore": "Reactivar",
+      "delete": "Eliminar permanentemente",
+      "promote": "Sí, es recurrente",
+      "dismiss": "No es recurrente",
+      "create": "Crear"
+    },
+    "action_hints": {
+      "pause": "Detiene los recordatorios. Puedes reanudarla cuando quieras.",
+      "cancel": "Marca esta serie como terminada. Puedes reactivarla más tarde.",
+      "delete": "Elimina la serie y desvincula sus transacciones. No se puede deshacer."
+    },
+    "show": {
+      "cancelled_on": "Terminada el {{date}}"
+    },
+    "types": {
+      "fixed_expense": "Gasto fijo",
+      "variable_expense": "Gasto variable",
+      "income": "Ingreso"
+    },
+    "fields": {
+      "name": "Nombre",
+      "amount": "Monto",
+      "frequency": "Frecuencia",
+      "type": "Tipo",
+      "next_due_date": "Próxima fecha"
+    },
+    "frequencies": {
+      "weekly": "Semanal",
+      "biweekly": "Quincenal",
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "annual": "Anual",
+      "custom": "Personalizado"
+    },
+    "flash": {
+      "created": "Creado"
+    },
+    "errors": {
+      "nameRequired": "El nombre es obligatorio",
+      "amountRequired": "El monto debe ser mayor a 0"
+    },
+    "addModal": {
+      "titleAdd": "Nuevo recurrente",
+      "titleEdit": "Editar recurrente",
+      "saveButton": "Crear",
+      "saveChangesButton": "Guardar cambios"
+    }
   }
 }

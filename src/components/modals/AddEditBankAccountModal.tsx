@@ -22,6 +22,7 @@ import { useTheme } from '../../theme/ThemeContext';
 import { getBankLogoComponent } from '../../utils/bankLogos';
 import type { Bank } from '../../api/banks';
 import type { BankAccount, CreateBankAccountBody, UpdateBankAccountBody } from '../../api/bankAccounts';
+import { formatDisplayDate, toISODate } from '../../utils/format';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -35,20 +36,6 @@ interface Props {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function toISODate(d: Date): string {
-  // 'YYYY-MM-DD' in local time (avoid UTC offset shifting the date)
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDisplayDate(d: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-  }).format(d);
-}
 
 // ── BankLogo ───────────────────────────────────────────────────────────────
 
@@ -541,7 +528,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                         accessibilityRole="button"
                       >
                         <Text style={[styles.fieldRowText, { color: textPrimary }]}>
-                          {formatDisplayDate(openingBalanceDate, displayLocale)}
+                          {formatDisplayDate(openingBalanceDate, locale)}
                         </Text>
                         <Calendar size={16} color="#94a3b8" />
                       </TouchableOpacity>

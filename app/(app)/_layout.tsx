@@ -220,6 +220,9 @@ export default function AppLayout() {
 
         {/* Hide assistant from tab bar — accessible via profile / FAB long-press */}
         <Tabs.Screen name="assistant" options={{ href: null }} />
+
+        {/* Hide recurring stack from tab bar — accessible via profile / dashboard */}
+        <Tabs.Screen name="recurring" options={{ href: null }} />
       </Tabs>
 
       <AddEditTransactionModal

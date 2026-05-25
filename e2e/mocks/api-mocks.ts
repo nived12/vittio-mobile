@@ -53,7 +53,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.includes("/dashboard") ||
       pathname.endsWith("/bank_accounts") ||
       pathname.includes("/transactions/summary") ||
-      pathname.includes("/transactions/recurring_suggestions") ||
+      pathname.includes("/recurring") ||
       pathname.endsWith("/transactions") ||
       pathname.endsWith("/categories") ||
       pathname.endsWith("/user_settings") ||
@@ -83,8 +83,59 @@ export async function setupApiMocks(page: Page): Promise<void> {
     if (pathname.includes("/transactions/summary")) {
       return fulfillJson(route, transactions.summary);
     }
-    if (pathname.includes("/transactions/recurring_suggestions")) {
-      return fulfillJson(route, { data: [] });
+    if (pathname.includes("/recurring/scan")) {
+      return fulfillJson(route, { data: { detected: [] } });
+    }
+    if (pathname.endsWith("/recurring") || pathname.match(/\/recurring\/\d+$/)) {
+      if (method === "GET" && pathname.endsWith("/recurring")) {
+        return fulfillJson(route, {
+          data: {
+            series: [
+              {
+                id: 1,
+                name: "Netflix",
+                description_signature: "netflix",
+                merchant_hint: "Netflix",
+                expected_amount: 219.0,
+                amount_variance_pct: 0,
+                frequency: "monthly",
+                custom_interval_days: null,
+                interval_days: 30,
+                next_due_date: "2026-06-05",
+                last_charged_at: "2026-05-05",
+                last_notified_on: null,
+                category_id: null,
+                transaction_type: "fixed_expense",
+                status: "active",
+                source: "manual",
+                confidence_score: null,
+                occurrences_count: 5,
+                notes: null,
+                monthly_estimate: 219.0,
+                annual_estimate: 2664.0,
+                detected_at: null,
+                confirmed_at: null,
+                cancelled_at: null,
+                created_at: "2026-05-01T00:00:00Z",
+                updated_at: "2026-05-05T00:00:00Z"
+              }
+            ],
+            summary: {
+              monthly_total: 219.0,
+              annual_total: 2664.0,
+              active_count: 1,
+              detected_count: 0,
+              upcoming: []
+            }
+          }
+        });
+      }
+      if (method === "GET") {
+        return fulfillJson(route, { data: { id: 1, name: "Netflix", expected_amount: 219.0, frequency: "monthly", monthly_estimate: 219.0, annual_estimate: 2664.0, next_due_date: "2026-06-05", status: "active", interval_days: 30, transaction_type: "fixed_expense", source: "manual", description_signature: "netflix", amount_variance_pct: 0, custom_interval_days: null, last_charged_at: null, last_notified_on: null, category_id: null, confidence_score: null, occurrences_count: 0, notes: null, merchant_hint: null, detected_at: null, confirmed_at: null, cancelled_at: null, created_at: "2026-05-01T00:00:00Z", updated_at: "2026-05-01T00:00:00Z" } });
+      }
+      if (method === "POST") return fulfillJson(route, { data: { id: 2 } }, 201);
+      if (method === "PATCH") return fulfillJson(route, { data: { id: 1 } });
+      if (method === "DELETE") return route.fulfill({ status: 204, headers: corsHeaders });
     }
     if (pathname.endsWith("/transactions")) {
       if (method === "GET") return fulfillJson(route, transactions.list);

@@ -19,13 +19,14 @@ import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Repeat2, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from '../../i18n';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useRequireConfirmed } from '../../hooks/useRequireConfirmed';
+import { useRecurringSummary } from '../../hooks/useRecurringSummary';
 import { apiClient } from '../../api/client';
 import { ReportPickerModal } from './ReportPickerModal';
 import { colors, spacing, textStyles } from '../../theme';
@@ -68,6 +69,7 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   const { showToast } = useUIStore();
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const requireConfirmed = useRequireConfirmed();
+  const { detectedCount } = useRecurringSummary();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [showReport, setShowReport] = useState(false);
 
@@ -177,6 +179,11 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   function handleNotifications() {
     onClose();
     router.push('/(app)/notification-preferences');
+  }
+
+  function handleRecurring() {
+    onClose();
+    router.push('/(app)/recurring');
   }
 
   function handleLogout() {
@@ -301,6 +308,24 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
         >
           <Tag size={20} color={textSecondary} />
           <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('profile.manageCategories')}</Text>
+        </TouchableOpacity>
+
+        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
+
+        {/* Recurring transactions */}
+        <TouchableOpacity
+          style={styles.actionRow}
+          onPress={handleRecurring}
+          accessibilityRole="button"
+          accessibilityLabel={t('recurring.title')}
+        >
+          <Repeat2 size={20} color={textSecondary} />
+          <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('recurring.title')}</Text>
+          {detectedCount > 0 && (
+            <View style={styles.recurringBadge}>
+              <Text style={styles.recurringBadgeText}>{detectedCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
@@ -495,6 +520,21 @@ const styles = StyleSheet.create({
   actionLabel: {
     ...textStyles.bodyMd,
     color: colors.text.primary,
+    flex: 1,
+  },
+  recurringBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 6,
+    backgroundColor: '#4f46e5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recurringBadgeText: {
+    color: '#ffffff',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
   },
   languageRow: {
     flexDirection:     'row',

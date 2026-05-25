@@ -19,19 +19,9 @@ import { useCreateDebt, useUpdateDebt } from '../../hooks/useDebts';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Debt } from '../../api/debts';
+import { formatDisplayDate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
-
-function toISODate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function formatDisplayDate(d: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
-}
 
 interface Props {
   visible: boolean;
@@ -43,7 +33,6 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
-  const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const isEdit = Boolean(debt);
   const { theme, isDark } = useTheme();
   const sheetBg       = isDark ? theme.surface         : '#ffffff';
@@ -201,7 +190,7 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
             <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.targetDateLabel')}</Text>
             <TouchableOpacity style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]} onPress={() => setShowDatePicker(true)} activeOpacity={0.7}>
               <Text style={targetPayoffDate ? [s.inputText, { color: textPrimary }] : s.placeholder}>
-                {targetPayoffDate ? formatDisplayDate(targetPayoffDate, displayLocale) : t('debts.addModal.targetDatePlaceholder')}
+                {targetPayoffDate ? formatDisplayDate(targetPayoffDate, locale) : t('debts.addModal.targetDatePlaceholder')}
               </Text>
               {targetPayoffDate ? (
                 <TouchableOpacity onPress={() => setTargetPayoffDate(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
