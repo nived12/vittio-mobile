@@ -91,14 +91,6 @@ export interface AiParseResult {
   confidence: number;
 }
 
-export interface RecurringSuggestion {
-  merchant: string;
-  amount: number;
-  frequency_days: number;
-  last_seen: string;
-  suggested_category_id: number | null;
-}
-
 // ── API calls ─────────────────────────────────────────────────────────────
 
 /** GET /api/v1/transactions */
@@ -175,8 +167,3 @@ export async function parseImage(imageBase64: string, mimeType: string): Promise
   return response.data.data;
 }
 
-/** GET /api/v1/transactions/recurring_suggestions */
-export async function fetchRecurringSuggestions(): Promise<RecurringSuggestion[]> {
-  const response = await apiClient.get<{ data: RecurringSuggestion[] }>('/transactions/recurring_suggestions');
-  return response.data.data;
-}
