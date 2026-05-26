@@ -15,3 +15,11 @@ expo-env.d.ts
 e2e/.auth/
 e2e/playwright-report/
 e2e/test-results/
+
+# macOS metadata
+.DS_Store
+
+# Firebase config — bundled by EAS at build time; never commit
+google-services.json
+GoogleService-Info.plist
+*firebase-adminsdk*.json

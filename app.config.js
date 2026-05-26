@@ -25,9 +25,41 @@ module.exports = () => ({
       entitlements: {
         'keychain-access-groups': ['$(AppIdentifierPrefix)io.vitt.app'],
       },
+      // iOS 17+ Privacy Manifest (required for App Store submission).
+      // Declares which required-reason APIs we access and why.
+      // Reason codes are from Apple's documented list:
+      // https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api
+      privacyManifests: {
+        NSPrivacyTracking: false,
+        NSPrivacyTrackingDomains: [],
+        NSPrivacyCollectedDataTypes: [],
+        NSPrivacyAccessedAPITypes: [
+          {
+            // UserDefaults — used by React Native AsyncStorage and Expo libs
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
+            NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+          },
+          {
+            // File timestamp — used by expo-file-system and image processing
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
+            NSPrivacyAccessedAPITypeReasons: ['C617.1'],
+          },
+          {
+            // System boot time — used by networking + crash reporting libs (Sentry)
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+            NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
+          },
+          {
+            // Disk space — used by file-system libs to check available space
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
+            NSPrivacyAccessedAPITypeReasons: ['85F4.1'],
+          },
+        ],
+      },
     },
     android: {
       package: 'io.vitt.app',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
       permissions: [
         'android.permission.INTERNET',
         'android.permission.READ_EXTERNAL_STORAGE',
