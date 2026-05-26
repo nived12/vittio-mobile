@@ -23,3 +23,8 @@ export async function updateUser(body: UpdateUserBody): Promise<AuthUser> {
 export async function updatePassword(body: UpdatePasswordBody): Promise<void> {
   await apiClient.patch('/user/password', { user: body });
 }
+
+/** DELETE /api/v1/user — archives the account */
+export async function deleteAccount(): Promise<void> {
+  await apiClient.delete('/user');
+}

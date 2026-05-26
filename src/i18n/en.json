@@ -1135,6 +1135,39 @@
       "saveChangesButton": "Save changes"
     }
   },
+  "account": {
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete account",
+    "deleteAccountHint": "Opens the process to permanently delete your account",
+    "deleteTitle": "Delete account",
+    "deleteSubtitle": "This action is permanent and signs you out of all devices.",
+    "willBeDeleted": "Will be removed:",
+    "willBeRetained": "Will be retained:",
+    "deleteItems": {
+      "transactions": "Transactions and bank statements",
+      "bankAccounts": "Bank accounts",
+      "goalsEtc": "Goals, savings, debts",
+      "recurring": "Recurring series",
+      "assistant": "Assistant conversations"
+    },
+    "retainItems": {
+      "legalConsent": "Terms acceptance record (5 years, LFPDPPP Art. 14)"
+    },
+    "subscriptionWarning": "Your Premium subscription will be cancelled automatically.",
+    "continueToDelete": "Continue with deletion",
+    "confirmTitle": "Confirm your decision",
+    "confirmSubtitle": "Type DELETE to confirm.",
+    "confirmPlaceholder": "Type DELETE",
+    "confirmInputLabel": "Confirmation field",
+    "confirmInputHint": "Type DELETE to enable the delete button",
+    "confirmButton": "Delete my account",
+    "confirmButtonA11y": "Permanently delete my account",
+    "successToast": "Your account has been deleted",
+    "errorTitle": "Could not delete your account",
+    "errorBody": "A network error occurred. Your account was not modified.",
+    "back": "Back",
+    "cancelNav": "Cancel"
+  },
   "analytics": {
     "notice": {
       "title": "We collect anonymous usage data",
