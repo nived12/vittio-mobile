@@ -511,7 +511,12 @@
     "schemeSystem": "Sistema",
     "schemeLight": "Claro",
     "schemeDark": "Oscuro",
-    "privacySection": "PRIVACIDAD"
+    "privacySection": "PRIVACIDAD",
+    "betaSection": "BETA",
+    "sendFeedback": "Enviar comentarios",
+    "reportBug": "Reportar un problema",
+    "feedbackMailtoUnavailableTitle": "No encontramos una app de correo",
+    "feedbackMailtoUnavailableMessage": "Por favor escríbenos a {{email}}."
   },
   "categories": {
     "title": "Categorías",

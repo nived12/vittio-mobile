@@ -511,7 +511,12 @@
     "schemeSystem": "System",
     "schemeLight": "Light",
     "schemeDark": "Dark",
-    "privacySection": "PRIVACY"
+    "privacySection": "PRIVACY",
+    "betaSection": "BETA",
+    "sendFeedback": "Send feedback",
+    "reportBug": "Report a problem",
+    "feedbackMailtoUnavailableTitle": "No mail app found",
+    "feedbackMailtoUnavailableMessage": "Please email us at {{email}}."
   },
   "categories": {
     "title": "Categories",

@@ -12,14 +12,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { CaretLeft } from 'phosphor-react-native';
+import { CaretLeft, ChatCircleDots, Bug, CaretRight } from 'phosphor-react-native';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { AnalyticsToggleRow } from '../../src/components/AnalyticsPrivacyNotice';
-import { CaretRight } from 'phosphor-react-native';
+import { sendBetaFeedback, reportBetaBug } from '../../src/utils/feedback';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -150,6 +150,37 @@ export default function ProfileScreen() {
 
           <View style={{ height: spacing.lg }} />
 
+          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.betaSection')}</Text>
+            <TouchableOpacity
+              style={styles.betaRow}
+              onPress={sendBetaFeedback}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.sendFeedback')}
+            >
+              <ChatCircleDots size={20} color={textPrimary} weight="regular" />
+              <Text style={[styles.betaRowText, { color: textPrimary }]}>
+                {t('settings.sendFeedback')}
+              </Text>
+              <CaretRight size={18} color={mutedCol} weight="regular" />
+            </TouchableOpacity>
+            <View style={[styles.betaDivider, { backgroundColor: borderCol }]} />
+            <TouchableOpacity
+              style={styles.betaRow}
+              onPress={reportBetaBug}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.reportBug')}
+            >
+              <Bug size={20} color={textPrimary} weight="regular" />
+              <Text style={[styles.betaRowText, { color: textPrimary }]}>
+                {t('settings.reportBug')}
+              </Text>
+              <CaretRight size={18} color={mutedCol} weight="regular" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ height: spacing.lg }} />
+
           <View style={[styles.card, styles.dangerCard]}>
             <Text style={styles.dangerLabel}>{t('account.dangerZone')}</Text>
             <TouchableOpacity
@@ -261,6 +292,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: '#ffffff',
+  },
+  betaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 44,
+    paddingVertical: 6,
+  },
+  betaRowText: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+  },
+  betaDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: 4,
   },
   dangerCard: {
     borderColor: '#fee2e2',
