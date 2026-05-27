@@ -18,8 +18,6 @@ import { useUpdateUser } from '../../src/hooks/useUser';
 import { useUIStore } from '../../src/stores/uiStore';
 import { colors, spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
-import { AnalyticsToggleRow } from '../../src/components/AnalyticsPrivacyNotice';
-import { CaretRight } from 'phosphor-react-native';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -75,7 +73,7 @@ export default function ProfileScreen() {
         >
           <CaretLeft size={24} color={textPrimary} weight="regular" />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: textPrimary }]}>{t('settings.title')}</Text>
+        <Text style={[styles.title, { color: textPrimary }]}>{t('settings.editProfileTitle')}</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -138,29 +136,6 @@ export default function ProfileScreen() {
               <Text style={styles.saveBtnText}>
                 {updateUserMutation.isPending ? t('common.loading') : t('settings.saveProfile')}
               </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ height: spacing.lg }} />
-
-          <View style={[styles.card, { backgroundColor: surface, borderColor: borderCol }]}>
-            <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('settings.privacySection')}</Text>
-            <AnalyticsToggleRow />
-          </View>
-
-          <View style={{ height: spacing.lg }} />
-
-          <View style={[styles.card, styles.dangerCard]}>
-            <Text style={styles.dangerLabel}>{t('account.dangerZone')}</Text>
-            <TouchableOpacity
-              style={styles.dangerRow}
-              onPress={() => router.push('/(app)/delete-account')}
-              accessibilityRole="button"
-              accessibilityLabel={t('account.deleteAccount')}
-              accessibilityHint={t('account.deleteAccountHint')}
-            >
-              <Text style={styles.dangerRowText}>{t('account.deleteAccount')}</Text>
-              <CaretRight size={18} color="#ef4444" weight="regular" />
             </TouchableOpacity>
           </View>
 
@@ -261,27 +236,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 15,
     color: '#ffffff',
-  },
-  dangerCard: {
-    borderColor: '#fee2e2',
-  },
-  dangerLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#ef4444',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-  },
-  dangerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 44,
-  },
-  dangerRowText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    color: '#ef4444',
   },
 });

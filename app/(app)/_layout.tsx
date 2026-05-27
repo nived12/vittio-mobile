@@ -208,6 +208,8 @@ export default function AppLayout() {
 
         {/* Hide profile from tab bar (kept as dead code) */}
         <Tabs.Screen name="profile" options={{ href: null }} />
+        <Tabs.Screen name="settings" options={{ href: null }} />
+        <Tabs.Screen name="delete-account" options={{ href: null }} />
 
         {/* Hide categories from tab bar */}
         <Tabs.Screen name="categories" options={{ href: null }} />

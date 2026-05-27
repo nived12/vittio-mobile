@@ -483,7 +483,14 @@
     "comingSoon": "Pronto"
   },
   "settings": {
-    "title": "Editar Perfil",
+    "title": "Ajustes",
+    "editProfileTitle": "Editar Perfil",
+    "preferencesSection": "PREFERENCIAS",
+    "notificationsSection": "NOTIFICACIONES",
+    "helpSection": "AYUDA Y COMENTARIOS",
+    "accountSection": "CUENTA",
+    "notificationsRow": "Notificaciones",
+    "deleteAccountRow": "Eliminar cuenta",
     "profileSection": "Perfil",
     "passwordSection": "Cambiar contraseña",
     "firstNameLabel": "Nombre",
@@ -507,11 +514,16 @@
     "upgradePremium": "Vittio Premium",
     "invalidCurrentPassword": "La contraseña actual es incorrecta",
     "oauthAccountPassword": "Esta cuenta usa Google. No es posible cambiar la contraseña.",
-    "appearance": "APARIENCIA",
+    "appearance": "Apariencia",
     "schemeSystem": "Sistema",
     "schemeLight": "Claro",
     "schemeDark": "Oscuro",
-    "privacySection": "PRIVACIDAD"
+    "privacySection": "PRIVACIDAD",
+    "betaSection": "BETA",
+    "sendFeedback": "Enviar comentarios",
+    "reportBug": "Reportar un problema",
+    "feedbackMailtoUnavailableTitle": "No encontramos una app de correo",
+    "feedbackMailtoUnavailableMessage": "Por favor escríbenos a {{email}}."
   },
   "categories": {
     "title": "Categorías",
@@ -601,6 +613,7 @@
     "activity": "Actividad",
     "accounts": "Cuentas",
     "finances": "Finanzas",
+    "settings": "Ajustes",
     "homeTab": "Pestaña Inicio",
     "activityTab": "Pestaña Actividad",
     "accountsTab": "Pestaña Cuentas",
