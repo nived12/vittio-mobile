@@ -12,8 +12,17 @@ import { useTranslation } from 'react-i18next';
 import { analytics } from '../../app/_layout';
 import { useTheme } from '../theme/ThemeContext';
 import { colors, spacing, textStyles } from '../theme';
+import {
+  fetchUserSettings,
+  markAnalyticsNoticeSeen,
+  updateAnalyticsEnabled,
+} from '../api/settings';
+import { useAuthStore } from '../stores/authStore';
 
-const NOTICE_KEY = 'analytics_notice_shown';
+// Per-user cache key so two users on the same device each see the notice once.
+function noticeCacheKey(userId: number | string | undefined): string {
+  return `analytics_notice_seen_${userId ?? 'anon'}`;
+}
 export const OPT_OUT_KEY = 'analytics_opted_out';
 
 export async function isAnalyticsEnabled(): Promise<boolean> {
@@ -24,14 +33,38 @@ export async function isAnalyticsEnabled(): Promise<boolean> {
 export function AnalyticsPrivacyNotice() {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
+  const userId = useAuthStore((s) => s.user?.id);
   const [visible, setVisible] = useState(false);
   const slideAnim = new Animated.Value(200);
 
   useEffect(() => {
-    AsyncStorage.getItem(NOTICE_KEY).then((shown) => {
-      if (!shown) setVisible(true);
+    let cancelled = false;
+    const cacheKey = noticeCacheKey(userId);
+
+    // Check the local cache first to avoid a flash while the API call resolves.
+    // Server is the source of truth — we still fetch and reconcile.
+    AsyncStorage.getItem(cacheKey).then((cached) => {
+      if (cancelled) return;
+      if (cached === 'true') return; // already seen on this device
+      setVisible(true);
     });
-  }, []);
+
+    fetchUserSettings()
+      .then(async (settings) => {
+        if (cancelled) return;
+        if (settings.analytics_notice_seen_at) {
+          await AsyncStorage.setItem(cacheKey, 'true');
+          setVisible(false);
+        }
+      })
+      .catch(() => {
+        // Offline or unauthenticated — fall back to whatever the cache decided.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   useEffect(() => {
     if (visible) {
@@ -47,7 +80,13 @@ export function AnalyticsPrivacyNotice() {
   if (!visible) return null;
 
   async function dismiss() {
-    await AsyncStorage.setItem(NOTICE_KEY, 'true');
+    const cacheKey = noticeCacheKey(userId);
+    await AsyncStorage.setItem(cacheKey, 'true');
+    try {
+      await markAnalyticsNoticeSeen();
+    } catch {
+      // Cached locally; will sync on next dismiss attempt or stay device-scoped.
+    }
     Animated.timing(slideAnim, {
       toValue: 200,
       duration: 200,
@@ -93,7 +132,22 @@ export function AnalyticsToggleRow({ style }: AnalyticsToggleRowProps) {
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
+    // Local cache first (no flash), then reconcile with server.
     isAnalyticsEnabled().then(setEnabled);
+    fetchUserSettings()
+      .then(async (settings) => {
+        const serverEnabled = settings.analytics_enabled;
+        setEnabled(serverEnabled);
+        await AsyncStorage.setItem(OPT_OUT_KEY, serverEnabled ? 'false' : 'true');
+        if (serverEnabled) {
+          analytics?.optIn();
+        } else {
+          analytics?.optOut();
+        }
+      })
+      .catch(() => {
+        // Offline — keep cached value.
+      });
   }, []);
 
   async function toggle(value: boolean) {
@@ -103,6 +157,11 @@ export function AnalyticsToggleRow({ style }: AnalyticsToggleRowProps) {
       analytics?.optIn();
     } else {
       analytics?.optOut();
+    }
+    try {
+      await updateAnalyticsEnabled(value);
+    } catch {
+      // Cached locally; will reconcile on next app launch.
     }
   }
 
