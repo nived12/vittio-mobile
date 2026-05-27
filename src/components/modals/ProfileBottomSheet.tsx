@@ -19,7 +19,7 @@ import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Repeat2, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Repeat2, Settings as SettingsIcon, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from '../../i18n';
@@ -166,6 +166,11 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
     router.push('/(app)/profile');
   }
 
+  function handleSettings() {
+    onClose();
+    router.push('/(app)/settings');
+  }
+
   function handleCategories() {
     onClose();
     router.push('/(app)/categories');
@@ -267,6 +272,19 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
         >
           <User size={20} color={textSecondary} />
           <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('profile.editProfile')}</Text>
+        </TouchableOpacity>
+
+        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
+
+        {/* Settings */}
+        <TouchableOpacity
+          style={styles.actionRow}
+          onPress={handleSettings}
+          accessibilityRole="button"
+          accessibilityLabel={t('navigation.settings')}
+        >
+          <SettingsIcon size={20} color={textSecondary} />
+          <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('navigation.settings')}</Text>
         </TouchableOpacity>
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
