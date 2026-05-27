@@ -22,7 +22,6 @@ import { router } from 'expo-router';
 import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Repeat2, Settings as SettingsIcon, Tag, Upload, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import i18n from '../../i18n';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useRequireConfirmed } from '../../hooks/useRequireConfirmed';
@@ -51,10 +50,8 @@ interface ProfileBottomSheetProps {
 export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps) {
   const { theme, isDark } = useTheme();
   const sheetBg       = isDark ? theme.surface         : '#ffffff';
-  const inputBg       = isDark ? theme.surfaceElevated : '#f1f5f9';
   const textPrimary   = isDark ? theme.textPrimary     : '#0f172a';
   const textSecondary = isDark ? theme.textSecondary   : '#64748b';
-  const borderCol     = isDark ? theme.border          : '#e2e8f0';
   const dividerCol    = isDark ? 'rgba(255,255,255,0.06)'       : '#f1f5f9';
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -62,10 +59,6 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   const subscriptionStatus = useAuthStore((s) => s.user?.subscription_status ?? 'none');
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
-  const locale = useUIStore((s) => s.locale);
-  const setLocale = useUIStore((s) => s.setLocale);
-  const colorScheme = useUIStore((s) => s.colorScheme);
-  const setColorScheme = useUIStore((s) => s.setColorScheme);
   const { showToast } = useUIStore();
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const requireConfirmed = useRequireConfirmed();
@@ -98,17 +91,6 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
 
   const initials = getInitials(user);
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
-
-  function handleLanguage(lang: 'en' | 'es') {
-    Haptics.selectionAsync();
-    setLocale(lang);
-    i18n.changeLanguage(lang);
-  }
-
-  function handleScheme(scheme: 'system' | 'light' | 'dark') {
-    Haptics.selectionAsync();
-    setColorScheme(scheme);
-  }
 
   function handleUpload() {
     requireConfirmed(() => {
@@ -374,62 +356,6 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
 
-        {/* Language toggle */}
-        <View style={styles.languageRow}>
-          <Text style={[styles.languageLabel, { color: textPrimary }]}>{t('profile.language')}</Text>
-          <View style={styles.langPills}>
-            {(['ES', 'EN'] as const).map((label) => {
-              const lang = label.toLowerCase() as 'es' | 'en';
-              const active = locale === lang;
-              return (
-                <TouchableOpacity
-                  key={lang}
-                  onPress={() => handleLanguage(lang)}
-                  style={[styles.langPill, { backgroundColor: inputBg, borderColor: borderCol }, active && styles.langPillActive]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                >
-                  <Text style={[styles.langPillText, { color: textSecondary }, active && styles.langPillTextActive]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
-
-        {/* Appearance */}
-        <View style={styles.languageRow}>
-          <Text style={[styles.languageLabel, { color: textPrimary }]}>{t('settings.appearance')}</Text>
-          <View style={styles.langPills}>
-            {(['system', 'light', 'dark'] as const).map((option) => {
-              const active = colorScheme === option;
-              const label = option === 'system'
-                ? t('settings.schemeSystem')
-                : option === 'light'
-                  ? t('settings.schemeLight')
-                  : t('settings.schemeDark');
-              return (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => handleScheme(option)}
-                  style={[styles.schemePill, { backgroundColor: inputBg, borderColor: borderCol }, active && styles.langPillActive]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: active }}
-                >
-                  <Text style={[styles.langPillText, { color: textSecondary }, active && styles.langPillTextActive]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: dividerCol }]} />
-
         {/* Logout */}
         <TouchableOpacity
           style={styles.actionRow}
@@ -553,55 +479,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-  },
-  languageRow: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    justifyContent:    'space-between',
-    paddingHorizontal: spacing.screenPaddingH,
-    paddingVertical:   14,
-    minHeight:         52,
-  },
-  languageLabel: {
-    ...textStyles.bodyMd,
-    color: colors.text.primary,
-  },
-  langPills: {
-    flexDirection: 'row',
-    gap:           8,
-  },
-  langPill: {
-    width:           44,
-    height:          32,
-    borderRadius:    8,
-    backgroundColor: colors.bg.surface2,
-    alignItems:      'center',
-    justifyContent:  'center',
-    borderWidth:     1,
-    borderColor:     colors.borderNested.default,
-  },
-  langPillActive: {
-    backgroundColor: colors.brand.primary,
-    borderColor:     colors.brand.primary,
-  },
-  langPillText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize:   13,
-    color:      colors.text.secondary,
-  },
-  langPillTextActive: {
-    fontFamily: 'Inter_600SemiBold',
-    color:      '#ffffff',
-  },
-  schemePill: {
-    minWidth:        56,
-    height:          32,
-    borderRadius:    8,
-    backgroundColor: colors.bg.surface2,
-    alignItems:      'center',
-    justifyContent:  'center',
-    paddingHorizontal: 8,
-    borderWidth:     1,
-    borderColor:     colors.borderNested.default,
   },
 });
