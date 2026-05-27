@@ -78,6 +78,12 @@
       "signingIn": "Iniciando sesión...",
       "error": "Error al iniciar sesión con Google. Intenta de nuevo."
     },
+    "apple": {
+      "networkError": "Error de conexión. Intenta de nuevo.",
+      "serverError": "No se pudo iniciar sesión con Apple.",
+      "emailConflict": "Ya existe una cuenta con este correo. Inicia sesión con email.",
+      "loading": "Iniciando sesión con Apple"
+    },
     "biometric": {
       "prompt": "Confirma tu identidad",
       "cancel": "Cancelar",

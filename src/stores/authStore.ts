@@ -36,6 +36,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   signup: (fields: SignupFields) => Promise<void>;
   loginWithGoogle: (tokens: TokenPayload) => Promise<void>;
+  loginWithApple: (payload: AppleAuthPayload) => Promise<void>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<string>;
   hydrate: () => Promise<void>;
@@ -53,6 +54,13 @@ interface SignupFields {
   email: string;
   password: string;
   password_confirmation: string;
+}
+
+interface AppleAuthPayload {
+  identity_token: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
 }
 
 interface TokenPayload {
@@ -132,6 +140,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { authApi } = await import('../api/auth');
       const user = await authApi.me();
       await get()._setAuth(tokens, user);
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
+  },
+
+  // ── loginWithApple ────────────────────────────────────────────────────────
+  // Native Apple Sign In: exchange the identity token for Vittio JWTs.
+  loginWithApple: async (payload) => {
+    set({ isLoading: true });
+    try {
+      const { resetConsentRedirect } = await import('../api/client');
+      resetConsentRedirect();
+      const { authApi } = await import('../api/auth');
+      const response = await authApi.loginWithApple(payload);
+      await get()._setAuth(
+        {
+          access_token:  response.data.access_token,
+          refresh_token: response.data.refresh_token,
+          expires_in:    response.data.expires_in,
+          token_type:    response.data.token_type,
+        },
+        response.data.user,
+      );
     } catch (err) {
       set({ isLoading: false });
       throw err;

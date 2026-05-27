@@ -18,6 +18,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import * as ExpoLinking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -56,12 +57,14 @@ export default function SignupScreen() {
   const { t } = useTranslation();
   const signup = useAuthStore((s) => s.signup);
   const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const scrollViewRef = useRef<ScrollView>(null);
@@ -139,6 +142,46 @@ export default function SignupScreen() {
           message: t('errors.UNKNOWN_ERROR'),
         });
       }
+    }
+  };
+
+  // ── Apple Sign-In ─────────────────────────────────────────────────────────
+  const [appleError, setAppleError] = useState<string | null>(null);
+
+  const handleAppleSignIn = async () => {
+    if (isAppleLoading || isGoogleLoading || isLoading) return;
+    setIsAppleLoading(true);
+    setAppleError(null);
+
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        setAppleError(t('auth.apple.networkError'));
+        return;
+      }
+
+      await loginWithApple({
+        identity_token: credential.identityToken,
+        first_name: credential.fullName?.givenName ?? undefined,
+        last_name: credential.fullName?.familyName ?? undefined,
+        email: credential.email ?? undefined,
+      });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(app)');
+    } catch (err: unknown) {
+      const e = err as { code?: string };
+      if (e?.code === 'ERR_REQUEST_CANCELED') return;
+      console.error('[Apple Sign-In] error:', err);
+      setAppleError(t('auth.apple.serverError'));
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -472,6 +515,29 @@ export default function SignupScreen() {
             <View style={styles.dividerLine} />
           </View>
 
+          {/* Apple Sign-In error */}
+          {appleError != null && (
+            <Text style={styles.googleError}>{appleError}</Text>
+          )}
+
+          {/* Apple Sign-In button (iOS only — Apple HIG requires SIWA above Google) */}
+          {Platform.OS === 'ios' && (
+            <View style={styles.appleButtonContainer}>
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={12}
+                style={styles.appleButton}
+                onPress={handleAppleSignIn}
+              />
+              {isAppleLoading && (
+                <View style={styles.appleLoadingOverlay} accessibilityLiveRegion="polite">
+                  <ActivityIndicator size="small" color={colors.brand.primary} />
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Google Sign-In error */}
           {googleError != null && (
             <Text style={styles.googleError}>{googleError}</Text>
@@ -642,6 +708,23 @@ const styles = StyleSheet.create({
     ...textStyles.bodySm,
     color: colors.neutral[400],
     marginHorizontal: 12,
+  },
+
+  // Apple Sign-In
+  appleButtonContainer: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  appleButton: {
+    width: '100%',
+    height: 52,
+  },
+  appleLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 12,
   },
 
   // Google Sign-In

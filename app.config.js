@@ -21,6 +21,7 @@ module.exports = () => ({
       bundleIdentifier: 'io.vitt.app',
       appleTeamId: process.env.APPLE_TEAM_ID ?? '9Y84K3A2BJ',
       supportsTablet: false,
+      usesAppleSignIn: true,
       associatedDomains: ['applinks:app.vitt.io'],
       entitlements: {
         'keychain-access-groups': ['$(AppIdentifierPrefix)io.vitt.app'],
@@ -121,6 +122,7 @@ module.exports = () => ({
         },
       ],
       'expo-web-browser',
+      'expo-apple-authentication',
     ],
     experiments: {
       typedRoutes: true,

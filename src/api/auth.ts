@@ -29,6 +29,18 @@ async function login(email: string, password: string): Promise<AuthResponse> {
   return response.data;
 }
 
+interface ApplePayload {
+  identity_token: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
+async function loginWithApple(payload: ApplePayload): Promise<AuthResponse> {
+  const response = await apiClient.post<AuthResponse>('/auth/apple', payload);
+  return response.data;
+}
+
 interface SignupPayload {
   first_name: string;
   last_name: string;
@@ -99,6 +111,7 @@ async function confirmEmail(token: string): Promise<void> {
 
 export const authApi = {
   login,
+  loginWithApple,
   signup,
   logout,
   refresh,

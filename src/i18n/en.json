@@ -78,6 +78,12 @@
       "signingIn": "Signing in...",
       "error": "Google Sign-In failed. Please try again."
     },
+    "apple": {
+      "networkError": "Connection error. Please try again.",
+      "serverError": "Could not sign in with Apple.",
+      "emailConflict": "An account already exists with this email. Sign in with email instead.",
+      "loading": "Signing in with Apple"
+    },
     "biometric": {
       "prompt": "Confirm your identity",
       "cancel": "Cancel",

@@ -18,6 +18,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import * as ExpoLinking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -61,12 +62,14 @@ export default function LoginScreen() {
   const textSecondary = theme.textSecondary;
   const login = useAuthStore((s) => s.login);
   const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
+  const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorCode, setErrorCode] = useState<ErrorVariant>(null);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const passwordRef = useRef<TextInput>(null);
@@ -190,6 +193,44 @@ export default function LoginScreen() {
       setTimeout(() => setResendSuccess(false), 3000);
     } catch {
       // Silent fail — the user can try again
+    }
+  };
+
+  // ── Apple Sign-In ─────────────────────────────────────────────────────────
+  const handleAppleSignIn = async () => {
+    if (isAppleLoading || isGoogleLoading || isLoading) return;
+    setIsAppleLoading(true);
+    setErrorCode(null);
+
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        setErrorCode('NETWORK_ERROR');
+        return;
+      }
+
+      await loginWithApple({
+        identity_token: credential.identityToken,
+        first_name: credential.fullName?.givenName ?? undefined,
+        last_name: credential.fullName?.familyName ?? undefined,
+        email: credential.email ?? undefined,
+      });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace('/(app)');
+    } catch (err: unknown) {
+      const e = err as { code?: string };
+      if (e?.code === 'ERR_REQUEST_CANCELED') return; // user dismissed
+      console.error('[Apple Sign-In] error:', err);
+      setErrorCode('NETWORK_ERROR');
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -487,6 +528,28 @@ export default function LoginScreen() {
               <View style={styles.dividerLine} />
             </View>
 
+            {/* Apple Sign-In button (iOS only — Apple HIG requires SIWA above Google) */}
+            {Platform.OS === 'ios' && (
+              <View style={styles.appleButtonContainer}>
+                <AppleAuthentication.AppleAuthenticationButton
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                  buttonStyle={
+                    isDark
+                      ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                      : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                  }
+                  cornerRadius={12}
+                  style={styles.appleButton}
+                  onPress={handleAppleSignIn}
+                />
+                {isAppleLoading && (
+                  <View style={styles.appleLoadingOverlay} accessibilityLiveRegion="polite">
+                    <ActivityIndicator size="small" color={colors.brand.primary} />
+                  </View>
+                )}
+              </View>
+            )}
+
             {/* Google Sign-In button */}
             <TouchableOpacity
               style={[
@@ -494,7 +557,7 @@ export default function LoginScreen() {
                 (isGoogleLoading || isLoading) && styles.googleButtonDisabled,
               ]}
               onPress={handleGoogleSignIn}
-              disabled={isGoogleLoading || isLoading}
+              disabled={isGoogleLoading || isLoading || isAppleLoading}
               accessibilityRole="button"
               accessibilityLabel={t('auth.oauth.continueWithGoogle')}
               accessibilityState={{ busy: isGoogleLoading, disabled: isGoogleLoading || isLoading }}
@@ -705,6 +768,23 @@ const styles = StyleSheet.create({
     ...textStyles.bodySm,
     color: colors.neutral[400],
     marginHorizontal: 12,
+  },
+
+  // Apple Sign-In
+  appleButtonContainer: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  appleButton: {
+    width: '100%',
+    height: 52,
+  },
+  appleLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 12,
   },
 
   // Google Sign-In
