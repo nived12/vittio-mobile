@@ -93,7 +93,14 @@ module.exports = () => ({
     },
     scheme: 'vittio',
     plugins: [
-      '@sentry/react-native',
+      './plugins/withJetifier',
+      [
+        '@sentry/react-native',
+        {
+          organization: 'vittio',
+          project: 'vittio-mobile',
+        },
+      ],
       'expo-router',
       'expo-secure-store',
       'expo-system-ui',
