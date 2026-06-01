@@ -12,7 +12,7 @@ export function useDashboard(month?: string) {
   return useQuery({
     queryKey: dashboardQueryKey(month),
     queryFn: () => getDashboard(month),
-    staleTime: 30_000,        // 30 seconds
+    staleTime: 300_000,       // 5 minutes
     gcTime: 600_000,          // 10 minutes
     retry: 2,
     networkMode: 'offlineFirst',

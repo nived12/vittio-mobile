@@ -348,7 +348,7 @@ export default function TransactionsScreen() {
   function handleSearchChange(text: string) {
     setSearch(text);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedSearch(text), 350);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(text), 200);
   }
 
   const handleRefresh = useCallback(async () => {
@@ -560,6 +560,9 @@ export default function TransactionsScreen() {
           keyExtractor={(item) => String(item.id)}
           stickySectionHeadersEnabled
           removeClippedSubviews={false}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           renderSectionHeader={({ section }) => (
             <SectionHeader
               dateKey={section.title}

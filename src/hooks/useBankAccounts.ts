@@ -27,7 +27,7 @@ export function useBankAccounts() {
   return useQuery({
     queryKey: bankAccountKeys.list(),
     queryFn: getBankAccounts,
-    staleTime: 120_000,   // 2 minutes
+    staleTime: 300_000,   // 5 minutes
     gcTime: 600_000,
     networkMode: 'offlineFirst',
   });
@@ -37,7 +37,7 @@ export function useBankAccount(id: number) {
   return useQuery({
     queryKey: bankAccountKeys.detail(id),
     queryFn: () => getBankAccount(id),
-    staleTime: 120_000,
+    staleTime: 300_000,
     networkMode: 'offlineFirst',
     enabled: id > 0,
   });
