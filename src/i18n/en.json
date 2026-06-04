@@ -920,7 +920,12 @@
       "error": "Couldn't understand. Try again.",
       "permissionDenied": "Microphone permission required",
       "openSettings": "Open Settings",
-      "requiresDevBuild": "Voice recording requires a development build"
+      "requiresDevBuild": "Voice recording requires a development build",
+      "micPermissionDenied": "Microphone access denied. Enable it in Settings.",
+      "noRecognizerAvailable": "Speech recognition is not available on this device.",
+      "recognitionFailed": "Speech recognition failed. Try again.",
+      "noSpeechDetected": "Didn't hear anything. Try again.",
+      "hint": "Tap once to speak, tap again to stop"
     },
     "camera": {
       "tap": "Scan receipt",

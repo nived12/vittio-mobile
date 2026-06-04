@@ -7,11 +7,12 @@ import { recurringKeys } from './useRecurring';
  * Shares the same query key as useRecurring() so the Profile sheet badge and
  * the Transactions header chip reuse the main /recurring screen fetch.
  */
-export function useRecurringSummary() {
+export function useRecurringSummary(options: { enabled?: boolean } = {}) {
   const { data } = useQuery({
     queryKey: recurringKeys.list(),
     queryFn: () => fetchRecurring(),
     staleTime: 30_000,
+    enabled: options.enabled ?? true,
   });
 
   return {

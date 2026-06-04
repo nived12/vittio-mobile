@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Platform, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +21,38 @@ import { useTheme } from '../../src/theme/ThemeContext';
 const TAB_BAR_CONTENT_HEIGHT_IOS = 49;
 const TAB_BAR_CONTENT_HEIGHT_ANDROID = 56;
 const TOAST_GAP_ABOVE_TAB_BAR = 16;
+
+// Module-scope tab-bar icon factories. Defining these inside AppLayout
+// re-creates the function on every parent render, which makes React Navigation
+// think the screen options changed and re-mount the tab bar items.
+const renderHomeIcon = ({ color, focused }: { color: string; focused: boolean }) => (
+  <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
+);
+const renderActivityIcon = ({ color, focused }: { color: string; focused: boolean }) => (
+  <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={22} color={color} />
+);
+const renderAccountsIcon = ({ color, focused }: { color: string; focused: boolean }) => (
+  <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={22} color={color} />
+);
+const renderFinancesIcon = ({ color, focused }: { color: string; focused: boolean }) => (
+  <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={22} color={color} />
+);
+const HIDDEN_TAB_OPTIONS = { href: null } as const;
+
+const fabButtonStyle = {
+  top: -16,
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  backgroundColor: '#4f46e5',
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
+  shadowColor: '#4f46e5',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.4,
+  shadowRadius: 8,
+  elevation: 8,
+};
 
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
@@ -59,12 +91,12 @@ export default function AppLayout() {
   const tabBarActive = theme.tabBarActive;
   const tabBarInactive = theme.tabBarInactive;
 
-  function handleFabLongPress() {
+  const handleFabLongPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setShowFabSheet(true);
-  }
+  }, []);
 
-  const fabActions: FabAction[] = [
+  const fabActions: FabAction[] = useMemo(() => [
     {
       key: 'newTransaction',
       icon: 'plus',
@@ -89,157 +121,123 @@ export default function AppLayout() {
       subtitle: t('navigation.fab.aiAssistantSubtitle'),
       onPress: () => router.push('/(app)/assistant'),
     },
-  ];
+  ], [t, requireConfirmed, openStatementUpload]);
+
+  // Stable haptic handler for every tab's tabPress listener.
+  const tabPressListeners = useMemo(
+    () => ({ tabPress: () => Haptics.selectionAsync() }),
+    [],
+  );
+
+  const screenOptions = useMemo(() => ({
+    headerShown: false,
+    tabBarHideOnKeyboard: true,
+    tabBarActiveTintColor: tabBarActive,
+    tabBarInactiveTintColor: tabBarInactive,
+    freezeOnBlur: true,
+    tabBarStyle: {
+      backgroundColor: tabBarBg,
+      borderTopWidth: 1,
+      borderTopColor: tabBarBorder,
+    },
+    tabBarLabelStyle: {
+      fontSize: 11,
+      marginTop: 2,
+    },
+  }), [tabBarActive, tabBarInactive, tabBarBg, tabBarBorder]);
+
+  const homeOptions = useMemo(() => ({
+    title: t('navigation.home'),
+    tabBarIcon: renderHomeIcon,
+    tabBarAccessibilityLabel: t('navigation.homeTab'),
+  }), [t]);
+
+  const activityOptions = useMemo(() => ({
+    title: t('navigation.activity'),
+    tabBarIcon: renderActivityIcon,
+    tabBarAccessibilityLabel: t('navigation.activityTab'),
+  }), [t]);
+
+  const accountsOptions = useMemo(() => ({
+    title: t('navigation.accounts'),
+    tabBarIcon: renderAccountsIcon,
+    tabBarAccessibilityLabel: t('navigation.accountsTab'),
+  }), [t]);
+
+  const financesOptions = useMemo(() => ({
+    title: t('navigation.finances'),
+    tabBarIcon: renderFinancesIcon,
+    tabBarAccessibilityLabel: t('navigation.financesTab'),
+  }), [t]);
+
+  // The FAB tab options depend on showFabSheet + iconRotate so we don't memoize
+  // it aggressively — its rotation animation needs to stay reactive.
+  const addOptions = useMemo(() => ({
+    tabBarButton: () => (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <TouchableOpacity
+          onPress={() => {
+            if (showFabSheet) {
+              setShowFabSheet(false);
+              return;
+            }
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            requireConfirmed(() => setShowAddTransaction(true));
+          }}
+          onLongPress={handleFabLongPress}
+          style={fabButtonStyle}
+          accessibilityLabel={t('navigation.addTransaction')}
+          accessibilityRole="button"
+          accessibilityHint={t('navigation.addTransactionHint')}
+        >
+          <Animated.View style={{ transform: [{ rotate: iconRotate }] }}>
+            <Ionicons name="add" size={28} color="#ffffff" />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+    ),
+  }), [showFabSheet, requireConfirmed, handleFabLongPress, iconRotate, t]);
 
   return (
     <>
       {showBanner && <ConfirmationBanner />}
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarHideOnKeyboard: true,
-          tabBarActiveTintColor: tabBarActive,
-          tabBarInactiveTintColor: tabBarInactive,
-          tabBarStyle: {
-            backgroundColor: tabBarBg,
-            borderTopWidth: 1,
-            borderTopColor: tabBarBorder,
-          },
-          tabBarLabelStyle: {
-            fontSize: 11,
-            marginTop: 2,
-          },
-        }}
-      >
-        {/* 1. Home */}
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: t('navigation.home'),
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
-            ),
-            tabBarAccessibilityLabel: t('navigation.homeTab'),
-          }}
-          listeners={{ tabPress: () => Haptics.selectionAsync() }}
-        />
+      <Tabs screenOptions={screenOptions}>
+        <Tabs.Screen name="index" options={homeOptions} listeners={tabPressListeners} />
+        <Tabs.Screen name="transactions" options={activityOptions} listeners={tabPressListeners} />
+        <Tabs.Screen name="add" options={addOptions} />
+        <Tabs.Screen name="accounts" options={accountsOptions} listeners={tabPressListeners} />
+        <Tabs.Screen name="finances" options={financesOptions} listeners={tabPressListeners} />
 
-        {/* 2. Activity */}
-        <Tabs.Screen
-          name="transactions"
-          options={{
-            title: t('navigation.activity'),
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={22} color={color} />
-            ),
-            tabBarAccessibilityLabel: t('navigation.activityTab'),
-          }}
-          listeners={{ tabPress: () => Haptics.selectionAsync() }}
-        />
-
-        {/* 3. FAB — center raised button */}
-        <Tabs.Screen
-          name="add"
-          options={{
-            tabBarButton: () => (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    if (showFabSheet) {
-                      setShowFabSheet(false);
-                      return;
-                    }
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    requireConfirmed(() => setShowAddTransaction(true));
-                  }}
-                  onLongPress={handleFabLongPress}
-                  style={{
-                    top: -16,
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: '#4f46e5',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    shadowColor: '#4f46e5',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 8,
-                    elevation: 8,
-                  }}
-                  accessibilityLabel={t('navigation.addTransaction')}
-                  accessibilityRole="button"
-                  accessibilityHint={t('navigation.addTransactionHint')}
-                >
-                  <Animated.View style={{ transform: [{ rotate: iconRotate }] }}>
-                    <Ionicons name="add" size={28} color="#ffffff" />
-                  </Animated.View>
-                </TouchableOpacity>
-              </View>
-            ),
-          }}
-        />
-
-        {/* 4. Accounts */}
-        <Tabs.Screen
-          name="accounts"
-          options={{
-            title: t('navigation.accounts'),
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'wallet' : 'wallet-outline'} size={22} color={color} />
-            ),
-            tabBarAccessibilityLabel: t('navigation.accountsTab'),
-          }}
-          listeners={{ tabPress: () => Haptics.selectionAsync() }}
-        />
-
-        {/* 5. Finances */}
-        <Tabs.Screen
-          name="finances"
-          options={{
-            title: t('navigation.finances'),
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={22} color={color} />
-            ),
-            tabBarAccessibilityLabel: t('navigation.financesTab'),
-          }}
-          listeners={{ tabPress: () => Haptics.selectionAsync() }}
-        />
-
-        {/* Hide profile from tab bar (kept as dead code) */}
-        <Tabs.Screen name="profile" options={{ href: null }} />
-        <Tabs.Screen name="settings" options={{ href: null }} />
-        <Tabs.Screen name="delete-account" options={{ href: null }} />
-
-        {/* Hide categories from tab bar */}
-        <Tabs.Screen name="categories" options={{ href: null }} />
-
-        {/* Hide notification-preferences from tab bar */}
-        <Tabs.Screen name="notification-preferences" options={{ href: null }} />
-
-        {/* Hide premium from tab bar — accessible via profile */}
-        <Tabs.Screen name="premium" options={{ href: null }} />
-
-        {/* Hide assistant from tab bar — accessible via profile / FAB long-press */}
-        <Tabs.Screen name="assistant" options={{ href: null }} />
-
-        {/* Hide recurring stack from tab bar — accessible via profile / dashboard */}
-        <Tabs.Screen name="recurring" options={{ href: null }} />
+        {/* Routes hidden from the tab bar but accessible via deep links / profile menu */}
+        <Tabs.Screen name="profile" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="settings" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="delete-account" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="categories" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="notification-preferences" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="premium" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="assistant" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="recurring" options={HIDDEN_TAB_OPTIONS} />
       </Tabs>
 
-      <AddEditTransactionModal
-        visible={showAddTransaction}
-        onClose={() => setShowAddTransaction(false)}
-      />
-      <StatementUploadModal
-        visible={showUploadStatement}
-        onClose={closeStatementUpload}
-      />
-      <FabSpeedDial
-        visible={showFabSheet}
-        onClose={() => setShowFabSheet(false)}
-        actions={fabActions}
-      />
+      {showAddTransaction && (
+        <AddEditTransactionModal
+          visible={showAddTransaction}
+          onClose={() => setShowAddTransaction(false)}
+        />
+      )}
+      {showUploadStatement && (
+        <StatementUploadModal
+          visible={showUploadStatement}
+          onClose={closeStatementUpload}
+        />
+      )}
+      {showFabSheet && (
+        <FabSpeedDial
+          visible={showFabSheet}
+          onClose={() => setShowFabSheet(false)}
+          actions={fabActions}
+        />
+      )}
       <View
         style={{
           position: 'absolute',

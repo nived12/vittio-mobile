@@ -1,0 +1,3 @@
+# Override gitignore for EAS builds — include sensitive files needed at build time.
+# google-services.json is gitignored but must be present for Android prebuild.
+!google-services.json

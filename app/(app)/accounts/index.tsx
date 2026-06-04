@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -21,9 +21,8 @@ import { useTheme } from '../../../src/theme/ThemeContext';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
+import { currencyFormatter } from '../../../src/utils/format';
 import type { BankAccount } from '../../../src/api/bankAccounts';
-
-// ── Account icon config ────────────────────────────────────────────────────
 
 const accountTypeConfig = {
   debit: { bg: '#dbeafe', iconColor: '#1e40af', Icon: CreditCard },
@@ -31,9 +30,12 @@ const accountTypeConfig = {
   cash: { bg: '#d1fae5', iconColor: '#065f46', Icon: Banknote },
 } as const;
 
-// ── Account row ────────────────────────────────────────────────────────────
+interface AccountRowProps {
+  account: BankAccount;
+  locale: string;
+}
 
-function AccountRow({ account, locale }: { account: BankAccount; locale: string }) {
+const AccountRow = React.memo(function AccountRow({ account, locale }: AccountRowProps) {
   const { t } = useTranslation();
   const { theme, isDark } = useTheme();
   const textPrimary = isDark ? theme.textPrimary : '#0f172a';
@@ -46,36 +48,39 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
       account.account_type === 'credit' ? t('accounts.types.credit') :
         t('accounts.types.cash');
 
-  const fmtBalance = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: account.currency,
-    minimumFractionDigits: 2,
-  }).format(account.balance);
+  const fmtBalance = currencyFormatter(locale, account.currency).format(account.balance);
+
+  const handlePress = useCallback(() => {
+    router.push(`/(app)/accounts/${account.id}` as `/(app)/accounts/${string}`);
+  }, [account.id]);
+
+  const Logo = getBankLogoComponent(account.bank_logo_url);
 
   return (
     <TouchableOpacity
       style={styles.accountRow}
-      onPress={() => router.push(`/(app)/accounts/${account.id}` as `/(app)/accounts/${string}`)}
+      onPress={handlePress}
       accessibilityRole="button"
       accessibilityLabel={`${resolveBankAccountName(account, t)}, ${typeLabel} account, balance ${fmtBalance}`}
     >
-      {/* Bank logo or type icon */}
-      {(() => {
-        const Logo = getBankLogoComponent(account.bank_logo_url);
-        if (Logo) {
-          return (
-            <View style={[styles.accountIcon, { backgroundColor: isDark ? theme.surface : '#ffffff', borderWidth: 1, borderColor: isDark ? theme.border : '#e2e8f0' }]}>
-              <Logo width={24} height={24} />
-            </View>
-          );
-        }
-        return (
-          <View style={[styles.accountIcon, { backgroundColor: config.bg }]}>
-            <Icon size={20} color={config.iconColor} />
-          </View>
-        );
-      })()}
-      {/* Text */}
+      {Logo ? (
+        <View
+          style={[
+            styles.accountIcon,
+            {
+              backgroundColor: isDark ? theme.surface : '#ffffff',
+              borderWidth: 1,
+              borderColor: isDark ? theme.border : '#e2e8f0',
+            },
+          ]}
+        >
+          <Logo width={24} height={24} />
+        </View>
+      ) : (
+        <View style={[styles.accountIcon, { backgroundColor: config.bg }]}>
+          <Icon size={20} color={config.iconColor} />
+        </View>
+      )}
       <View style={styles.accountCenter}>
         <Text style={[styles.accountName, { color: textPrimary }]} numberOfLines={1}>
           {resolveBankAccountName(account, t)}
@@ -84,7 +89,6 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
           {typeLabel} · {account.currency}
         </Text>
       </View>
-      {/* Balance + chevron */}
       <View style={styles.accountRight}>
         <Text
           style={[
@@ -100,9 +104,7 @@ function AccountRow({ account, locale }: { account: BankAccount; locale: string 
       </View>
     </TouchableOpacity>
   );
-}
-
-// ── Screen ─────────────────────────────────────────────────────────────────
+});
 
 export default function AccountsScreen() {
   const { t } = useTranslation();
@@ -133,13 +135,21 @@ export default function AccountsScreen() {
     }
   }, [refetch]);
 
-  const totalBalance = (accounts ?? []).reduce((sum, a) => sum + a.balance, 0);
+  const { totalBalance, fmtTotal } = useMemo(() => {
+    const list = accounts ?? [];
+    const total = list.reduce((sum, a) => sum + a.balance, 0);
+    const currency = list[0]?.currency ?? 'MXN';
+    return {
+      totalBalance: total,
+      fmtTotal: currencyFormatter(resolvedLocale, currency).format(total),
+    };
+  }, [accounts, resolvedLocale]);
 
-  const fmtTotal = new Intl.NumberFormat(resolvedLocale, {
-    style: 'currency',
-    currency: accounts?.[0]?.currency ?? 'MXN',
-    minimumFractionDigits: 2,
-  }).format(totalBalance);
+  const handleAddPress = useCallback(() => {
+    requireConfirmed(() => setShowAddModal(true));
+  }, [requireConfirmed]);
+
+  const handleCloseAdd = useCallback(() => setShowAddModal(false), []);
 
   if (isError && !accounts) {
     return (
@@ -162,12 +172,11 @@ export default function AccountsScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
-      {/* Nav header */}
       <View style={styles.navHeader}>
         <Text style={[styles.navTitle, { color: textPrimary }]} accessibilityRole="header">{t('accounts.title')}</Text>
         <TouchableOpacity
           style={styles.addBtn}
-          onPress={() => requireConfirmed(() => setShowAddModal(true))}
+          onPress={handleAddPress}
           accessibilityRole="button"
           accessibilityLabel={t('accounts.addButton')}
         >
@@ -186,7 +195,6 @@ export default function AccountsScreen() {
           />
         }
       >
-        {/* Net worth card */}
         {isLoading ? (
           <View style={styles.netWorthCard}>
             <SkeletonBox width={80} height={14} />
@@ -219,7 +227,6 @@ export default function AccountsScreen() {
           </View>
         ) : null}
 
-        {/* Accounts list */}
         {isLoading ? (
           <View style={styles.accountsCard}>
             {[1, 2, 3].map((i) => (
@@ -244,7 +251,7 @@ export default function AccountsScreen() {
             subtitle={t('accounts.empty.subtitle')}
             ctaLabel={t('accounts.empty.cta')}
             ctaVariant="primary"
-            onCta={() => requireConfirmed(() => setShowAddModal(true))}
+            onCta={handleAddPress}
             fullScreen
           />
         ) : (
@@ -258,11 +265,10 @@ export default function AccountsScreen() {
           </View>
         )}
 
-        {/* Add account CTA */}
         {(accounts?.length ?? 0) > 0 && (
           <TouchableOpacity
             style={styles.addAccountCard}
-            onPress={() => requireConfirmed(() => setShowAddModal(true))}
+            onPress={handleAddPress}
             accessibilityRole="button"
             accessibilityLabel={t('accounts.addButton')}
           >
@@ -272,10 +278,12 @@ export default function AccountsScreen() {
         )}
       </ScrollView>
 
-      <AddEditBankAccountModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-      />
+      {showAddModal && (
+        <AddEditBankAccountModal
+          visible={showAddModal}
+          onClose={handleCloseAdd}
+        />
+      )}
     </View>
   );
 }

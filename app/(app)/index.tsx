@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Modal,
   ScrollView,
@@ -9,20 +9,22 @@ import {
   RefreshControl,
   StyleSheet,
   useWindowDimensions,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, Check, Crown } from 'lucide-react-native';
+import { ChevronDown, Check } from 'lucide-react-native';
 import { resolveBankAccountName } from '../../src/utils/displayNames';
 import { format, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useDashboard } from '../../src/hooks/useDashboard';
+import type { DashboardTransaction } from '../../src/api/dashboard';
 import { useUIStore } from '../../src/stores/uiStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useTheme } from '../../src/theme/ThemeContext';
+import { AvatarCircle } from '../../src/components/AvatarCircle';
 import { ProfileBottomSheet } from '../../src/components/modals/ProfileBottomSheet';
 import { BalanceCard } from '../../src/components/ui/BalanceCard';
 import { ChartBar } from '../../src/components/ui/ChartBar';
@@ -34,28 +36,81 @@ import {
   ChartBarSkeleton,
 } from '../../src/components/ui/SkeletonLoader';
 
-function AvatarCircle({
-  initials, onPress, isPremium, avatarUrl,
-}: { initials: string; onPress: () => void; isPremium?: boolean; avatarUrl?: string | null }) {
-  const [imgError, setImgError] = React.useState(false);
-  const showImage = !!avatarUrl && !imgError;
+// ── Module-scope formatter cache (Intl.NumberFormat is expensive on Hermes) ──
+
+const currencyFmtCache = new Map<string, Intl.NumberFormat>();
+function getCurrencyFmt(locale: string, currency: string): Intl.NumberFormat {
+  const key = `${locale}_${currency}`;
+  let fmt = currencyFmtCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    });
+    currencyFmtCache.set(key, fmt);
+  }
+  return fmt;
+}
+
+const ACCOUNT_DOT_COLORS: Record<string, string> = {
+  debit: '#0ea5e9',
+  credit: '#8b5cf6',
+  cash: '#10b981',
+};
+
+interface RecentTransactionsListProps {
+  transactions: DashboardTransaction[];
+  isLoading: boolean;
+  surface: string;
+  borderCol: string;
+  dividerCol: string;
+}
+
+const RecentTransactionsList = React.memo(function RecentTransactionsList({
+  transactions,
+  isLoading,
+  surface,
+  borderCol,
+  dividerCol,
+}: RecentTransactionsListProps) {
+  const { t } = useTranslation();
   return (
-    <View style={{ position: 'relative' }}>
-      <TouchableOpacity onPress={onPress} style={styles.avatarCircle} accessibilityRole="button">
-        {showImage ? (
-          <Image source={{ uri: avatarUrl! }} style={styles.avatarImage} onError={() => setImgError(true)} />
-        ) : (
-          <Text style={styles.avatarInitials}>{initials}</Text>
-        )}
-      </TouchableOpacity>
-      {isPremium && (
-        <View style={styles.crownBadge}>
-          <Crown size={9} color="#ffffff" />
-        </View>
+    <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
+      {isLoading ? (
+        [1, 2, 3, 4, 5].map((i) => (
+          <React.Fragment key={i}>
+            <TransactionRowSkeleton />
+            {i < 5 && <View style={styles.separator} />}
+          </React.Fragment>
+        ))
+      ) : transactions.length === 0 ? (
+        <EmptyState
+          icon="receipt"
+          iconSize={48}
+          iconColor="#c7d2fe"
+          title={t('dashboard.transactionsEmpty.title')}
+          subtitle={t('dashboard.transactionsEmpty.subtitle')}
+          topPadding={8}
+        />
+      ) : (
+        transactions.map((tx, idx) => (
+          <React.Fragment key={tx.id}>
+            <TransactionRow
+              {...tx}
+              onPress={() => router.push(`/(app)/transactions/${tx.id}` as `/(app)/transactions/${string}`)}
+              showAccountName
+              enableSwipeActions={false}
+            />
+            {idx < transactions.length - 1 && (
+              <View style={[styles.separator, { backgroundColor: dividerCol }]} />
+            )}
+          </React.Fragment>
+        ))
       )}
     </View>
   );
-}
+});
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -92,10 +147,44 @@ export default function DashboardScreen() {
     }
   }, [refetch]);
 
-  const dateFnsLocale = locale === 'es' ? es : enUS;
-  const monthLabel = data?.summary.selected_month
-    ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
-    : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+  const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
+
+  const renderAccountChip = useCallback(({ item }: { item: { id: number; account_type: string; bank_name: string; balance: number; currency: string } }) => {
+    const dotColor = ACCOUNT_DOT_COLORS[item.account_type] ?? '#94a3b8';
+    return (
+      <TouchableOpacity
+        onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
+        style={[styles.accountChip, { backgroundColor: surface, borderColor: borderCol }]}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.bank_name}, ${item.account_type}, balance ${item.balance}`}
+        activeOpacity={0.8}
+      >
+        <View style={styles.chipTopRow}>
+          <View style={[styles.typeDot, { backgroundColor: dotColor }]} />
+          <Text style={[styles.chipName, { color: textSecondary }]} numberOfLines={1}>
+            {resolveBankAccountName(item, t)}
+          </Text>
+        </View>
+        <Text
+          style={[
+            styles.chipBalance,
+            { color: textPrimary },
+            item.balance < 0 && { color: '#e11d48' },
+            item.balance === 0 && { color: '#94a3b8' },
+          ]}
+        >
+          {getCurrencyFmt(resolvedLocale, item.currency).format(item.balance)}
+        </Text>
+      </TouchableOpacity>
+    );
+  }, [surface, borderCol, textSecondary, textPrimary, resolvedLocale, t]);
+
+  const monthLabel = useMemo(() => {
+    const dateFnsLocale = locale === 'es' ? es : enUS;
+    return data?.summary.selected_month
+      ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
+      : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+  }, [locale, data?.summary.selected_month]);
 
   if (isError && !data) {
     return (
@@ -114,17 +203,20 @@ export default function DashboardScreen() {
     );
   }
 
-  const rawCategories = data?.category_summary.categories ?? [];
-  const topCategories = rawCategories.slice(0, 5);
-  const otherCategories = rawCategories.slice(5);
-  const otherSum = otherCategories.reduce((sum, c) => sum + c.amount, 0);
-  const chartCategories = [
-    ...topCategories,
-    ...(otherSum > 0
-      ? [{ id: null as number | null, name: t('dashboard.chart.other'), icon: 'more-horizontal' as string | null, amount: otherSum }]
-      : []),
-  ];
-  const maxCategoryAmount = Math.max(...chartCategories.map((c) => c.amount), 1);
+  const { chartCategories, maxCategoryAmount } = useMemo(() => {
+    const rawCategories = data?.category_summary.categories ?? [];
+    const topCategories = rawCategories.slice(0, 5);
+    const otherCategories = rawCategories.slice(5);
+    const otherSum = otherCategories.reduce((sum, c) => sum + c.amount, 0);
+    const cats = [
+      ...topCategories,
+      ...(otherSum > 0
+        ? [{ id: null as number | null, name: t('dashboard.chart.other'), icon: 'more-horizontal' as string | null, amount: otherSum }]
+        : []),
+    ];
+    const max = cats.length > 0 ? Math.max(...cats.map((c) => c.amount), 1) : 1;
+    return { chartCategories: cats, maxCategoryAmount: max };
+  }, [data?.category_summary.categories, t]);
 
   return (
     <>
@@ -157,7 +249,7 @@ export default function DashboardScreen() {
                   height: 80,
                 },
               ]}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </View>
           <View style={styles.topBarSide}>
@@ -188,7 +280,7 @@ export default function DashboardScreen() {
               netIncome={data?.monthly_summary.net_income ?? 0}
               currency={data?.bank_accounts?.[0]?.currency ?? 'MXN'}
               selectedMonth={monthLabel}
-              locale={locale === 'es' ? 'es-MX' : 'en-MX'}
+              locale={resolvedLocale}
             />
           )}
         </View>
@@ -235,44 +327,13 @@ export default function DashboardScreen() {
               horizontal
               data={data!.bank_accounts}
               keyExtractor={(item) => String(item.id)}
+              renderItem={renderAccountChip}
               ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
               contentContainerStyle={{ paddingHorizontal: 16 }}
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => {
-                const dotColors: Record<string, string> = { debit: '#0ea5e9', credit: '#8b5cf6', cash: '#10b981' };
-                const dotColor = dotColors[item.account_type] ?? '#94a3b8';
-                const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
-                return (
-                  <TouchableOpacity
-                    onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
-                    style={[styles.accountChip, { backgroundColor: surface, borderColor: borderCol }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.bank_name}, ${item.account_type}, balance ${item.balance}`}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.chipTopRow}>
-                      <View style={[styles.typeDot, { backgroundColor: dotColor }]} />
-                      <Text style={[styles.chipName, { color: textSecondary }]} numberOfLines={1}>
-                        {resolveBankAccountName(item, t)}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[
-                        styles.chipBalance,
-                        { color: textPrimary },
-                        item.balance < 0 && { color: '#e11d48' },
-                        item.balance === 0 && { color: '#94a3b8' },
-                      ]}
-                    >
-                      {new Intl.NumberFormat(resolvedLocale, {
-                        style: 'currency',
-                        currency: item.currency,
-                        minimumFractionDigits: 2,
-                      }).format(item.balance)}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }}
+              removeClippedSubviews
+              initialNumToRender={5}
+              maxToRenderPerBatch={5}
             />
           )}
         </View>
@@ -304,7 +365,7 @@ export default function DashboardScreen() {
                   value={cat.amount}
                   maxValue={maxCategoryAmount}
                   index={idx}
-                  locale={locale === 'es' ? 'es-MX' : 'en-MX'}
+                  locale={resolvedLocale}
                 />
               ))
             )}
@@ -323,39 +384,13 @@ export default function DashboardScreen() {
               <Text style={styles.seeAllText}>{t('dashboard.sections.seeAll')} →</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
-            {isLoading ? (
-              [1, 2, 3, 4, 5].map((i) => (
-                <React.Fragment key={i}>
-                  <TransactionRowSkeleton />
-                  {i < 5 && <View style={styles.separator} />}
-                </React.Fragment>
-              ))
-            ) : (data?.recent_transactions?.length ?? 0) === 0 ? (
-              <EmptyState
-                icon="receipt"
-                iconSize={48}
-                iconColor="#c7d2fe"
-                title={t('dashboard.transactionsEmpty.title')}
-                subtitle={t('dashboard.transactionsEmpty.subtitle')}
-                topPadding={8}
-              />
-            ) : (
-              data!.recent_transactions.map((tx, idx) => (
-                <React.Fragment key={tx.id}>
-                  <TransactionRow
-                    {...tx}
-                    onPress={() => router.push(`/(app)/transactions/${tx.id}` as `/(app)/transactions/${string}`)}
-                    showAccountName
-                    enableSwipeActions={false}
-                  />
-                  {idx < data!.recent_transactions.length - 1 && (
-                    <View style={[styles.separator, { backgroundColor: dividerCol }]} />
-                  )}
-                </React.Fragment>
-              ))
-            )}
-          </View>
+          <RecentTransactionsList
+            transactions={data?.recent_transactions ?? []}
+            isLoading={isLoading}
+            surface={surface}
+            borderCol={borderCol}
+            dividerCol={dividerCol}
+          />
         </View>
 
         <View style={{ height: 32 + insets.bottom }} />
@@ -435,26 +470,6 @@ const styles = StyleSheet.create({
   logo: {
     flexShrink: 1,
   },
-  avatarCircle: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#4f46e5', alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarImage: { width: 36, height: 36, borderRadius: 18 },
-  avatarInitials: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
-  crownBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#d97706',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-  },
   monthPickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -464,17 +479,6 @@ const styles = StyleSheet.create({
     minHeight: 36,
   },
   monthPickerText: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22, color: '#0f172a', flexShrink: 1 },
-  profileSheet: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-  },
-  profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16 },
-  profileAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#4f46e5', alignItems: 'center', justifyContent: 'center' },
-  profileAvatarText: { fontFamily: 'Inter_600SemiBold', fontSize: 18, color: '#fff' },
-  profileName: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#0f172a' },
-  profileEmail: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748b' },
-  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-  profileRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, color: '#0f172a' },
   sectionPad: { paddingHorizontal: 16, marginTop: 4 },
   sectionGap: { marginTop: 24 },
   sectionHeaderRow: {

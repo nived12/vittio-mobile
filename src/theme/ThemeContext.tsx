@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { colors, darkColors, ThemeTokens } from './colors';
 import { useUIStore } from '../stores/uiStore';
@@ -22,11 +22,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const isDark = resolved === 'dark';
   const theme: ThemeTokens = isDark ? darkColors : colors;
 
-  return (
-    <ThemeContext.Provider value={{ theme, isDark }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  // Stable reference — without this, every parent re-render produces a new
+  // value object and every useTheme() consumer re-renders, which on a 5-tab
+  // app cascades into a full subtree re-render on every interaction.
+  const value = useMemo(() => ({ theme, isDark }), [theme, isDark]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

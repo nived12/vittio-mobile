@@ -12,11 +12,9 @@ module.exports = () => ({
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
-    splash: {
-      image: './assets/images/splash.png',
-      resizeMode: 'contain',
-      backgroundColor: '#ffffff',
-    },
+    // Splash configured via the expo-splash-screen plugin below (SDK 50+).
+    // The legacy root-level `splash` block was deprecated and caused a
+    // conflicting white background to render on Android.
     ios: {
       bundleIdentifier: 'io.vitt.app',
       appleTeamId: process.env.APPLE_TEAM_ID ?? '9Y84K3A2BJ',
@@ -94,6 +92,7 @@ module.exports = () => ({
     scheme: 'vittio',
     plugins: [
       './plugins/withJetifier',
+      './plugins/withRecognitionServiceQuery',
       [
         '@sentry/react-native',
         {
@@ -114,10 +113,12 @@ module.exports = () => ({
       ],
       '@react-native-community/datetimepicker',
       [
-        '@react-native-voice/voice',
+        'expo-speech-recognition',
         {
           microphonePermission:
             'Vittio necesita acceso al micrófono para registrar transacciones por voz.',
+          speechRecognitionPermission:
+            'Vittio necesita acceso al reconocimiento de voz para registrar transacciones.',
         },
       ],
       [

@@ -55,12 +55,14 @@ export function useTransactions(filters: TransactionFilters = {}) {
 /** Summary stats (income / expenses) for the same filter set */
 export function useTransactionsSummary(
   filters: Omit<TransactionFilters, 'page' | 'page_size' | 'sort' | 'direction'> = {},
+  options: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: transactionKeys.summary(filters),
     queryFn: () => getTransactionsSummary(filters),
     staleTime: 60_000,
     networkMode: 'offlineFirst',
+    enabled: options.enabled ?? true,
   });
 }
 

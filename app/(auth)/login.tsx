@@ -24,7 +24,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
-import { Image, useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from 'react-native';
+import { Image } from 'expo-image';
 
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, isApiError } from '../../src/api/client';
@@ -327,7 +328,7 @@ export default function LoginScreen() {
                   height: 132,
                 },
               ]}
-              resizeMode="contain"
+              contentFit="contain"
               accessibilityLabel="Vittio"
             />
           </Animated.View>
