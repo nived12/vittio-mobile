@@ -34,6 +34,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { enableFreeze } from 'react-native-screens';
+import * as SystemUI from 'expo-system-ui';
+
+// Match the splash background so there's no white flash during the
+// splash-to-first-screen transition on Android.
+SystemUI.setBackgroundColorAsync('#4f46e5');
+
+// Freeze inactive screens so off-screen tabs don't re-render when state changes
+// elsewhere. Critical for low-end Android perf in a 5-tab app.
+enableFreeze(true);
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/stores/authStore';

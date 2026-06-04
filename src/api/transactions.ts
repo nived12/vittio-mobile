@@ -89,6 +89,11 @@ export interface AiParseResult {
   date?: string | null;
   category_suggestion: { id: number; name: string } | null;
   confidence: number;
+  merchant?: string | null;
+  bank_account_id?: number | null;
+  concept?: string | null;
+  transcript?: string | null;
+  items?: { name: string; amount: number }[];
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────

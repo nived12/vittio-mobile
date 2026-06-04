@@ -14,36 +14,22 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
+  withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-// @react-native-voice/voice requires a native module not included in Expo Go.
-// The JS module loads fine in Expo Go (require doesn't throw), but NativeModules.Voice
-// is undefined, meaning every method call would fail. Check the native backing first.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Voice: any = null;
-type SpeechResultsEvent = { value?: string[] };
-type SpeechErrorEvent = { error?: { message?: string } };
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { NativeModules } = require('react-native');
-  if (NativeModules.Voice || NativeModules.RNVoice) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    Voice = require('@react-native-voice/voice').default;
-  }
-} catch {
-  Voice = null;
-}
 import { Ionicons } from '@expo/vector-icons';
 import { format, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -66,6 +52,7 @@ import { useTheme } from '../../theme/ThemeContext';
 import { useIsPremiumLocked } from '../../hooks/useIsPremiumLocked';
 import { parseVoice, parseImage } from '../../api/transactions';
 import { PremiumBadge } from '../PremiumBadge';
+import { Toast } from '../ui/Toast';
 import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
 import type { Category } from '../../api/categories';
@@ -326,10 +313,35 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   type AiState = 'idle' | 'recording' | 'processing' | 'prefilled';
   const [aiState, setAiState] = useState<AiState>('idle');
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
   const [receiptThumbnail, setReceiptThumbnail] = useState<string | null>(null);
   const [showReceiptReview, setShowReceiptReview] = useState(false);
   const latestTranscriptRef = useRef('');
   const lastParsedTranscriptRef = useRef('');
+  const startingRef = useRef(false);
+
+  // pulse ring when recording
+  const pulseScale = useSharedValue(1);
+  const pulseOpacity = useSharedValue(0);
+  useEffect(() => {
+    if (aiState === 'recording') {
+      pulseScale.value = 1;
+      pulseOpacity.value = 0.6;
+      pulseScale.value = withRepeat(withTiming(1.7, { duration: 900 }), -1, true);
+      pulseOpacity.value = withRepeat(withTiming(0, { duration: 900 }), -1, true);
+    } else {
+      pulseScale.value = withTiming(1, { duration: 200 });
+      pulseOpacity.value = withTiming(0, { duration: 200 });
+    }
+  }, [aiState, pulseOpacity, pulseScale]);
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+    opacity: pulseOpacity.value,
+  }));
+
+  // toasts rendered inside the modal (above modal content)
+  const toasts = useUIStore((s) => s.toasts);
+  const dismissToast = useUIStore((s) => s.dismissToast);
 
   // ── Smart categorization — committed merchant name (set on blur) ──
   const [committedMerchant, setCommittedMerchant] = useState('');
@@ -471,11 +483,31 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
         setSelectedCategory(child ?? match);
       }
     }
-  }, [categories]);
+    if (result.merchant) {
+      setMerchant(result.merchant);
+    }
+    if (result.bank_account_id && !isEditMode) {
+      const match = accounts.find((a) => a.id === result.bank_account_id);
+      if (match) setSelectedAccount(match);
+    }
+    if (result.concept) {
+      // Image: concept (state) = short AI label (shown in list), description (state) = itemized list (raw source)
+      if (result.description) setConcept((prev) => prev || result.description);
+      setDescription(result.concept);
+    } else if (result.transcript) {
+      // Voice: concept (state) = short AI label (shown in list), description (state) = full transcript (raw source)
+      if (result.description) setConcept((prev) => prev || result.description);
+      setDescription(result.transcript);
+    } else {
+      if (result.description) setDescription(result.description);
+    }
+  }, [categories, accounts, isEditMode]);
 
   const parseVoiceTranscript = useCallback(async (transcript: string) => {
     const text = transcript.trim();
+    setLiveTranscript('');
     if (!text) {
+      showToast(t('aiInput.voice.noSpeechDetected'), 'warning');
       setAiState('idle');
       return;
     }
@@ -505,25 +537,42 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       }
       setAiState('idle');
     }
-  }, [applyAiResult, showToast, t]);
+  }, [applyAiResult, showToast, t, setLiveTranscript]);
 
-  // ── Voice handlers ──
-  useEffect(() => {
-    if (!Voice) return;
-    Voice.onSpeechResults = (e: SpeechResultsEvent) => {
-      latestTranscriptRef.current = (e.value?.[0] ?? '').trim();
-    };
-    Voice.onSpeechEnd = () => {
-      void parseVoiceTranscript(latestTranscriptRef.current);
-    };
-    Voice.onSpeechError = (_e: SpeechErrorEvent) => {
-      showToast(t('aiInput.voice.error'), 'error');
-      setAiState('idle');
-    };
-    return () => {
-      Voice.destroy().then(() => Voice.removeAllListeners());
-    };
-  }, [parseVoiceTranscript, showToast, t]);
+  // ── Speech recognition events (expo-speech-recognition) ──
+  // useSpeechRecognitionEvent uses a ref internally so handlers always stay
+  // fresh without re-registering the subscription on every render.
+  useSpeechRecognitionEvent('start', () => {
+    startingRef.current = false;
+  });
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const text = event.results[0]?.transcript ?? '';
+    latestTranscriptRef.current = text;
+    runOnJS(setLiveTranscript)(text);
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    startingRef.current = false;
+    void parseVoiceTranscript(latestTranscriptRef.current);
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    startingRef.current = false;
+    Sentry.addBreadcrumb({
+      category: 'voice',
+      level: 'error',
+      data: { error: event.error, message: event.message },
+    });
+    if (event.error === 'no-speech') {
+      showToast(t('aiInput.voice.noSpeechDetected'), 'warning');
+    } else if (__DEV__ || process.env.EXPO_PUBLIC_VOICE_DEBUG === '1') {
+      showToast(`Voice error: ${event.error} - ${event.message}`, 'error');
+    } else {
+      showToast(t('aiInput.voice.recognitionFailed'), 'error');
+    }
+    setAiState('idle');
+  });
 
   const handleMicPress = useCallback(async () => {
     if (isPremiumLocked) {
@@ -531,36 +580,43 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
       return;
     }
-    if (!Voice) {
+
+    if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
       showToast(t('aiInput.voice.requiresDevBuild'), 'warning');
       return;
     }
+
     if (aiState === 'recording') {
-      try {
-        await Voice.stop();
-        setAiState('processing');
-      } catch {
-        showToast(t('aiInput.voice.error'), 'error');
-        setAiState('idle');
+      ExpoSpeechRecognitionModule.stop();
+      setAiState('processing');
+      return;
+    }
+
+    if (startingRef.current) return;
+
+    const { granted, canAskAgain } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) {
+      if (!canAskAgain) {
+        setMicPermissionDenied(true);
+      } else {
+        showToast(t('aiInput.voice.micPermissionDenied'), 'error');
       }
       return;
     }
-    try {
-      const available = await Voice.isAvailable();
-      if (!available) {
-        setMicPermissionDenied(true);
-        return;
-      }
-      setMicPermissionDenied(false);
-      latestTranscriptRef.current = '';
-      lastParsedTranscriptRef.current = '';
-      setAiState('recording');
-      await Voice.start('es-MX');
-    } catch {
-      showToast(t('aiInput.voice.error'), 'error');
-      setAiState('idle');
-    }
-  }, [aiState, showToast, t]);
+    setMicPermissionDenied(false);
+
+    latestTranscriptRef.current = '';
+    lastParsedTranscriptRef.current = '';
+    setLiveTranscript('');
+    startingRef.current = true;
+    setAiState('recording');
+
+    ExpoSpeechRecognitionModule.start({
+      lang: 'es-MX',
+      interimResults: true,
+      maxAlternatives: 1,
+    });
+  }, [aiState, isPremiumLocked, showToast, t, onClose]);
 
   // ── Camera handler ──
   const handleCameraPress = useCallback(async () => {
@@ -714,7 +770,20 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
           >
             {/* Amount */}
             <View style={styles.amountRow}>
-              <View style={{ position: 'relative' }}>
+              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                {/* pulse ring */}
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    StyleSheet.absoluteFill,
+                    {
+                      borderRadius: 24,
+                      backgroundColor: '#e11d48',
+                      margin: -6,
+                    },
+                    pulseStyle,
+                  ]}
+                />
                 <TouchableOpacity
                   onPress={handleMicPress}
                   style={[styles.aiButton, styles.aiButtonPrimary]}
@@ -770,8 +839,20 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
             </View>
 
             {/* AI state labels */}
+            {aiState === 'idle' && !micPermissionDenied && ExpoSpeechRecognitionModule.isRecognitionAvailable() && (
+              <Text style={[styles.aiLabel, { color: textSecondary, fontSize: 11 }]}>
+                {t('aiInput.voice.hint')}
+              </Text>
+            )}
             {aiState === 'recording' && (
-              <Text style={styles.aiLabel}>{t('aiInput.voice.recording')}</Text>
+              <>
+                <Text style={[styles.aiLabel, { color: '#e11d48' }]}>{t('aiInput.voice.recording')}</Text>
+                {liveTranscript.length > 0 && (
+                  <Text style={[styles.aiLabel, { color: textSecondary, fontSize: 12, fontStyle: 'italic', marginTop: 2 }]} numberOfLines={2}>
+                    {liveTranscript}
+                  </Text>
+                )}
+              </>
             )}
             {aiState === 'processing' && (
               <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
@@ -1050,6 +1131,22 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
+
+        {/* Toasts must render inside the Modal to appear above it */}
+        <View
+          style={{ position: 'absolute', bottom: 80, left: 16, right: 16, gap: 8 }}
+          pointerEvents="box-none"
+        >
+          {toasts.map((toast) => (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              variant={toast.variant}
+              action={toast.action}
+              onDismiss={() => dismissToast(toast.id)}
+            />
+          ))}
+        </View>
       </View>
 
       {/* Sub-sheets */}

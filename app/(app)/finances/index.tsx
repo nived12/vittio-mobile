@@ -591,10 +591,10 @@ export default function FinancesScreen() {
         </ScrollView>
       </View>
 
-      {/* Modals */}
-      <AddEditSavingModal visible={showAddSaving} onClose={() => setShowAddSaving(false)} />
-      <AddEditDebtModal   visible={showAddDebt}   onClose={() => setShowAddDebt(false)}   />
-      <AddEditGoalModal   visible={showAddGoal}   onClose={() => setShowAddGoal(false)}   />
+      {/* Modals — mount only when visible to avoid keeping their trees on the JS thread */}
+      {showAddSaving && <AddEditSavingModal visible={showAddSaving} onClose={() => setShowAddSaving(false)} />}
+      {showAddDebt   && <AddEditDebtModal   visible={showAddDebt}   onClose={() => setShowAddDebt(false)}   />}
+      {showAddGoal   && <AddEditGoalModal   visible={showAddGoal}   onClose={() => setShowAddGoal(false)}   />}
     </>
   );
 }

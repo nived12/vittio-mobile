@@ -23,3 +23,5 @@ e2e/test-results/
 google-services.json
 GoogleService-Info.plist
 *firebase-adminsdk*.json
+
+build-*.apk

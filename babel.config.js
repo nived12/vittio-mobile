@@ -1,6 +1,6 @@
 module.exports = function (api) {
-  api.cache(true);
-  const isProduction = api.env('production');
+  api.cache.invalidate(() => process.env.NODE_ENV);
+  const isProduction = process.env.NODE_ENV === 'production';
   return {
     presets: ['babel-preset-expo'],
     plugins: [

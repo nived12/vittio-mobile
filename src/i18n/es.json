@@ -920,7 +920,12 @@
       "error": "No pude entender. Intenta de nuevo.",
       "permissionDenied": "Se necesita permiso de micrófono",
       "openSettings": "Abrir Configuración",
-      "requiresDevBuild": "La grabación de voz requiere un build de desarrollo"
+      "requiresDevBuild": "La grabación de voz requiere un build de desarrollo",
+      "micPermissionDenied": "Acceso al micrófono denegado. Actívalo en Configuración.",
+      "noRecognizerAvailable": "El reconocimiento de voz no está disponible en este dispositivo.",
+      "recognitionFailed": "Error al reconocer la voz. Intenta de nuevo.",
+      "noSpeechDetected": "No te escuché. Intenta de nuevo.",
+      "hint": "Toca para hablar, toca de nuevo para terminar"
     },
     "camera": {
       "tap": "Escanear recibo",

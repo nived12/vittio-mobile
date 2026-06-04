@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Modal,
   ScrollView,
@@ -9,8 +9,8 @@ import {
   RefreshControl,
   StyleSheet,
   useWindowDimensions,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -35,6 +35,29 @@ import {
   BalanceCardSkeleton,
   ChartBarSkeleton,
 } from '../../src/components/ui/SkeletonLoader';
+
+// ── Module-scope formatter cache (Intl.NumberFormat is expensive on Hermes) ──
+
+const currencyFmtCache = new Map<string, Intl.NumberFormat>();
+function getCurrencyFmt(locale: string, currency: string): Intl.NumberFormat {
+  const key = `${locale}_${currency}`;
+  let fmt = currencyFmtCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    });
+    currencyFmtCache.set(key, fmt);
+  }
+  return fmt;
+}
+
+const ACCOUNT_DOT_COLORS: Record<string, string> = {
+  debit: '#0ea5e9',
+  credit: '#8b5cf6',
+  cash: '#10b981',
+};
 
 interface RecentTransactionsListProps {
   transactions: DashboardTransaction[];
@@ -127,8 +150,7 @@ export default function DashboardScreen() {
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
   const renderAccountChip = useCallback(({ item }: { item: { id: number; account_type: string; bank_name: string; balance: number; currency: string } }) => {
-    const dotColors: Record<string, string> = { debit: '#0ea5e9', credit: '#8b5cf6', cash: '#10b981' };
-    const dotColor = dotColors[item.account_type] ?? '#94a3b8';
+    const dotColor = ACCOUNT_DOT_COLORS[item.account_type] ?? '#94a3b8';
     return (
       <TouchableOpacity
         onPress={() => router.push(`/(app)/accounts/${item.id}` as `/(app)/accounts/${string}`)}
@@ -151,20 +173,18 @@ export default function DashboardScreen() {
             item.balance === 0 && { color: '#94a3b8' },
           ]}
         >
-          {new Intl.NumberFormat(resolvedLocale, {
-            style: 'currency',
-            currency: item.currency,
-            minimumFractionDigits: 2,
-          }).format(item.balance)}
+          {getCurrencyFmt(resolvedLocale, item.currency).format(item.balance)}
         </Text>
       </TouchableOpacity>
     );
   }, [surface, borderCol, textSecondary, textPrimary, resolvedLocale, t]);
 
-  const dateFnsLocale = locale === 'es' ? es : enUS;
-  const monthLabel = data?.summary.selected_month
-    ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
-    : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+  const monthLabel = useMemo(() => {
+    const dateFnsLocale = locale === 'es' ? es : enUS;
+    return data?.summary.selected_month
+      ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
+      : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+  }, [locale, data?.summary.selected_month]);
 
   if (isError && !data) {
     return (
@@ -183,17 +203,20 @@ export default function DashboardScreen() {
     );
   }
 
-  const rawCategories = data?.category_summary.categories ?? [];
-  const topCategories = rawCategories.slice(0, 5);
-  const otherCategories = rawCategories.slice(5);
-  const otherSum = otherCategories.reduce((sum, c) => sum + c.amount, 0);
-  const chartCategories = [
-    ...topCategories,
-    ...(otherSum > 0
-      ? [{ id: null as number | null, name: t('dashboard.chart.other'), icon: 'more-horizontal' as string | null, amount: otherSum }]
-      : []),
-  ];
-  const maxCategoryAmount = Math.max(...chartCategories.map((c) => c.amount), 1);
+  const { chartCategories, maxCategoryAmount } = useMemo(() => {
+    const rawCategories = data?.category_summary.categories ?? [];
+    const topCategories = rawCategories.slice(0, 5);
+    const otherCategories = rawCategories.slice(5);
+    const otherSum = otherCategories.reduce((sum, c) => sum + c.amount, 0);
+    const cats = [
+      ...topCategories,
+      ...(otherSum > 0
+        ? [{ id: null as number | null, name: t('dashboard.chart.other'), icon: 'more-horizontal' as string | null, amount: otherSum }]
+        : []),
+    ];
+    const max = cats.length > 0 ? Math.max(...cats.map((c) => c.amount), 1) : 1;
+    return { chartCategories: cats, maxCategoryAmount: max };
+  }, [data?.category_summary.categories, t]);
 
   return (
     <>
@@ -226,7 +249,7 @@ export default function DashboardScreen() {
                   height: 80,
                 },
               ]}
-              resizeMode="contain"
+              contentFit="contain"
             />
           </View>
           <View style={styles.topBarSide}>

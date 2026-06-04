@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -30,6 +31,7 @@ export function useBankAccounts() {
     staleTime: 300_000,   // 5 minutes
     gcTime: 600_000,
     networkMode: 'offlineFirst',
+    placeholderData: keepPreviousData,
   });
 }
 

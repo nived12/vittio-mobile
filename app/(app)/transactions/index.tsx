@@ -24,6 +24,7 @@ import {
 } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useRecurringSummary } from '../../../src/hooks/useRecurringSummary';
+import { useDeferredReady } from '../../../src/hooks/useDeferredReady';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { SectionHeader } from '../../../src/components/ui/SectionHeader';
@@ -54,6 +55,21 @@ function groupByDate(transactions: Transaction[]): Section[] {
     dailyTotal: data.reduce((sum, tx) => sum + tx.amount, 0),
   }));
 }
+
+// ── Module-scope currency formatters (constructing Intl on Hermes is expensive) ──
+
+const fmtMXN_es = new Intl.NumberFormat('es-MX', {
+  style: 'currency', currency: 'MXN', minimumFractionDigits: 2,
+});
+const fmtMXN_en = new Intl.NumberFormat('en-MX', {
+  style: 'currency', currency: 'MXN', minimumFractionDigits: 2,
+});
+
+function formatMXN(n: number, locale: 'es-MX' | 'en-MX'): string {
+  return (locale === 'es-MX' ? fmtMXN_es : fmtMXN_en).format(Math.abs(n));
+}
+
+const SectionSeparator = () => <View style={{ height: 8 }} />;
 
 // ── Date helpers ──────────────────────────────────────────────────────────
 
@@ -297,8 +313,10 @@ export default function TransactionsScreen() {
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const ready = useDeferredReady();
+
   const { data: categoriesData } = useCategories();
-  const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary();
+  const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
 
   const categories = categoriesData ?? [];
 
@@ -328,7 +346,7 @@ export default function TransactionsScreen() {
     isFetchingNextPage,
   } = useTransactions(filters);
 
-  const { data: summaryData } = useTransactionsSummary(filters);
+  const { data: summaryData } = useTransactionsSummary(filters, { enabled: ready });
   const deleteMutation = useDeleteTransaction();
 
   // ── Categorize via swipe ──────────────────────────────────────────────────
@@ -411,6 +429,30 @@ export default function TransactionsScreen() {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: Section }) => (
+      <SectionHeader dateKey={section.title} dailyTotal={section.dailyTotal} currency="MXN" />
+    ),
+    [],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: Transaction }) => (
+      <TransactionRow
+        {...item}
+        onPress={() => router.push(`/(app)/transactions/${item.id}` as `/(app)/transactions/${string}`)}
+        onDelete={handleDelete}
+        onCategorize={handleCategorize}
+        showAccountName
+        enableSwipeActions
+        isDeleting={deletingId === item.id}
+      />
+    ),
+    [deletingId],
+  );
+
+  const keyExtractor = useCallback((item: Transaction) => String(item.id), []);
+
   const { theme, isDark } = useTheme();
   const bg = isDark ? theme.background : '#f8fafc';
   const textPrimary = isDark ? theme.textPrimary : '#0f172a';
@@ -419,13 +461,8 @@ export default function TransactionsScreen() {
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
   const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
 
-  const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
-  const fmtAmount = (n: number) =>
-    new Intl.NumberFormat(resolvedLocale, {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 2,
-    }).format(Math.abs(n));
+  const resolvedLocale: 'es-MX' | 'en-MX' = locale === 'es' ? 'es-MX' : 'en-MX';
+  const fmtAmount = useCallback((n: number) => formatMXN(n, resolvedLocale), [resolvedLocale]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -557,32 +594,16 @@ export default function TransactionsScreen() {
       ) : (
         <SectionList
           sections={sections}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={keyExtractor}
           stickySectionHeadersEnabled
-          removeClippedSubviews={false}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
-          renderSectionHeader={({ section }) => (
-            <SectionHeader
-              dateKey={section.title}
-              dailyTotal={section.dailyTotal}
-              currency="MXN"
-            />
-          )}
-          renderItem={({ item }) => (
-            <TransactionRow
-              {...item}
-              onPress={() => router.push(`/(app)/transactions/${item.id}` as `/(app)/transactions/${string}`)}
-              onDelete={handleDelete}
-              onCategorize={handleCategorize}
-              showAccountName
-              enableSwipeActions
-              isDeleting={deletingId === item.id}
-            />
-          )}
+          initialNumToRender={15}
+          maxToRenderPerBatch={8}
+          updateCellsBatchingPeriod={50}
+          windowSize={11}
+          renderSectionHeader={renderSectionHeader}
+          renderItem={renderItem}
           ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: dividerCol }]} />}
-          SectionSeparatorComponent={() => <View style={{ height: 8 }} />}
+          SectionSeparatorComponent={SectionSeparator}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}
           ListFooterComponent={() =>
@@ -606,25 +627,29 @@ export default function TransactionsScreen() {
         />
       )}
 
-      {/* Filter sheet */}
-      <FilterSheet
-        visible={showFilterSheet}
-        current={activeFilters}
-        categories={categories}
-        onApply={(f) => {
-          setActiveFilters(f);
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
-        }}
-        onClose={() => setShowFilterSheet(false)}
-      />
+      {/* Filter sheet — mount only when open */}
+      {showFilterSheet && (
+        <FilterSheet
+          visible={showFilterSheet}
+          current={activeFilters}
+          categories={categories}
+          onApply={(f) => {
+            setActiveFilters(f);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+          }}
+          onClose={() => setShowFilterSheet(false)}
+        />
+      )}
 
-      {/* Category picker (for swipe-to-categorize) */}
-      <CategoryPickerModal
-        visible={showCategoryPicker}
-        onClose={() => { setShowCategoryPicker(false); setCategorizingId(null); }}
-        onSelect={handleCategorySelect}
-        categories={categories}
-      />
+      {/* Category picker (for swipe-to-categorize) — mount only when open */}
+      {showCategoryPicker && (
+        <CategoryPickerModal
+          visible={showCategoryPicker}
+          onClose={() => { setShowCategoryPicker(false); setCategorizingId(null); }}
+          onSelect={handleCategorySelect}
+          categories={categories}
+        />
+      )}
 
     </View>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { isToday, isYesterday, format, parseISO } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
@@ -7,37 +7,15 @@ import { useUIStore } from '../../stores/uiStore';
 import { AmountDisplay } from './AmountDisplay';
 import { useTheme } from '../../theme/ThemeContext';
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 interface SectionHeaderProps {
-  dateKey: string;           // ISO date: "2026-04-15"
+  dateKey: string;
   locale?: string;
   transactionCount?: number;
   dailyTotal?: number;
   currency?: string;
 }
 
-// ── Date formatting ────────────────────────────────────────────────────────
-
-function formatSectionDate(dateKey: string, locale: string, t: (k: string) => string): string {
-  try {
-    const date = parseISO(dateKey);
-    const dateFnsLocale = locale.startsWith('es') ? es : enUS;
-    if (isToday(date)) return t('sectionHeader.today');
-    if (isYesterday(date)) return t('sectionHeader.yesterday');
-    const currentYear = new Date().getFullYear();
-    if (date.getFullYear() === currentYear) {
-      return format(date, 'EEE, MMMM d', { locale: dateFnsLocale });
-    }
-    return format(date, 'EEE, MMMM d, yyyy', { locale: dateFnsLocale });
-  } catch {
-    return dateKey;
-  }
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
-
-export function SectionHeader({
+function SectionHeaderComponent({
   dateKey,
   locale,
   transactionCount,
@@ -53,17 +31,34 @@ export function SectionHeader({
   const textPrimary = isDark ? theme.textPrimary : '#475569';
   const borderCol = isDark ? theme.border : '#e2e8f0';
 
-  const dateLabel = formatSectionDate(dateKey, resolvedLocale, t);
-
-  // Build accessibility label
-  let a11yLabel: string;
-  if (isToday(parseISO(dateKey))) {
-    a11yLabel = t('sectionHeader.a11yTransactionsToday');
-  } else if (isYesterday(parseISO(dateKey))) {
-    a11yLabel = t('sectionHeader.a11yTransactionsYesterday');
-  } else {
-    a11yLabel = t('sectionHeader.a11yTransactionsOn', { date: dateLabel });
-  }
+  const { dateLabel, a11yLabel } = useMemo(() => {
+    let parsed: Date;
+    try {
+      parsed = parseISO(dateKey);
+    } catch {
+      return { dateLabel: dateKey, a11yLabel: dateKey };
+    }
+    const dateFnsLocale = resolvedLocale.startsWith('es') ? es : enUS;
+    const today = isToday(parsed);
+    const yesterday = !today && isYesterday(parsed);
+    let label: string;
+    if (today) {
+      label = t('sectionHeader.today');
+    } else if (yesterday) {
+      label = t('sectionHeader.yesterday');
+    } else {
+      const currentYear = new Date().getFullYear();
+      label = parsed.getFullYear() === currentYear
+        ? format(parsed, 'EEE, MMMM d', { locale: dateFnsLocale })
+        : format(parsed, 'EEE, MMMM d, yyyy', { locale: dateFnsLocale });
+    }
+    const a11y = today
+      ? t('sectionHeader.a11yTransactionsToday')
+      : yesterday
+        ? t('sectionHeader.a11yTransactionsYesterday')
+        : t('sectionHeader.a11yTransactionsOn', { date: label });
+    return { dateLabel: label, a11yLabel: a11y };
+  }, [dateKey, resolvedLocale, t]);
 
   return (
     <View
@@ -91,6 +86,8 @@ export function SectionHeader({
   );
 }
 
+export const SectionHeader = React.memo(SectionHeaderComponent);
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -111,6 +108,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     lineHeight: 16,
-    color: '#94a3b8', // slate-400
+    color: '#94a3b8',
   },
 });
