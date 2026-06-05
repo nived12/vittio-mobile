@@ -545,11 +545,9 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       if (match) setSelectedAccount(match);
     }
     if (result.concept) {
-      // When items are present, result.concept may be a joined items string from an older API.
-      // Prefer result.description (short AI label) for both fields when items exist.
-      const label = (result.items?.length && result.description) ? result.description : result.concept!;
-      setConcept((prev) => prev || label);
-      setDescription(label);
+      // Image: both concept and description get the short AI label; items hold the line items
+      setConcept((prev) => prev || result.concept!);
+      setDescription(result.concept);
       if (result.items?.length) {
         setItems(result.items.map((it) => ({ name: it.name, amount: it.amount.toFixed(2) })));
         setItemsExpanded(true);
