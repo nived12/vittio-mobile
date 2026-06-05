@@ -271,7 +271,19 @@
     "no_account_warning": "Add an account first",
     "add_account_cta": "+ Add new account",
     "transfer_to_label": "To account",
-    "select_transfer_account_title": "Select destination account"
+    "select_transfer_account_title": "Select destination account",
+    "items": {
+      "disclosure_title": "Itemize transaction",
+      "add": "Add item",
+      "remove": "Remove",
+      "name_placeholder": "Item name",
+      "amount_placeholder": "Amount",
+      "tax_label": "Tax (IVA) (Optional)",
+      "tip_label": "Tip (Optional)",
+      "adjustments_label": "Adjustments",
+      "count_one": "1 item",
+      "count_other": "{{count}} items"
+    }
   },
   "bank_accounts": {
     "add_title": "New Account",

@@ -53,7 +53,7 @@ import { useIsPremiumLocked } from '../../hooks/useIsPremiumLocked';
 import { parseVoice, parseImage } from '../../api/transactions';
 import { PremiumBadge } from '../PremiumBadge';
 import { Toast } from '../ui/Toast';
-import type { Transaction, TransactionType, CreateTransactionBody, AiParseResult } from '../../api/transactions';
+import type { Transaction, TransactionType, CreateTransactionBody, TransactionItemAttribute, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
 import type { Category } from '../../api/categories';
 
@@ -285,6 +285,14 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const [showTransferToPicker, setShowTransferToPicker] = useState(false);
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
 
+  // ── Items / tax / tip ──
+  type ItemRow = { id?: number; name: string; amount: string };
+  const [items, setItems] = useState<ItemRow[]>([]);
+  const [taxStr, setTaxStr] = useState('');
+  const [tipStr, setTipStr] = useState('');
+  const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
+  const [itemsExpanded, setItemsExpanded] = useState(false);
+
   // ── Spring animation (modal sheet entry/exit) ──
   const translateY = useSharedValue(80);
   const animOpacity = useSharedValue(0);
@@ -397,6 +405,18 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       setConcept(transaction.concept ?? '');
       setMerchant(transaction.merchant ?? '');
       setReference(transaction.reference ?? '');
+      // Pre-fill items, tax, tip
+      const existingItems = (transaction.items ?? []).map((it) => ({
+        id: it.id,
+        name: it.name,
+        amount: it.amount.toFixed(2),
+      }));
+      setItems(existingItems);
+      setTaxStr(transaction.tax_amount != null ? transaction.tax_amount.toFixed(2) : '');
+      setTipStr(transaction.tip_amount != null ? transaction.tip_amount.toFixed(2) : '');
+      setRemovedItemIds([]);
+      const shouldExpand = existingItems.length > 0 || transaction.tax_amount != null || transaction.tip_amount != null;
+      setItemsExpanded(shouldExpand);
       // Pre-fill destination account for transfer edits
       if (transaction.is_transfer && transaction.transfer_account?.id) {
         const destAcct = accounts.find((a) => a.id === transaction.transfer_account!.id) ?? null;
@@ -417,6 +437,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       setSelectedAccount(accounts[0] ?? null);
       setSelectedCategory(null);
       setConcept('');
+      setItems([]);
+      setTaxStr('');
+      setTipStr('');
+      setRemovedItemIds([]);
+      setItemsExpanded(false);
       setMerchant(prefill?.merchant ?? '');
       setReference('');
       setTransferToAccount(null);
@@ -491,9 +516,21 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       if (match) setSelectedAccount(match);
     }
     if (result.concept) {
-      // Image: concept (state) = short AI label (shown in list), description (state) = itemized list (raw source)
-      if (result.description) setConcept((prev) => prev || result.description);
+      // Image: both concept and description get the short AI label; items hold the line items
+      setConcept((prev) => prev || result.concept!);
       setDescription(result.concept);
+      if (result.items?.length) {
+        setItems(result.items.map((it) => ({ name: it.name, amount: it.amount.toFixed(2) })));
+        setItemsExpanded(true);
+      }
+      if (result.tax_amount != null) {
+        setTaxStr(result.tax_amount.toFixed(2));
+        setItemsExpanded(true);
+      }
+      if (result.tip_amount != null) {
+        setTipStr(result.tip_amount.toFixed(2));
+        setItemsExpanded(true);
+      }
     } else if (result.transcript) {
       // Voice: concept (state) = short AI label (shown in list), description (state) = full transcript (raw source)
       if (result.description) setConcept((prev) => prev || result.description);
@@ -704,6 +741,22 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     if (!canSave || !selectedAccount) return;
     Keyboard.dismiss();
 
+    // Build transaction_items_attributes from items state
+    const itemAttrs: TransactionItemAttribute[] = [
+      ...items
+        .filter((it) => it.name.trim() && parseFloat(it.amount) >= 0)
+        .map((it, idx) => ({
+          ...(it.id ? { id: it.id } : {}),
+          name: it.name.trim(),
+          amount: parseFloat(it.amount) || 0,
+          position: idx,
+        })),
+      ...removedItemIds.map((id) => ({ id, name: '', amount: 0, position: 0, _destroy: true })),
+    ];
+
+    const parsedTax = parseFloat(taxStr);
+    const parsedTip = parseFloat(tipStr);
+
     const body: CreateTransactionBody = {
       bank_account_id: selectedAccount.id,
       date: format(date, 'yyyy-MM-dd'),
@@ -715,6 +768,9 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       ...(reference.trim() ? { reference: reference.trim() } : {}),
       ...(selectedCategory ? { category_id: selectedCategory.id } : {}),
       ...(topType === 'transfer' && transferToAccount ? { transfer_account_id: transferToAccount.id } : {}),
+      ...(itemAttrs.length ? { transaction_items_attributes: itemAttrs } : {}),
+      ...(taxStr.trim() && !isNaN(parsedTax) ? { tax_amount: parsedTax } : { tax_amount: null }),
+      ...(tipStr.trim() && !isNaN(parsedTip) ? { tip_amount: parsedTip } : { tip_amount: null }),
     };
 
     try {
@@ -1114,6 +1170,129 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               />
             </View>
 
+            {/* Itemize transaction disclosure */}
+            <View style={[styles.disclosureBlock, { borderColor: borderCol }]}>
+              <TouchableOpacity
+                style={styles.disclosureHeader}
+                onPress={() => setItemsExpanded((prev) => !prev)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.disclosureTitle, { color: textSecondary }]}>
+                  {t('transactions.items.disclosure_title').toUpperCase()}
+                </Text>
+                <ChevronRight
+                  size={16}
+                  color={textSecondary}
+                  style={{ transform: [{ rotate: itemsExpanded ? '90deg' : '0deg' }] }}
+                />
+              </TouchableOpacity>
+
+              {itemsExpanded && (
+                <View style={styles.disclosureBody}>
+                  {/* Item rows */}
+                  {items.map((item, idx) => (
+                    <View key={idx} style={styles.itemRow}>
+                      <TextInput
+                        style={[styles.itemNameInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                        value={item.name}
+                        onChangeText={(val) =>
+                          setItems((prev) => prev.map((it, i) => i === idx ? { ...it, name: val } : it))
+                        }
+                        placeholder={t('transactions.items.name_placeholder')}
+                        placeholderTextColor="#94a3b8"
+                      />
+                      <TextInput
+                        style={[styles.itemAmountInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                        value={item.amount}
+                        onChangeText={(val) =>
+                          setItems((prev) => prev.map((it, i) => i === idx ? { ...it, amount: val } : it))
+                        }
+                        onBlur={() => {
+                          const n = parseFloat(item.amount);
+                          if (!isNaN(n) && item.amount.trim() !== '')
+                            setItems((prev) => prev.map((it, i) => i === idx ? { ...it, amount: n.toFixed(2) } : it));
+                        }}
+                        placeholder={t('transactions.items.amount_placeholder')}
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="decimal-pad"
+                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (item.id) setRemovedItemIds((prev) => [...prev, item.id!]);
+                          setItems((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        hitSlop={8}
+                        style={styles.itemRemoveBtn}
+                      >
+                        <X size={16} color="#94a3b8" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  <TouchableOpacity
+                    style={styles.addItemBtn}
+                    onPress={() => setItems((prev) => [...prev, { name: '', amount: '' }])}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.addItemBtnLabel}>+ {t('transactions.items.add')}</Text>
+                  </TouchableOpacity>
+
+                  {/* Tax + Tip */}
+                  <View style={styles.taxTipRow}>
+                    <View style={styles.taxTipField}>
+                      <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.items.tax_label')}</Text>
+                      <TextInput
+                        style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                        value={taxStr}
+                        onChangeText={setTaxStr}
+                        onBlur={() => {
+                          const n = parseFloat(taxStr);
+                          if (!isNaN(n) && taxStr.trim() !== '') setTaxStr(n.toFixed(2));
+                        }}
+                        placeholder="0.00"
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                    <View style={styles.taxTipField}>
+                      <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.items.tip_label')}</Text>
+                      <TextInput
+                        style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+                        value={tipStr}
+                        onChangeText={setTipStr}
+                        onBlur={() => {
+                          const n = parseFloat(tipStr);
+                          if (!isNaN(n) && tipStr.trim() !== '') setTipStr(n.toFixed(2));
+                        }}
+                        placeholder="0.00"
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                  </View>
+
+                  {/* Adjustments residual */}
+                  {(() => {
+                    const itemsSum = items.reduce((s, it) => s + (parseFloat(it.amount) || 0), 0);
+                    const tax = parseFloat(taxStr) || 0;
+                    const tip = parseFloat(tipStr) || 0;
+                    const adj = amountNum - itemsSum - tax - tip;
+                    if (amountNum === 0 || Math.abs(adj) < 0.005) return null;
+                    return (
+                      <View style={styles.adjustmentsRow}>
+                        <Text style={[styles.adjustmentsLabel, { color: textSecondary }]}>
+                          {t('transactions.items.adjustments_label')}
+                        </Text>
+                        <Text style={[styles.adjustmentsValue, { color: adj >= 0 ? '#10b981' : '#e11d48' }]}>
+                          {adj >= 0 ? '+' : '-'}${Math.abs(adj).toFixed(2)}
+                        </Text>
+                      </View>
+                    );
+                  })()}
+                </View>
+              )}
+            </View>
+
             {/* Save button */}
             <TouchableOpacity
               style={[styles.saveBtn, (!canSave || isSaving) && styles.saveBtnDisabled]}
@@ -1353,6 +1532,87 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#e11d48',
     marginTop: 4,
+  },
+  disclosureBlock: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  disclosureHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  disclosureTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+  },
+  disclosureBody: {
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    gap: 10,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  itemNameInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+  },
+  itemAmountInput: {
+    width: 80,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
+  },
+  itemRemoveBtn: {
+    padding: 4,
+  },
+  addItemBtn: {
+    paddingVertical: 6,
+  },
+  addItemBtnLabel: {
+    color: '#4f46e5',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  taxTipRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  taxTipField: {
+    flex: 1,
+  },
+  adjustmentsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderRadius: 8,
+  },
+  adjustmentsLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  adjustmentsValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
   saveBtn: {
     backgroundColor: '#4f46e5',
