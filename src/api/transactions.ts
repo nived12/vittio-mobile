@@ -9,6 +9,13 @@ export type TransactionType =
   | 'transfer_in'
   | 'transfer_out';
 
+export interface TransactionItem {
+  id: number;
+  name: string;
+  amount: number;
+  position: number;
+}
+
 export interface Transaction {
   id: number;
   date: string;
@@ -20,6 +27,9 @@ export interface Transaction {
   merchant: string | null;
   reference: string | null;
   statement_file_id: number | null;
+  tax_amount: number | null;
+  tip_amount: number | null;
+  items: TransactionItem[];
   bank_account: { id: number; name: string; account_type: 'debit' | 'credit' | 'cash' };
   category: { id: number; name: string; icon: string } | null;
   is_transfer: boolean;
@@ -65,6 +75,14 @@ export interface TransactionSummary {
   expense_count: number;
 }
 
+export type TransactionItemAttribute = {
+  id?: number;
+  name: string;
+  amount: number;
+  position: number;
+  _destroy?: boolean;
+};
+
 export type CreateTransactionBody = {
   bank_account_id: number;
   date: string;
@@ -76,6 +94,9 @@ export type CreateTransactionBody = {
   reference?: string;
   category_id?: number;
   transfer_account_id?: number;
+  tax_amount?: number | null;
+  tip_amount?: number | null;
+  transaction_items_attributes?: TransactionItemAttribute[];
 };
 
 export type UpdateTransactionBody = Partial<CreateTransactionBody> & {
@@ -94,6 +115,8 @@ export interface AiParseResult {
   concept?: string | null;
   transcript?: string | null;
   items?: { name: string; amount: number }[];
+  tax_amount?: number | null;
+  tip_amount?: number | null;
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────

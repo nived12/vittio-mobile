@@ -271,7 +271,19 @@
     "no_account_warning": "Agrega una cuenta primero",
     "add_account_cta": "+ Agregar cuenta nueva",
     "transfer_to_label": "Cuenta destino",
-    "select_transfer_account_title": "Seleccionar cuenta destino"
+    "select_transfer_account_title": "Seleccionar cuenta destino",
+    "items": {
+      "disclosure_title": "Desglosar transacción",
+      "add": "Agregar artículo",
+      "remove": "Quitar",
+      "name_placeholder": "Nombre del artículo",
+      "amount_placeholder": "Monto",
+      "tax_label": "Impuesto (IVA) (Opcional)",
+      "tip_label": "Propina (Opcional)",
+      "adjustments_label": "Ajustes",
+      "count_one": "1 artículo",
+      "count_other": "{{count}} artículos"
+    }
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
