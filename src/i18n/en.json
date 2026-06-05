@@ -575,6 +575,7 @@
     "downloadError": "Couldn't generate the report. Please try again."
   },
   "common": {
+    "search": "Search...",
     "loading": "Loading...",
     "error": "Something went wrong",
     "tryAgain": "Try again",
