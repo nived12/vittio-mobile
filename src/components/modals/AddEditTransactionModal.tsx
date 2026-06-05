@@ -318,7 +318,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   }));
 
   // ── AI input state ──
-  type AiState = 'idle' | 'recording' | 'processing' | 'prefilled';
+  type AiState = 'idle' | 'recording' | 'processing_voice' | 'processing_image' | 'prefilled';
   const [aiState, setAiState] = useState<AiState>('idle');
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -625,7 +625,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
     if (aiState === 'recording') {
       ExpoSpeechRecognitionModule.stop();
-      setAiState('processing');
+      setAiState('processing_voice');
       return;
     }
 
@@ -688,7 +688,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   }, [showToast, t]);
 
   const processImage = useCallback(async (uri: string) => {
-    setAiState('processing');
+    setAiState('processing_image');
     try {
       const manipulated = await ImageManipulator.manipulateAsync(
         uri,
@@ -846,7 +846,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                   accessibilityLabel={t('aiInput.voice.tap')}
                   hitSlop={8}
                 >
-                  {aiState === 'processing' ? (
+                  {aiState === 'processing_voice' ? (
                     <ActivityIndicator size="small" color="#4f46e5" />
                   ) : (
                     <Ionicons
@@ -888,7 +888,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                   accessibilityLabel={t('aiInput.camera.tap')}
                   hitSlop={8}
                 >
-                  <Ionicons name="camera-outline" size={28} color="#94a3b8" />
+                  {aiState === 'processing_image' ? (
+                    <ActivityIndicator size="small" color="#94a3b8" />
+                  ) : (
+                    <Ionicons name="camera-outline" size={28} color="#94a3b8" />
+                  )}
                 </TouchableOpacity>
                 {isPremiumLocked && <PremiumBadge />}
               </View>
@@ -910,8 +914,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 )}
               </>
             )}
-            {aiState === 'processing' && (
+            {aiState === 'processing_voice' && (
               <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
+            )}
+            {aiState === 'processing_image' && (
+              <Text style={styles.aiLabel}>{t('aiInput.camera.processing')}</Text>
             )}
             {aiState === 'prefilled' && (
               <Text style={[styles.aiLabel, { color: '#10b981' }]}>{t('aiInput.voice.prefilled')}</Text>
