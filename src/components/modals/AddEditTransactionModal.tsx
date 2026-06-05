@@ -187,20 +187,36 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
   const textPrimary = isDark ? theme.textPrimary : '#0f172a';
+  const textSecondary = isDark ? theme.textSecondary : '#64748b';
   const borderCol = isDark ? theme.border : '#e2e8f0';
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
+  const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
 
-  // Flatten tree: parents first, children indented
+  const [query, setQuery] = useState('');
+
+  // Reset search when sheet opens
+  useEffect(() => { if (visible) setQuery(''); }, [visible]);
+
   const flat = useMemo(() => {
     const rows: Array<{ cat: Category; depth: number }> = [];
+    const q = query.trim().toLowerCase();
     for (const parent of categories) {
-      rows.push({ cat: parent, depth: 0 });
-      for (const child of parent.children ?? []) {
-        rows.push({ cat: child, depth: 1 });
+      if (!q) {
+        rows.push({ cat: parent, depth: 0 });
+        for (const child of parent.children ?? []) rows.push({ cat: child, depth: 1 });
+      } else {
+        const matchedChildren = (parent.children ?? []).filter((ch) => ch.name.toLowerCase().includes(q));
+        const parentMatches = parent.name.toLowerCase().includes(q);
+        if (parentMatches || matchedChildren.length > 0) {
+          rows.push({ cat: parent, depth: 0 });
+          for (const child of parentMatches ? (parent.children ?? []) : matchedChildren) {
+            rows.push({ cat: child, depth: 1 });
+          }
+        }
       }
     }
     return rows;
-  }, [categories]);
+  }, [categories, query]);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -210,17 +226,30 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
           <View style={[styles.handle, { backgroundColor: borderCol }]} />
           <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
 
-          <TouchableOpacity
-            style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
-            onPress={() => { onSelect(null); onClose(); }}
-          >
-            <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
-            {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
-          </TouchableOpacity>
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('common.search')}
+            placeholderTextColor={textSecondary}
+            style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+          />
+
+          {!query && (
+            <TouchableOpacity
+              style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
+              onPress={() => { onSelect(null); onClose(); }}
+            >
+              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
+              {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+          )}
 
           <FlatList
             data={flat}
             keyExtractor={(item) => String(item.cat.id)}
+            keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
@@ -318,7 +347,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   }));
 
   // ── AI input state ──
-  type AiState = 'idle' | 'recording' | 'processing' | 'prefilled';
+  type AiState = 'idle' | 'recording' | 'processing_voice' | 'processing_image' | 'prefilled';
   const [aiState, setAiState] = useState<AiState>('idle');
   const [micPermissionDenied, setMicPermissionDenied] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -625,7 +654,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
     if (aiState === 'recording') {
       ExpoSpeechRecognitionModule.stop();
-      setAiState('processing');
+      setAiState('processing_voice');
       return;
     }
 
@@ -688,7 +717,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   }, [showToast, t]);
 
   const processImage = useCallback(async (uri: string) => {
-    setAiState('processing');
+    setAiState('processing_image');
     try {
       const manipulated = await ImageManipulator.manipulateAsync(
         uri,
@@ -846,7 +875,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                   accessibilityLabel={t('aiInput.voice.tap')}
                   hitSlop={8}
                 >
-                  {aiState === 'processing' ? (
+                  {aiState === 'processing_voice' ? (
                     <ActivityIndicator size="small" color="#4f46e5" />
                   ) : (
                     <Ionicons
@@ -888,7 +917,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                   accessibilityLabel={t('aiInput.camera.tap')}
                   hitSlop={8}
                 >
-                  <Ionicons name="camera-outline" size={28} color="#94a3b8" />
+                  {aiState === 'processing_image' ? (
+                    <ActivityIndicator size="small" color="#94a3b8" />
+                  ) : (
+                    <Ionicons name="camera-outline" size={28} color="#94a3b8" />
+                  )}
                 </TouchableOpacity>
                 {isPremiumLocked && <PremiumBadge />}
               </View>
@@ -910,8 +943,11 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
                 )}
               </>
             )}
-            {aiState === 'processing' && (
+            {aiState === 'processing_voice' && (
               <Text style={styles.aiLabel}>{t('aiInput.voice.processing')}</Text>
+            )}
+            {aiState === 'processing_image' && (
+              <Text style={styles.aiLabel}>{t('aiInput.camera.processing')}</Text>
             )}
             {aiState === 'prefilled' && (
               <Text style={[styles.aiLabel, { color: '#10b981' }]}>{t('aiInput.voice.prefilled')}</Text>
@@ -1687,6 +1723,15 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     textAlign: 'center',
     paddingVertical: 24,
+  },
+  categorySearch: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 15,
   },
   categoryRow: {
     flexDirection: 'row',
