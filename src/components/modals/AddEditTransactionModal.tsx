@@ -193,13 +193,7 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
 
   const [query, setQuery] = useState('');
 
-  // Reset search and dismiss keyboard when sheet opens
-  useEffect(() => {
-    if (visible) {
-      setQuery('');
-      Keyboard.dismiss();
-    }
-  }, [visible]);
+  useEffect(() => { if (visible) setQuery(''); }, [visible]);
 
   const flat = useMemo(() => {
     const rows: Array<{ cat: Category; depth: number }> = [];
@@ -222,51 +216,51 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
     return rows;
   }, [categories, query]);
 
-  if (!visible) return null;
-
   return (
-    <View style={styles.categoryOverlay}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-        <View style={[styles.handle, { backgroundColor: borderCol }]} />
-        <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+          <View style={[styles.handle, { backgroundColor: borderCol }]} />
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
 
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder={t('common.search')}
-          placeholderTextColor={textSecondary}
-          style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-          autoCorrect={false}
-          clearButtonMode="while-editing"
-        />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('common.search')}
+            placeholderTextColor={textSecondary}
+            style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+          />
 
-        {!query && (
-          <TouchableOpacity
-            style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
-            onPress={() => { onSelect(null); onClose(); }}
-          >
-            <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
-            {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
-          </TouchableOpacity>
-        )}
-
-        <FlatList
-          data={flat}
-          keyExtractor={(item) => String(item.cat.id)}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
+          {!query && (
             <TouchableOpacity
-              style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
-              onPress={() => { onSelect(item.cat); onClose(); }}
+              style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
+              onPress={() => { onSelect(null); onClose(); }}
             >
-              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
-              {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
+              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
+              {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
             </TouchableOpacity>
           )}
-        />
+
+          <FlatList
+            data={flat}
+            keyExtractor={(item) => String(item.cat.id)}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
+                onPress={() => { onSelect(item.cat); onClose(); }}
+              >
+                <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
+                {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       </View>
-    </View>
+    </Modal>
   );
 }
 
@@ -1650,12 +1644,6 @@ const styles = StyleSheet.create({
   },
   accountSheet: {
     maxHeight: '55%',
-  },
-  categoryOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    zIndex: 100,
-    elevation: 20,
   },
   categorySheet: {
     maxHeight: '70%',
