@@ -4,7 +4,6 @@ import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
-import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { FabSpeedDial, FabAction } from '../../src/components/ui/FabSpeedDial';
@@ -58,7 +57,6 @@ const fabButtonStyle = {
 
 export default function AppLayout() {
   const { t } = useTranslation();
-  const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showFabSheet, setShowFabSheet] = useState(false);
   const showUploadStatement = useUIStore((s) => s.showStatementUpload);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
@@ -103,7 +101,7 @@ export default function AppLayout() {
       tint: 'indigo',
       title: t('navigation.fab.newTransaction'),
       subtitle: t('navigation.fab.newTransactionSubtitle'),
-      onPress: () => requireConfirmed(() => setShowAddTransaction(true)),
+      onPress: () => requireConfirmed(() => router.push('/(app)/transactions/new')),
     },
     {
       key: 'uploadStatement',
@@ -182,7 +180,7 @@ export default function AppLayout() {
               return;
             }
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            requireConfirmed(() => setShowAddTransaction(true));
+            requireConfirmed(() => router.push('/(app)/transactions/new'));
           }}
           onLongPress={handleFabLongPress}
           style={fabButtonStyle}
@@ -219,12 +217,6 @@ export default function AppLayout() {
         <Tabs.Screen name="recurring" options={HIDDEN_TAB_OPTIONS} />
       </Tabs>
 
-      {showAddTransaction && (
-        <AddEditTransactionModal
-          visible={showAddTransaction}
-          onClose={() => setShowAddTransaction(false)}
-        />
-      )}
       {showUploadStatement && (
         <StatementUploadModal
           visible={showUploadStatement}

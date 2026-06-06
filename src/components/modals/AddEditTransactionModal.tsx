@@ -4,6 +4,7 @@ import {
   Alert,
   FlatList,
   Keyboard,
+  KeyboardAvoidingView,
   Linking,
   Modal,
   Platform,
@@ -18,13 +19,11 @@ import * as Sentry from '@sentry/react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
   withRepeat,
   runOnJS,
 } from 'react-native-reanimated';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
-import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
@@ -35,6 +34,7 @@ import { format, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import {
   ChevronRight,
+  ChevronLeft,
   X,
   TrendingUp,
   TrendingDown,
@@ -71,9 +71,8 @@ interface PrefillData {
 }
 
 interface Props {
-  visible: boolean;
   onClose: () => void;
-  /** If provided, modal opens in Edit mode pre-filled with this transaction */
+  /** If provided, renders in Edit mode pre-filled with this transaction */
   transaction?: Transaction;
   /** Pre-fill fields from AI suggestion (add mode only) */
   prefill?: PrefillData;
@@ -194,8 +193,13 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
 
   const [query, setQuery] = useState('');
 
-  // Reset search when sheet opens
-  useEffect(() => { if (visible) setQuery(''); }, [visible]);
+  // Reset search and dismiss keyboard when sheet opens
+  useEffect(() => {
+    if (visible) {
+      setQuery('');
+      Keyboard.dismiss();
+    }
+  }, [visible]);
 
   const flat = useMemo(() => {
     const rows: Array<{ cat: Category; depth: number }> = [];
@@ -218,57 +222,57 @@ function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClos
     return rows;
   }, [categories, query]);
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.handle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
+    <View style={styles.categoryOverlay}>
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+      <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
+        <View style={[styles.handle, { backgroundColor: borderCol }]} />
+        <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
 
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('common.search')}
-            placeholderTextColor={textSecondary}
-            style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-            autoCorrect={false}
-            clearButtonMode="while-editing"
-          />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('common.search')}
+          placeholderTextColor={textSecondary}
+          style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+        />
 
-          {!query && (
+        {!query && (
+          <TouchableOpacity
+            style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
+            onPress={() => { onSelect(null); onClose(); }}
+          >
+            <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
+            {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
+          </TouchableOpacity>
+        )}
+
+        <FlatList
+          data={flat}
+          keyExtractor={(item) => String(item.cat.id)}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
-              onPress={() => { onSelect(null); onClose(); }}
+              style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
+              onPress={() => { onSelect(item.cat); onClose(); }}
             >
-              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
-              {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
+              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
+              {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
             </TouchableOpacity>
           )}
-
-          <FlatList
-            data={flat}
-            keyExtractor={(item) => String(item.cat.id)}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
-                onPress={() => { onSelect(item.cat); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
-                {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
-              </TouchableOpacity>
-            )}
-          />
-        </View>
+        />
       </View>
-    </Modal>
+    </View>
   );
 }
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
 
-export function AddEditTransactionModal({ visible, onClose, transaction, prefill }: Props) {
+export function AddEditTransactionModal({ onClose, transaction, prefill }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
@@ -322,29 +326,10 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
   const [itemsExpanded, setItemsExpanded] = useState(false);
 
-  // ── Spring animation (modal sheet entry/exit) ──
-  const translateY = useSharedValue(80);
-  const animOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (visible) {
-      translateY.value = withSpring(0, Springs.modal);
-      animOpacity.value = withTiming(1, { duration: 150 });
-    }
-  }, [visible]);
-
   const handleClose = useCallback(() => {
     if (isSaving) return;
-    translateY.value = withSpring(80, Springs.modal, (finished) => {
-      if (finished) runOnJS(onClose)();
-    });
-    animOpacity.value = withTiming(0, { duration: 120 });
+    onClose();
   }, [isSaving, onClose]);
-
-  const animatedSheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: animOpacity.value,
-  }));
 
   // ── AI input state ──
   type AiState = 'idle' | 'recording' | 'processing_voice' | 'processing_image' | 'prefilled';
@@ -390,7 +375,6 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
   // Auto-fill category from merchant rule (add mode only, and only once per modal open)
   useEffect(() => {
     if (
-      !visible ||
       isEditMode ||
       ruleApplied ||
       !merchantRule ||
@@ -412,11 +396,14 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       setSelectedCategory(cat);
       setRuleApplied(true);
     }
-  }, [merchantRule, visible, isEditMode, ruleApplied, selectedCategory, categories]);
+  }, [merchantRule, isEditMode, ruleApplied, selectedCategory, categories]);
 
-  // ── Pre-fill for edit mode ──
+  // ── Pre-fill for edit mode — runs once on mount (or once transaction loads in edit mode) ──
+  const didInitRef = useRef(false);
   useEffect(() => {
-    if (!visible) return;
+    if (isEditMode && !transaction) return; // wait for data
+    if (didInitRef.current) return;
+    didInitRef.current = true;
     if (transaction) {
       const abs = Math.abs(transaction.amount);
       setAmountStr(abs.toFixed(2));
@@ -482,7 +469,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     setMicPermissionDenied(false);
     setReceiptThumbnail(null);
     setShowReceiptReview(false);
-  }, [visible, transaction]);
+  }, [transaction, isEditMode]);
 
   // Pre-select first account when accounts load (add mode)
   useEffect(() => {
@@ -491,9 +478,9 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
     }
   }, [accounts]);
 
-  // Apply prefill category once categories load
+  // Apply prefill category once categories load (add mode only)
   useEffect(() => {
-    if (!visible || isEditMode || !prefill?.category_id || categories.length === 0 || selectedCategory !== null) return;
+    if (isEditMode || !prefill?.category_id || categories.length === 0 || selectedCategory !== null) return;
     const match = categories.find(
       (c) =>
         c.id === prefill.category_id ||
@@ -503,7 +490,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       const child = (match.children ?? []).find((ch) => ch.id === prefill.category_id);
       setSelectedCategory(child ?? match);
     }
-  }, [visible, isEditMode, prefill?.category_id, categories, selectedCategory]);
+  }, [isEditMode, prefill?.category_id, categories, selectedCategory]);
 
   // ── Type switching ──
   const handleTopTypeChange = (t: TopLevelType) => {
@@ -545,7 +532,7 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
       if (match) setSelectedAccount(match);
     }
     if (result.concept) {
-      // Image: both concept and description get the short AI label; items hold the line items
+      // Image: concept already contains the merchant prefix from the API (e.g. "HEB - Despensa")
       setConcept((prev) => prev || result.concept!);
       setDescription(result.concept);
       if (result.items?.length) {
@@ -820,39 +807,30 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
 
   // ── Render ──
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={isSaving ? undefined : handleClose}
-    >
-      <View style={styles.overlay}>
-        <TouchableOpacity
-          style={styles.backdrop}
-          activeOpacity={1}
-          onPress={isSaving ? undefined : handleClose}
-        />
+    <View style={[styles.screenRoot, { backgroundColor: sheetBg }]}>
+      {/* Status bar safe area + header */}
+      <View style={{ paddingTop: insets.top, backgroundColor: sheetBg }}>
+        <View style={[styles.header, { borderBottomColor: dividerCol }]}>
+          <TouchableOpacity onPress={handleClose} disabled={isSaving} hitSlop={12}>
+            <ChevronLeft size={24} color={textSecondary} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: textPrimary }]}>
+            {isEditMode ? t('transactions.edit_title') : t('transactions.add_title')}
+          </Text>
+          <View style={{ width: 24 }} />
+        </View>
+      </View>
 
-        <Animated.View style={[styles.modalContainer, { paddingBottom: insets.bottom + 16, backgroundColor: sheetBg }, animatedSheetStyle]}>
-          <View style={[styles.handle, { backgroundColor: borderCol }]} />
-
-          {/* Header */}
-          <View style={[styles.header, { borderBottomColor: dividerCol }]}>
-            <TouchableOpacity onPress={handleClose} disabled={isSaving} hitSlop={12}>
-              <X size={22} color={textSecondary} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: textPrimary }]}>
-              {isEditMode ? t('transactions.edit_title') : t('transactions.add_title')}
-            </Text>
-            <View style={{ width: 22 }} />
-          </View>
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.scrollContent}
-            automaticallyAdjustKeyboardInsets
-          >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+          automaticallyAdjustKeyboardInsets
+        >
             {/* Amount */}
             <View style={styles.amountRow}>
               <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
@@ -1345,26 +1323,25 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
               </Text>
             </TouchableOpacity>
           </ScrollView>
-        </Animated.View>
+      </KeyboardAvoidingView>
 
-        {/* Toasts must render inside the Modal to appear above it */}
-        <View
-          style={{ position: 'absolute', bottom: 80, left: 16, right: 16, gap: 8 }}
-          pointerEvents="box-none"
-        >
-          {toasts.map((toast) => (
-            <Toast
-              key={toast.id}
-              message={toast.message}
-              variant={toast.variant}
-              action={toast.action}
-              onDismiss={() => dismissToast(toast.id)}
-            />
-          ))}
-        </View>
+      {/* Toasts */}
+      <View
+        style={{ position: 'absolute', bottom: insets.bottom + 80, left: 16, right: 16, gap: 8 }}
+        pointerEvents="box-none"
+      >
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            variant={toast.variant}
+            action={toast.action}
+            onDismiss={() => dismissToast(toast.id)}
+          />
+        ))}
       </View>
 
-      {/* Sub-sheets */}
+      {/* Sub-sheets — no longer nested Modals, parent is a full screen */}
       <AccountPickerSheet
         visible={showAccountPicker}
         accounts={accounts}
@@ -1390,7 +1367,6 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
         selectedId={selectedCategory?.id ?? null}
         onSelect={(cat) => {
           setSelectedCategory(cat);
-          // Save merchant rule whenever user picks a category and a merchant name is known
           const merchantName = merchant.trim() || committedMerchant;
           if (cat && merchantName) {
             createRuleMutation.mutate({
@@ -1401,13 +1377,17 @@ export function AddEditTransactionModal({ visible, onClose, transaction, prefill
         }}
         onClose={() => setShowCategoryPicker(false)}
       />
-    </Modal>
+    </View>
   );
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  screenRoot: {
+    flex: 1,
+  },
+  // Used by AccountPickerSheet (Modal-based sub-sheets)
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -1415,12 +1395,6 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  modalContainer: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '92%',
   },
   handle: {
     width: 36,
@@ -1676,6 +1650,12 @@ const styles = StyleSheet.create({
   },
   accountSheet: {
     maxHeight: '55%',
+  },
+  categoryOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
+    zIndex: 100,
+    elevation: 20,
   },
   categorySheet: {
     maxHeight: '70%',

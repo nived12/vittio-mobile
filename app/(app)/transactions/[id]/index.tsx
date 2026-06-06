@@ -20,15 +20,14 @@ import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../src/hooks/useTransactions';
-import { useCategories } from '../../../src/hooks/useCategories';
-import { useUIStore } from '../../../src/stores/uiStore';
-import { useTheme } from '../../../src/theme/ThemeContext';
-import { AddEditTransactionModal } from '../../../src/components/modals/AddEditTransactionModal';
-import { EmptyState } from '../../../src/components/ui/EmptyState';
-import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
-import { getCategoryColor } from '../../../src/utils/categoryColors';
-import type { Category } from '../../../src/api/categories';
+import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../../src/hooks/useTransactions';
+import { useCategories } from '../../../../src/hooks/useCategories';
+import { useUIStore } from '../../../../src/stores/uiStore';
+import { useTheme } from '../../../../src/theme/ThemeContext';
+import { EmptyState } from '../../../../src/components/ui/EmptyState';
+import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
+import { getCategoryColor } from '../../../../src/utils/categoryColors';
+import type { Category } from '../../../../src/api/categories';
 
 // ── Icon resolver ──────────────────────────────────────────────────────────
 
@@ -117,7 +116,6 @@ export default function TransactionDetailScreen() {
   const showToast = useUIStore((s) => s.showToast);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const { theme, isDark } = useTheme();
   const bg = isDark ? theme.background : '#f8fafc';
@@ -166,7 +164,7 @@ export default function TransactionDetailScreen() {
         },
         (buttonIndex) => {
           if (txIsManual && buttonIndex === 0) {
-            setShowEditModal(true);
+            router.push(`/(app)/transactions/${txId}/edit` as never);
           } else if (txIsManual && buttonIndex === 1) {
             handleDelete();
           }
@@ -180,11 +178,7 @@ export default function TransactionDetailScreen() {
         buttons.unshift(
           {
             text: t('transactionDetail.edit'),
-            onPress: () =>
-              Alert.alert(
-                t('transactionDetail.editComingSoonTitle'),
-                t('transactionDetail.editComingSoonMessage'),
-              ),
+            onPress: () => router.push(`/(app)/transactions/${txId}/edit` as never),
           },
           { text: t('transactionDetail.actions.delete'), style: 'destructive', onPress: handleDelete },
         );
@@ -453,12 +447,6 @@ export default function TransactionDetailScreen() {
         selectedId={tx.category?.id ?? null}
       />
 
-      {/* Edit transaction modal */}
-      <AddEditTransactionModal
-        visible={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        transaction={tx}
-      />
     </View>
   );
 }
