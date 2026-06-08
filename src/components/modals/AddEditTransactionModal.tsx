@@ -53,6 +53,7 @@ import { useIsPremiumLocked } from '../../hooks/useIsPremiumLocked';
 import { parseVoice, parseImage } from '../../api/transactions';
 import { PremiumBadge } from '../PremiumBadge';
 import { Toast } from '../ui/Toast';
+import { setCategoryPickerCallback } from '../../utils/categoryPickerCallback';
 import type { Transaction, TransactionType, CreateTransactionBody, TransactionItemAttribute, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
 import type { Category } from '../../api/categories';
@@ -170,100 +171,6 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
   );
 }
 
-// ── Category Picker Sheet ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  categories: Category[];
-  selectedId: number | null;
-  onSelect: (cat: Category | null) => void;
-  onClose: () => void;
-}
-
-function CategoryPickerSheet({ visible, categories, selectedId, onSelect, onClose }: CategoryPickerProps) {
-  const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const textSecondary = isDark ? theme.textSecondary : '#64748b';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
-  const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
-
-  const [query, setQuery] = useState('');
-
-  useEffect(() => { if (visible) setQuery(''); }, [visible]);
-
-  const flat = useMemo(() => {
-    const rows: Array<{ cat: Category; depth: number }> = [];
-    const q = query.trim().toLowerCase();
-    for (const parent of categories) {
-      if (!q) {
-        rows.push({ cat: parent, depth: 0 });
-        for (const child of parent.children ?? []) rows.push({ cat: child, depth: 1 });
-      } else {
-        const matchedChildren = (parent.children ?? []).filter((ch) => ch.name.toLowerCase().includes(q));
-        const parentMatches = parent.name.toLowerCase().includes(q);
-        if (parentMatches || matchedChildren.length > 0) {
-          rows.push({ cat: parent, depth: 0 });
-          for (const child of parentMatches ? (parent.children ?? []) : matchedChildren) {
-            rows.push({ cat: child, depth: 1 });
-          }
-        }
-      }
-    }
-    return rows;
-  }, [categories, query]);
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.handle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
-
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('common.search')}
-            placeholderTextColor={textSecondary}
-            style={[styles.categorySearch, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-            autoCorrect={false}
-            clearButtonMode="while-editing"
-          />
-
-          {!query && (
-            <TouchableOpacity
-              style={[styles.categoryRow, { borderBottomColor: dividerCol }]}
-              onPress={() => { onSelect(null); onClose(); }}
-            >
-              <Text style={[styles.categoryRowText, { color: textPrimary }]}>{t('transactionDetail.fields.uncategorized')}</Text>
-              {selectedId === null && <Text style={styles.checkmark}>✓</Text>}
-            </TouchableOpacity>
-          )}
-
-          <FlatList
-            data={flat}
-            keyExtractor={(item) => String(item.cat.id)}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, { paddingLeft: 16 + item.depth * 20, borderBottomColor: dividerCol }]}
-                onPress={() => { onSelect(item.cat); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }]}>{item.cat.name}</Text>
-                {selectedId === item.cat.id && <Text style={styles.checkmark}>✓</Text>}
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 // ── Main Modal ─────────────────────────────────────────────────────────────
 
 export function AddEditTransactionModal({ onClose, transaction, prefill }: Props) {
@@ -307,7 +214,6 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
   const [merchant, setMerchant] = useState('');
   const [reference, setReference] = useState('');
   const [showAccountPicker, setShowAccountPicker] = useState(false);
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [transferToAccount, setTransferToAccount] = useState<BankAccount | null>(null);
   const [showTransferToPicker, setShowTransferToPicker] = useState(false);
   const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
@@ -1088,7 +994,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
               <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.account_label')} *</Text>
               <TouchableOpacity
                 style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                onPress={() => setShowAccountPicker(true)}
+                onPress={() => { Keyboard.dismiss(); setShowAccountPicker(true); }}
                 accessibilityRole="button"
               >
                 <Text style={selectedAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
@@ -1107,7 +1013,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.transfer_to_label')} *</Text>
                 <TouchableOpacity
                   style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }, hasAttemptedSave && !transferToAccount && styles.fieldRowError]}
-                  onPress={() => setShowTransferToPicker(true)}
+                  onPress={() => { Keyboard.dismiss(); setShowTransferToPicker(true); }}
                   accessibilityRole="button"
                 >
                   <Text style={transferToAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
@@ -1128,7 +1034,20 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
               <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.category_label')}</Text>
               <TouchableOpacity
                 style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                onPress={() => setShowCategoryPicker(true)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setCategoryPickerCallback((cat) => {
+                    setSelectedCategory(cat as Category | null);
+                    const merchantName = merchant.trim() || committedMerchant;
+                    if (cat && merchantName) {
+                      createRuleMutation.mutate({ merchant_name: merchantName, category_id: cat.id });
+                    }
+                  });
+                  router.push({
+                    pathname: '/(app)/transactions/select-category',
+                    params: { selectedId: selectedCategory?.id ?? '' },
+                  });
+                }}
                 accessibilityRole="button"
               >
                 <Text style={[styles.fieldRowText, { color: textPrimary }]}>{categoryDisplay}</Text>
@@ -1355,22 +1274,6 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
         onClose={() => setShowTransferToPicker(false)}
       />
 
-      <CategoryPickerSheet
-        visible={showCategoryPicker}
-        categories={categories}
-        selectedId={selectedCategory?.id ?? null}
-        onSelect={(cat) => {
-          setSelectedCategory(cat);
-          const merchantName = merchant.trim() || committedMerchant;
-          if (cat && merchantName) {
-            createRuleMutation.mutate({
-              merchant_name: merchantName,
-              category_id: cat.id,
-            });
-          }
-        }}
-        onClose={() => setShowCategoryPicker(false)}
-      />
     </View>
   );
 }

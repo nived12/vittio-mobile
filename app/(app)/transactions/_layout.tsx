@@ -6,6 +6,7 @@ export default function TransactionsLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="new" options={{ presentation: 'card' }} />
       <Stack.Screen name="[id]" options={{ presentation: 'card' }} />
+      <Stack.Screen name="select-category" options={{ presentation: 'card' }} />
     </Stack>
   );
 }

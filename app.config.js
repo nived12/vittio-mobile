@@ -94,6 +94,16 @@ module.exports = () => ({
       './plugins/withJetifier',
       './plugins/withRecognitionServiceQuery',
       [
+        'expo-build-properties',
+        {
+          ios: {
+            // expo-speech-recognition requires iOS 16.4+; raise the floor so
+            // its pod autolinks instead of being silently dropped.
+            deploymentTarget: '16.4',
+          },
+        },
+      ],
+      [
         '@sentry/react-native',
         {
           organization: 'vittio',
