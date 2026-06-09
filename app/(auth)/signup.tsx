@@ -484,7 +484,7 @@ export default function SignupScreen() {
             <Text
               style={styles.termsLink}
               onPress={() => {
-                const url = process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/terms';
+                const url = process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/legal/terms';
                 void Linking.openURL(url);
               }}
               accessibilityRole="link"
@@ -497,7 +497,7 @@ export default function SignupScreen() {
             <Text
               style={styles.termsLink}
               onPress={() => {
-                const url = process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/privacy';
+                const url = process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/legal/privacy';
                 void Linking.openURL(url);
               }}
               accessibilityRole="link"
