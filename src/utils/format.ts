@@ -33,11 +33,9 @@ export function formatCurrency(
   opts?: Intl.NumberFormatOptions,
 ): string {
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-US';
-  const currency = opts?.currency ?? 'MXN';
-  const formatterOpts = opts && Object.keys(opts).some((k) => k !== 'currency')
-    ? { ...opts, currency: undefined }
-    : undefined;
-  return getCurrencyFormatter(resolvedLocale, currency, formatterOpts).format(amount);
+  const { currency: currencyOpt, ...numberOpts } = opts ?? {};
+  const currency = currencyOpt ?? 'MXN';
+  return getCurrencyFormatter(resolvedLocale, currency, numberOpts).format(amount);
 }
 
 /**
