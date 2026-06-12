@@ -19,7 +19,12 @@ import * as Haptics from 'expo-haptics';
 import { CreditCard, Banknote } from 'lucide-react-native';
 import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
-import { useBankAccount, useDeleteBankAccount } from '../../../src/hooks/useBankAccounts';
+import {
+  useArchiveBankAccount,
+  useBankAccount,
+  useDeleteBankAccount,
+  useUnarchiveBankAccount,
+} from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
@@ -133,6 +138,8 @@ export default function AccountDetailScreen() {
   const { data: account, isLoading: accountLoading, isError: accountError, refetch: refetchAccount } =
     useBankAccount(accountId);
   const deleteAccountMutation = useDeleteBankAccount();
+  const archiveAccountMutation = useArchiveBankAccount();
+  const unarchiveAccountMutation = useUnarchiveBankAccount();
   const { data: categoriesData } = useCategories();
   const categories = categoriesData ?? [];
 
@@ -198,6 +205,39 @@ export default function AccountDetailScreen() {
     }
   }
 
+  function handleArchiveAccount() {
+    Alert.alert(
+      t('accountDetail.archiveConfirm.title'),
+      t('accountDetail.archiveConfirm.message'),
+      [
+        { text: t('accountDetail.archiveConfirm.cancel'), style: 'cancel' },
+        {
+          text: t('accountDetail.archiveConfirm.confirm'),
+          onPress: async () => {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
+            try {
+              await archiveAccountMutation.mutateAsync(accountId);
+              showToast(t('accountDetail.archiveSuccess'), 'success');
+              router.back();
+            } catch {
+              showToast(t('accountDetail.archiveError'), 'error');
+            }
+          },
+        },
+      ],
+    );
+  }
+
+  async function handleUnarchiveAccount() {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+    try {
+      await unarchiveAccountMutation.mutateAsync(accountId);
+      showToast(t('accountDetail.unarchiveSuccess'), 'success');
+    } catch {
+      showToast(t('accountDetail.unarchiveError'), 'error');
+    }
+  }
+
   function handleDeleteAccount() {
     const txCount = account?.transactions_count ?? 0;
     Alert.alert(
@@ -230,21 +270,31 @@ export default function AccountDetailScreen() {
 
   function handleMoreOptions() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+    const isArchived = account?.archived ?? false;
+    const archiveLabel = isArchived
+      ? t('accountDetail.actions.unarchiveAccount')
+      : t('accountDetail.actions.archiveAccount');
+    const onArchiveToggle = () =>
+      requireConfirmed(isArchived ? handleUnarchiveAccount : handleArchiveAccount);
+
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: [
             t('accountDetail.edit'),
+            archiveLabel,
             t('accountDetail.actions.deleteAccount'),
             t('accountDetail.actions.cancel'),
           ],
-          cancelButtonIndex: 2,
-          destructiveButtonIndex: 1,
+          cancelButtonIndex: 3,
+          destructiveButtonIndex: 2,
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
             requireConfirmed(() => setShowEditAccount(true));
           } else if (buttonIndex === 1) {
+            onArchiveToggle();
+          } else if (buttonIndex === 2) {
             handleDeleteAccount();
           }
         },
@@ -255,6 +305,7 @@ export default function AccountDetailScreen() {
         undefined,
         [
           { text: t('accountDetail.edit'), onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
+          { text: archiveLabel, onPress: onArchiveToggle },
           {
             text: t('accountDetail.actions.deleteAccount'),
             style: 'destructive',

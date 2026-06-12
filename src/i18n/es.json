@@ -395,6 +395,9 @@
     "empty": "Sin cuentas",
     "emptySubtitle": "Agrega tu primera cuenta bancaria",
     "addAccount": "Agregar cuenta",
+    "archived": {
+      "title": "Cuentas archivadas"
+    },
     "addButton": "Agregar cuenta bancaria",
     "totalBalance": "Saldo total",
     "accountCount": "{{count}} cuenta",
@@ -459,9 +462,21 @@
     },
     "deleteSuccess": "Cuenta eliminada",
     "deleteError": "No se pudo eliminar la cuenta",
+    "archiveConfirm": {
+      "title": "¿Archivar cuenta?",
+      "message": "Esta cuenta se ocultará de tus cuentas y balances, pero se conserva su historial de transacciones. Puedes desarchivarla cuando quieras.",
+      "confirm": "Archivar",
+      "cancel": "Cancelar"
+    },
+    "archiveSuccess": "Cuenta archivada",
+    "archiveError": "No se pudo archivar la cuenta",
+    "unarchiveSuccess": "Cuenta desarchivada",
+    "unarchiveError": "No se pudo desarchivar la cuenta",
     "actions": {
       "editAccount": "Editar cuenta",
-      "deleteAccount": "Eliminar cuenta",
+      "archiveAccount": "Archivar cuenta",
+      "unarchiveAccount": "Desarchivar cuenta",
+      "deleteAccount": "Eliminar permanentemente",
       "cancel": "Cancelar"
     },
     "empty": {
