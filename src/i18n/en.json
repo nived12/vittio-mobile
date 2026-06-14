@@ -395,6 +395,9 @@
     "empty": "No accounts yet",
     "emptySubtitle": "Add your first bank account",
     "addAccount": "Add account",
+    "archived": {
+      "title": "Archived accounts"
+    },
     "addButton": "Add Bank Account",
     "totalBalance": "Total Balance",
     "accountCount": "{{count}} account",
@@ -459,9 +462,21 @@
     },
     "deleteSuccess": "Account deleted",
     "deleteError": "Couldn't delete account",
+    "archiveConfirm": {
+      "title": "Archive account?",
+      "message": "This account will be hidden from your accounts and balances, but its transaction history is kept. You can unarchive it anytime.",
+      "confirm": "Archive",
+      "cancel": "Cancel"
+    },
+    "archiveSuccess": "Account archived",
+    "archiveError": "Couldn't archive account",
+    "unarchiveSuccess": "Account unarchived",
+    "unarchiveError": "Couldn't unarchive account",
     "actions": {
       "editAccount": "Edit Account",
-      "deleteAccount": "Delete Account",
+      "archiveAccount": "Archive Account",
+      "unarchiveAccount": "Unarchive Account",
+      "deleteAccount": "Delete permanently",
       "cancel": "Cancel"
     },
     "empty": {

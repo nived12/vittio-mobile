@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Plus, PlusCircle, ChevronRight, CreditCard, Banknote } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { useBankAccounts } from '../../../src/hooks/useBankAccounts';
+import { useArchivedBankAccounts, useBankAccounts } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { resolveBankAccountName } from '../../../src/utils/displayNames';
 import { useUIStore } from '../../../src/stores/uiStore';
@@ -116,6 +116,7 @@ export default function AccountsScreen() {
   const requireConfirmed = useRequireConfirmed();
 
   const { data: accounts, isLoading, isError, refetch } = useBankAccounts();
+  const { data: archivedAccounts, refetch: refetchArchived } = useArchivedBankAccounts();
   const { theme, isDark } = useTheme();
   const bg = isDark ? theme.background : '#f8fafc';
   const surface = isDark ? theme.surface : '#ffffff';
@@ -128,12 +129,12 @@ export default function AccountsScreen() {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     setIsRefreshing(true);
     try {
-      await refetch();
+      await Promise.all([refetch(), refetchArchived()]);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } finally {
       setIsRefreshing(false);
     }
-  }, [refetch]);
+  }, [refetch, refetchArchived]);
 
   const { totalBalance, fmtTotal } = useMemo(() => {
     const list = accounts ?? [];
@@ -276,6 +277,26 @@ export default function AccountsScreen() {
             <Text style={styles.addAccountText}>{t('accounts.addButton')}</Text>
           </TouchableOpacity>
         )}
+
+        {(archivedAccounts?.length ?? 0) > 0 && (
+          <View style={{ gap: 8 }}>
+            <Text style={[styles.archivedHeader, { color: textSecondary }]}>
+              {t('accounts.archived.title')}
+            </Text>
+            <View style={[styles.accountsCard, { backgroundColor: surface, borderColor: borderCol }]}>
+              {archivedAccounts?.map((account, idx) => (
+                <React.Fragment key={account.id}>
+                  <View style={{ opacity: 0.6 }}>
+                    <AccountRow account={account} locale={resolvedLocale} />
+                  </View>
+                  {idx < archivedAccounts.length - 1 && (
+                    <View style={[styles.separator, { backgroundColor: dividerCol }]} />
+                  )}
+                </React.Fragment>
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {showAddModal && (
@@ -363,6 +384,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addAccountText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#4f46e5' },
+  archivedHeader: { fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 18, paddingHorizontal: 4 },
   accountRowSkeleton: {
     flexDirection: 'row',
     alignItems: 'center',
