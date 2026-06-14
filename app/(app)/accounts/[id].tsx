@@ -279,42 +279,45 @@ export default function AccountDetailScreen() {
       requireConfirmed(isArchived ? handleUnarchiveAccount : handleArchiveAccount);
 
     if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: [
+      // Delete is only offered for archived accounts (two-step safety, matches desktop/web).
+      const options = isArchived
+        ? [
             t('accountDetail.edit'),
             archiveLabel,
             t('accountDetail.actions.deleteAccount'),
             t('accountDetail.actions.cancel'),
-          ],
-          cancelButtonIndex: 3,
-          destructiveButtonIndex: 2,
+          ]
+        : [t('accountDetail.edit'), archiveLabel, t('accountDetail.actions.cancel')];
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex: isArchived ? 3 : 2,
+          destructiveButtonIndex: isArchived ? 2 : undefined,
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
             requireConfirmed(() => setShowEditAccount(true));
           } else if (buttonIndex === 1) {
             onArchiveToggle();
-          } else if (buttonIndex === 2) {
+          } else if (isArchived && buttonIndex === 2) {
             handleDeleteAccount();
           }
         },
       );
     } else {
-      Alert.alert(
-        t('accountDetail.moreOptions'),
-        undefined,
-        [
-          { text: t('accountDetail.edit'), onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
-          { text: archiveLabel, onPress: onArchiveToggle },
-          {
-            text: t('accountDetail.actions.deleteAccount'),
-            style: 'destructive',
-            onPress: handleDeleteAccount,
-          },
-          { text: t('accountDetail.actions.cancel'), style: 'cancel' },
-        ],
-      );
+      const buttons: Parameters<typeof Alert.alert>[2] = [
+        { text: t('accountDetail.edit'), onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
+        { text: archiveLabel, onPress: onArchiveToggle },
+      ];
+      if (isArchived) {
+        buttons.push({
+          text: t('accountDetail.actions.deleteAccount'),
+          style: 'destructive',
+          onPress: handleDeleteAccount,
+        });
+      }
+      buttons.push({ text: t('accountDetail.actions.cancel'), style: 'cancel' });
+      Alert.alert(t('accountDetail.moreOptions'), undefined, buttons);
     }
   }
 
