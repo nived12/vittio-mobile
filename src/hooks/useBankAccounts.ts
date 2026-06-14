@@ -3,6 +3,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type QueryClient,
 } from '@tanstack/react-query';
 import {
   archiveBankAccount,
@@ -12,6 +13,7 @@ import {
   getBankAccounts,
   unarchiveBankAccount,
   updateBankAccount,
+  type BankAccount,
   type CreateBankAccountBody,
   type UpdateBankAccountBody,
 } from '../api/bankAccounts';
@@ -42,8 +44,8 @@ export function useArchivedBankAccounts(enabled = true) {
   return useQuery({
     queryKey: bankAccountKeys.archived(),
     queryFn: () => getBankAccounts({ archived: true }),
-    staleTime: 300_000,
-    gcTime: 600_000,
+    staleTime: 600_000,  // archived list changes rarely — refetch every 10 min
+    gcTime: 900_000,
     networkMode: 'offlineFirst',
     enabled,
   });
@@ -82,15 +84,19 @@ export function useUpdateBankAccount(id: number) {
   });
 }
 
+function onArchiveSuccess(queryClient: QueryClient) {
+  return (updated: BankAccount) => {
+    queryClient.setQueryData(bankAccountKeys.detail(updated.id), updated);
+    queryClient.invalidateQueries({ queryKey: bankAccountKeys.all });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  };
+}
+
 export function useArchiveBankAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => archiveBankAccount(id),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(bankAccountKeys.detail(updated.id), updated);
-      queryClient.invalidateQueries({ queryKey: bankAccountKeys.all });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-    },
+    onSuccess: onArchiveSuccess(queryClient),
   });
 }
 
@@ -98,11 +104,7 @@ export function useUnarchiveBankAccount() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => unarchiveBankAccount(id),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(bankAccountKeys.detail(updated.id), updated);
-      queryClient.invalidateQueries({ queryKey: bankAccountKeys.all });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-    },
+    onSuccess: onArchiveSuccess(queryClient),
   });
 }
 

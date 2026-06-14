@@ -214,9 +214,9 @@ export default function AccountDetailScreen() {
         {
           text: t('accountDetail.archiveConfirm.confirm'),
           onPress: async () => {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
             try {
               await archiveAccountMutation.mutateAsync(accountId);
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
               showToast(t('accountDetail.archiveSuccess'), 'success');
               router.back();
             } catch {
@@ -228,14 +228,15 @@ export default function AccountDetailScreen() {
     );
   }
 
-  async function handleUnarchiveAccount() {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
-    try {
-      await unarchiveAccountMutation.mutateAsync(accountId);
-      showToast(t('accountDetail.unarchiveSuccess'), 'success');
-    } catch {
-      showToast(t('accountDetail.unarchiveError'), 'error');
-    }
+  function handleUnarchiveAccount() {
+    unarchiveAccountMutation.mutateAsync(accountId)
+      .then(() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+        showToast(t('accountDetail.unarchiveSuccess'), 'success');
+      })
+      .catch(() => {
+        showToast(t('accountDetail.unarchiveError'), 'error');
+      });
   }
 
   function handleDeleteAccount() {

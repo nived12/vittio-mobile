@@ -284,12 +284,12 @@ export default function AccountsScreen() {
               {t('accounts.archived.title')}
             </Text>
             <View style={[styles.accountsCard, { backgroundColor: surface, borderColor: borderCol }]}>
-              {archivedAccounts!.map((account, idx) => (
+              {archivedAccounts?.map((account, idx) => (
                 <React.Fragment key={account.id}>
                   <View style={{ opacity: 0.6 }}>
                     <AccountRow account={account} locale={resolvedLocale} />
                   </View>
-                  {idx < archivedAccounts!.length - 1 && (
+                  {idx < archivedAccounts.length - 1 && (
                     <View style={[styles.separator, { backgroundColor: dividerCol }]} />
                   )}
                 </React.Fragment>
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   addAccountText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#4f46e5' },
-  archivedHeader: { fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 18, color: '#64748b', paddingHorizontal: 4 },
+  archivedHeader: { fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 18, paddingHorizontal: 4 },
   accountRowSkeleton: {
     flexDirection: 'row',
     alignItems: 'center',
