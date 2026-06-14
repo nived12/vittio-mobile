@@ -113,8 +113,9 @@ export function useDeleteBankAccount() {
   return useMutation({
     mutationFn: (id: number) => deleteBankAccount(id),
     onSuccess: (_data, id) => {
-      queryClient.invalidateQueries({ queryKey: bankAccountKeys.all });
       queryClient.removeQueries({ queryKey: bankAccountKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.list() });
+      queryClient.invalidateQueries({ queryKey: bankAccountKeys.archived() });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
