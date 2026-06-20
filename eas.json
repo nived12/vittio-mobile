@@ -38,6 +38,14 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascApiKeyPath": "../vittio-secrets/AuthKey_QC7LDCK775.p8",
+        "ascApiKeyId": "QC7LDCK775",
+        "ascApiKeyIssuerId": "3d8c0891-d338-4629-8173-03c9324e42b8",
+        "appleTeamId": "9Y84K3A2BJ",
+        "ascAppId": "6782220685"
+      }
+    }
   }
 }

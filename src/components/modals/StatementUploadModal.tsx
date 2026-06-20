@@ -152,6 +152,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   const [result, setResult] = useState<StatementFile | null>(null);
   const pollCountRef = useRef(0);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleRef = useRef(visible);
 
   // Pre-select account when provided or when accounts load
   useEffect(() => {
@@ -164,6 +165,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
   // Reset on open
   useEffect(() => {
+    visibleRef.current = visible;
     if (visible) {
       setStep('account_selection');
       setFile(null);
@@ -235,6 +237,8 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   }
 
   async function poll(id: number) {
+    if (!visibleRef.current) return; // modal closed while this poll was scheduled
+
     pollCountRef.current += 1;
     if (pollCountRef.current > MAX_POLLS) {
       // Timeout
@@ -246,6 +250,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
     try {
       const sf = await getStatementFile(id);
+      if (!visibleRef.current) return; // closed while the request was in flight
       setResult(sf);
       if (TERMINAL_STATUSES.includes(sf.status)) {
         if (sf.status === 'error') {

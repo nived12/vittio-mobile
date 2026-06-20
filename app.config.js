@@ -132,6 +132,22 @@ module.exports = () => ({
         },
       ],
       [
+        'expo-image-picker',
+        {
+          cameraPermission:
+            'Vittio necesita acceso a la cámara para escanear recibos y comprobantes.',
+          photosPermission:
+            'Vittio necesita acceso a tus fotos para adjuntar recibos y comprobantes.',
+        },
+      ],
+      [
+        'expo-local-authentication',
+        {
+          faceIDPermission:
+            'Vittio usa Face ID para proteger el acceso a tu información financiera.',
+        },
+      ],
+      [
         'expo-notifications',
         {
           icon: './assets/images/notification-icon.png',

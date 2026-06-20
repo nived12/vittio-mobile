@@ -84,9 +84,9 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = t('debts.addModal.errors.nameRequired');
-    const oa = parseFloat(originalAmount.replace(',', '.'));
+    const oa = parseFloat(originalAmount.replace(/,/g, ''));
     if (!originalAmount || isNaN(oa) || oa <= 0) errs.originalAmount = t('debts.addModal.errors.originalAmountPositive');
-    const cb = parseFloat((currentBalance || '0').replace(',', '.'));
+    const cb = parseFloat((currentBalance || '0').replace(/,/g, ''));
     if (isNaN(cb)) errs.currentBalance = t('debts.addModal.errors.currentBalanceRequired');
     if (!isNaN(oa) && !isNaN(cb) && cb > oa) errs.currentBalance = t('debts.addModal.errors.currentBalanceExceedsOriginal');
     const dd = parseInt(dueDay, 10);
@@ -101,10 +101,10 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const body = {
       name: name.trim(),
-      original_amount: parseFloat(originalAmount.replace(',', '.')),
-      current_balance: parseFloat((currentBalance || '0').replace(',', '.')),
-      interest_rate: interestRate ? parseFloat(interestRate.replace(',', '.')) : null,
-      minimum_payment: minimumPayment ? parseFloat(minimumPayment.replace(',', '.')) : null,
+      original_amount: parseFloat(originalAmount.replace(/,/g, '')),
+      current_balance: parseFloat((currentBalance || '0').replace(/,/g, '')),
+      interest_rate: interestRate ? parseFloat(interestRate.replace(/,/g, '')) : null,
+      minimum_payment: minimumPayment ? parseFloat(minimumPayment.replace(/,/g, '')) : null,
       due_day_of_month: dueDay ? parseInt(dueDay, 10) : null,
       color,
       status,

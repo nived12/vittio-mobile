@@ -77,7 +77,7 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = t('savings.addModal.errors.nameRequired');
-    const ta = parseFloat(targetAmount.replace(',', '.'));
+    const ta = parseFloat(targetAmount.replace(/,/g, ''));
     if (!targetAmount || isNaN(ta) || ta <= 0) errs.targetAmount = t('savings.addModal.errors.targetAmountPositive');
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -89,8 +89,8 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const body = {
       name: name.trim(),
-      target_amount: parseFloat(targetAmount.replace(',', '.')),
-      current_amount: parseFloat((currentAmount || '0').replace(',', '.')),
+      target_amount: parseFloat(targetAmount.replace(/,/g, '')),
+      current_amount: parseFloat((currentAmount || '0').replace(/,/g, '')),
       color,
       status,
       notes: notes.trim() || null,

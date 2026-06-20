@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -14,6 +15,7 @@ import {
   Bug,
   ChevronLeft,
   ChevronRight,
+  Fingerprint,
   MessageCircle,
   Moon,
   Sun,
@@ -21,10 +23,11 @@ import {
 } from 'lucide-react-native';
 import { useUIStore } from '../../src/stores/uiStore';
 import i18n from '../../src/i18n';
-import { spacing, textStyles } from '../../src/theme';
+import { colors, spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { AnalyticsToggleRow } from '../../src/components/AnalyticsPrivacyNotice';
 import { sendBetaFeedback, reportBetaBug } from '../../src/utils/feedback';
+import { useBiometricLock } from '../../src/hooks/useBiometricLock';
 
 type Scheme = 'system' | 'light' | 'dark';
 type Locale = 'es' | 'en';
@@ -44,10 +47,27 @@ export default function SettingsScreen() {
   const setLocale = useUIStore((s) => s.setLocale);
   const colorScheme = useUIStore((s) => s.colorScheme);
   const setColorScheme = useUIStore((s) => s.setColorScheme);
+  const biometricLock = useUIStore((s) => s.biometricLock);
+  const setBiometricLock = useUIStore((s) => s.setBiometricLock);
+  const showToast = useUIStore((s) => s.showToast);
+  const { isSupported: biometricSupported, authenticate } = useBiometricLock();
 
   function handleLocale(next: Locale) {
     setLocale(next);
     void i18n.changeLanguage(next);
+  }
+
+  async function handleBiometricToggle(enabled: boolean) {
+    if (!enabled) {
+      await setBiometricLock(false);
+      return;
+    }
+    const success = await authenticate();
+    if (success) {
+      await setBiometricLock(true);
+    } else {
+      showToast(t('auth.biometric.enableFailed'), 'error');
+    }
   }
 
   return (
@@ -163,6 +183,33 @@ export default function SettingsScreen() {
 
           {/* Analytics */}
           <AnalyticsToggleRow style={styles.analyticsRow} />
+
+          {biometricSupported && (
+            <>
+              <View style={[styles.divider, { backgroundColor: borderCol }]} />
+              <View style={styles.rowBetween}>
+                <View style={styles.rowLeading}>
+                  <Fingerprint size={20} color={textSecondary} />
+                  <View style={styles.toggleTextCol}>
+                    <Text style={[styles.rowLabel, { color: textPrimary }]}>
+                      {t('auth.biometric.settingTitle')}
+                    </Text>
+                    <Text style={[styles.rowSubLabel, { color: textSecondary }]}>
+                      {t('auth.biometric.settingSubtitle')}
+                    </Text>
+                  </View>
+                </View>
+                <Switch
+                  value={biometricLock}
+                  onValueChange={handleBiometricToggle}
+                  trackColor={{ false: borderCol, true: colors.brand.primary }}
+                  thumbColor="#ffffff"
+                  accessibilityLabel={t('auth.biometric.settingTitle')}
+                  accessibilityHint={t('auth.biometric.settingSubtitle')}
+                />
+              </View>
+            </>
+          )}
         </View>
 
         {/* NOTIFICATIONS */}
@@ -307,6 +354,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 15,
     lineHeight: 20,
+  },
+  rowSubLabel: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  toggleTextCol: {
+    flexShrink: 1,
   },
   navRow: {
     flexDirection: 'row',

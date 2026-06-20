@@ -281,8 +281,8 @@
       "tax_label": "Impuesto (IVA) (Opcional)",
       "tip_label": "Propina (Opcional)",
       "adjustments_label": "Ajustes",
-      "count_one": "1 artículo",
-      "count_other": "{{count}} artículos"
+      "count": "1 artículo",
+      "count_plural": "{{count}} artículos"
     }
   },
   "bank_accounts": {
@@ -1020,8 +1020,8 @@
     "headerTitle": "Vittio Premium",
     "backButton": "Volver",
     "trial": {
-      "daysRemaining_one": "{{count}} día restante en tu prueba gratuita",
-      "daysRemaining_other": "{{count}} días restantes en tu prueba gratuita",
+      "daysRemaining": "{{count}} día restante en tu prueba gratuita",
+      "daysRemaining_plural": "{{count}} días restantes en tu prueba gratuita",
       "ending": "Tu prueba gratuita está por terminar"
     },
     "bannerExpired": "Tu prueba gratuita ha terminado",
@@ -1031,6 +1031,7 @@
     "usageAi": "Usos de IA (voz + cámara)",
     "heroTitle": "Desbloquea todo el potencial de Vittio",
     "heroSubtitle": "Importa estados de cuenta, usa IA y mucho más.",
+    "iosInfo": "Estas funciones forman parte de Vittio Premium.",
     "features": [
       "Importar estados de cuenta (PDF/CSV)",
       "Entrada de transacciones por voz",
@@ -1081,8 +1082,8 @@
     "usageLabel": "Mensajes de IA",
     "nearLimitTrial": "Estás cerca de tu límite de uso gratuito.",
     "tryPremium": "Probar Premium",
-    "messageCount_one": "{{count}} mensaje",
-    "messageCount_other": "{{count}} mensajes",
+    "messageCount": "{{count}} mensaje",
+    "messageCount_plural": "{{count}} mensajes",
     "loadMore": "Cargar más",
     "quotaNotice": {
       "80": "Estás al 80% de tu uso mensual de IA.",

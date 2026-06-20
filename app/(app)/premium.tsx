@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -116,6 +117,14 @@ export default function PremiumScreen() {
   const expiredBannerText = isDark ? '#fecaca' : '#991b1b';
   const activeBannerBg   = isDark ? '#064e3b' : '#d1fae5';
   const activeBannerText = isDark ? '#6ee7b7' : '#065f46';
+
+  // iOS App Store guideline 3.1.1 forbids selling digital subscriptions through any
+  // mechanism other than Apple IAP. Vittio uses Stripe (web/Android), so on the native
+  // iOS build we hide all pricing, checkout, and the Stripe billing-portal link. The
+  // screen becomes informational only: existing subscribers keep full access, everyone
+  // else sees a price-free note. Expo web reports 'web' and Android 'android', so both
+  // keep the Stripe paywall untouched.
+  const isIOS = Platform.OS === 'ios';
 
   const status      = user?.subscription_status ?? 'none';
   const isActive    = status === 'active';
@@ -272,8 +281,15 @@ export default function PremiumScreen() {
           ))}
         </View>
 
+        {/* iOS (Path B): price-free note in place of the paywall. No price, no CTA, no link. */}
+        {isIOS && !isActive && (
+          <Text style={[styles.iosInfo, { color: textSecondary }]}>
+            {t('premium.iosInfo')}
+          </Text>
+        )}
+
         {/* Plan cards — shown to non-subscribers (both cards) and active subscribers (switch card only) */}
-        {(!isActive || currentInterval === 'month') && (
+        {!isIOS && (!isActive || currentInterval === 'month') && (
           <View style={styles.planRow}>
             {/* Monthly — hidden for active monthly subscribers */}
             {!isActive && (
@@ -326,7 +342,7 @@ export default function PremiumScreen() {
         )}
 
         {/* Switch to monthly — shown only to active annual subscribers */}
-        {isActive && currentInterval === 'year' && (
+        {!isIOS && isActive && currentInterval === 'year' && (
           <TouchableOpacity
             style={[styles.planCard, { backgroundColor: surface, borderColor: borderCol, flex: 0, width: '100%' }]}
             onPress={() => handleSubscribe('month')}
@@ -347,14 +363,14 @@ export default function PremiumScreen() {
         )}
 
         {/* IVA note — shown whenever plan cards are visible */}
-        {(!isActive || currentInterval !== null) && (
+        {!isIOS && (!isActive || currentInterval !== null) && (
           <Text style={[styles.ivaNote, { color: textSecondary }]}>
             {t('premium.ivaNote')}
           </Text>
         )}
 
-        {/* Manage subscription (active users) */}
-        {isActive && (
+        {/* Manage subscription (active users) — hidden on iOS (Stripe portal is an external link-out) */}
+        {!isIOS && isActive && (
           <TouchableOpacity
             style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
             onPress={handleManage}
@@ -465,6 +481,7 @@ const styles = StyleSheet.create({
   savingsBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: '700' },
 
   ivaNote:     { textAlign: 'center', fontSize: 12, marginBottom: spacing.md },
+  iosInfo:     { textAlign: 'center', fontSize: 13, lineHeight: 19, marginTop: spacing.sm, marginBottom: spacing.md },
 
   manageBtn: {
     borderWidth: 1,

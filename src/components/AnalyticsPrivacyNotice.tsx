@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -35,7 +35,7 @@ export function AnalyticsPrivacyNotice() {
   const { theme, isDark } = useTheme();
   const userId = useAuthStore((s) => s.user?.id);
   const [visible, setVisible] = useState(false);
-  const slideAnim = new Animated.Value(200);
+  const slideAnim = useRef(new Animated.Value(200)).current;
 
   useEffect(() => {
     let cancelled = false;

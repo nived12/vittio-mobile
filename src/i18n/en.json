@@ -281,8 +281,8 @@
       "tax_label": "Tax (IVA) (Optional)",
       "tip_label": "Tip (Optional)",
       "adjustments_label": "Adjustments",
-      "count_one": "1 item",
-      "count_other": "{{count}} items"
+      "count": "1 item",
+      "count_plural": "{{count}} items"
     }
   },
   "bank_accounts": {
@@ -1020,8 +1020,8 @@
     "headerTitle": "Vittio Premium",
     "backButton": "Go back",
     "trial": {
-      "daysRemaining_one": "{{count}} day remaining in your free trial",
-      "daysRemaining_other": "{{count}} days remaining in your free trial",
+      "daysRemaining": "{{count}} day remaining in your free trial",
+      "daysRemaining_plural": "{{count}} days remaining in your free trial",
       "ending": "Your free trial is about to end"
     },
     "bannerExpired": "Your free trial has ended",
@@ -1031,6 +1031,7 @@
     "usageAi": "AI uses (voice + camera)",
     "heroTitle": "Unlock the full potential of Vittio",
     "heroSubtitle": "Import statements, use AI, and much more.",
+    "iosInfo": "These features are part of Vittio Premium.",
     "features": [
       "Import bank statements (PDF/CSV)",
       "Voice transaction entry",
@@ -1081,8 +1082,8 @@
     "usageLabel": "AI messages",
     "nearLimitTrial": "You're close to your free usage limit.",
     "tryPremium": "Try Premium",
-    "messageCount_one": "{{count}} message",
-    "messageCount_other": "{{count}} messages",
+    "messageCount": "{{count}} message",
+    "messageCount_plural": "{{count}} messages",
     "loadMore": "Load more",
     "quotaNotice": {
       "80": "You're at 80% of your monthly AI usage.",
