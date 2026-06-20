@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -225,7 +226,7 @@ function InlineMultiSelect({
             autoCorrect={false}
             clearButtonMode="while-editing"
           />
-          <View style={{ maxHeight: 220 }}>
+          <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
             {filtered.map((item) => {
               const checked = selectedIds.includes(item.id);
               return (
@@ -246,7 +247,7 @@ function InlineMultiSelect({
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
       )}
     </View>
