@@ -672,6 +672,11 @@
   },
   "savings": {
     "title": "Ahorros",
+    "calcOptions": {
+      "positive": "Sumar al ahorro",
+      "negative": "Restar",
+      "ignore": "Ignorar"
+    },
     "addButton": "Agregar ahorro",
     "editButton": "Editar ahorro",
     "status": {
@@ -752,6 +757,11 @@
   },
   "debts": {
     "title": "Deudas",
+    "calcOptions": {
+      "positive": "Reducir deuda",
+      "negative": "Aumentar deuda",
+      "ignore": "Ignorar"
+    },
     "addButton": "Agregar deuda",
     "editButton": "Editar deuda",
     "dueDay": "Vence día {{day}}",
@@ -919,6 +929,35 @@
     "pink": "Rosa",
     "teal": "Turquesa",
     "orange": "Naranja"
+  },
+  "templates": {
+    "startFromTemplate": "Comienza con una plantilla",
+    "pickerHeading": "Comienza con una plantilla",
+    "pickerSubheading": "Elige una plantilla para prellenar el formulario. Puedes editar todo antes de guardar."
+  },
+  "advancedSettings": {
+    "title": "Configuración Avanzada",
+    "categories": "Categorías",
+    "selectCategories": "Seleccionar categorías",
+    "bankAccounts": "Cuentas bancarias",
+    "selectBankAccounts": "Seleccionar cuentas",
+    "search": "Buscar...",
+    "selectedCount": "{{count}} seleccionada",
+    "selectedCount_plural": "{{count}} seleccionadas",
+    "autoSync": "Auto-Sincronización",
+    "autoSyncHelp": "Vincula automáticamente las transacciones que coincidan con cualquier categoría y cualquier cuenta seleccionada.",
+    "calcTitle": "Configuración de Cálculo",
+    "calcHelp": "Elige cómo cada tipo de transacción afecta el progreso.",
+    "rows": {
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "transfer_in": "Transferencia entrante",
+      "transfer_out": "Transferencia saliente"
+    },
+    "errors": {
+      "categoriesRequired": "Selecciona al menos una categoría para la auto-sincronización.",
+      "bankAccountsRequired": "Selecciona al menos una cuenta para la auto-sincronización."
+    }
   },
   "errors": {
     "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",

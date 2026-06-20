@@ -16,9 +16,15 @@ import * as Haptics from 'expo-haptics';
 import { X, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateSaving, useUpdateSaving } from '../../hooks/useSavings';
+import { useCategories } from '../../hooks/useCategories';
+import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Saving } from '../../api/savings';
+import type { SavingTemplate } from '../../api/templates';
+import type { CalculationSettings } from '../../api/financeShared';
+import { calcToBody, findCategoryIdByName, mergeCalc } from '../../api/financeShared';
+import { AdvancedFinanceSettings } from './AdvancedFinanceSettings';
 import { formatDisplayDate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -27,9 +33,11 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   saving?: Saving;
+  /** When adding, pre-fill the form from a starter template. */
+  template?: SavingTemplate;
 }
 
-export function AddEditSavingModal({ visible, onClose, saving }: Props) {
+export function AddEditSavingModal({ visible, onClose, saving, template }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
@@ -53,6 +61,15 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
   const [errors, setErrors]               = useState<Record<string, string>>({});
   const [isSaving, setIsSaving]           = useState(false);
 
+  // Advanced settings
+  const [categoryIds, setCategoryIds]       = useState<number[]>([]);
+  const [bankAccountIds, setBankAccountIds] = useState<number[]>([]);
+  const [autoSync, setAutoSync]             = useState(false);
+  const [calc, setCalc]                     = useState<CalculationSettings>(mergeCalc('saving'));
+
+  const { data: categories = [] } = useCategories();
+  const { data: bankAccounts = [] } = useBankAccounts();
+
   const createMutation = useCreateSaving();
   const updateMutation = useUpdateSaving(saving?.id ?? 0);
 
@@ -66,19 +83,37 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
         setStatus(saving.status === 'paused' ? 'paused' : 'active');
         setNotes(saving.notes ?? '');
         setTargetDate(saving.target_date ? new Date(saving.target_date) : null);
+        setCategoryIds(saving.categories?.map((c) => c.id) ?? []);
+        setBankAccountIds(saving.bank_accounts?.map((a) => a.id) ?? []);
+        setAutoSync(Boolean(saving.auto_sync_transactions));
+        setCalc(mergeCalc('saving', saving.calculation_settings));
       } else {
-        setName(''); setTargetAmount(''); setCurrentAmount('0');
-        setColor(COLORS[0]); setStatus('active'); setNotes(''); setTargetDate(null);
+        setName(template?.name ?? '');
+        setTargetAmount(template?.suggested_target_amount ? String(template.suggested_target_amount) : '');
+        setCurrentAmount('0');
+        setColor(template?.color ?? COLORS[0]);
+        setStatus('active'); setNotes(''); setTargetDate(null);
+        setCategoryIds([]); setBankAccountIds([]); setAutoSync(false);
+        setCalc(mergeCalc('saving', template?.calculation_settings));
       }
       setErrors({});
     }
-  }, [visible, saving]);
+  }, [visible, saving, template]);
+
+  // Resolve the template's suggested category to the user's own once categories load.
+  useEffect(() => {
+    if (!visible || isEdit || !template?.category_name || categories.length === 0) return;
+    const id = findCategoryIdByName(categories, template.category_name);
+    if (id) setCategoryIds((prev) => (prev.length === 0 ? [id] : prev));
+  }, [visible, isEdit, template, categories]);
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = t('savings.addModal.errors.nameRequired');
     const ta = parseFloat(targetAmount.replace(/,/g, ''));
     if (!targetAmount || isNaN(ta) || ta <= 0) errs.targetAmount = t('savings.addModal.errors.targetAmountPositive');
+    if (autoSync && categoryIds.length === 0) errs.autoSync = t('advancedSettings.errors.categoriesRequired');
+    else if (autoSync && bankAccountIds.length === 0) errs.autoSync = t('advancedSettings.errors.bankAccountsRequired');
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -95,6 +130,10 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
       status,
       notes: notes.trim() || null,
       target_date: targetDate ? toISODate(targetDate) : null,
+      category_ids: categoryIds,
+      bank_account_ids: bankAccountIds,
+      auto_sync_transactions: autoSync,
+      ...calcToBody(calc),
     };
     try {
       if (isEdit && saving) {
@@ -250,6 +289,21 @@ export function AddEditSavingModal({ visible, onClose, saving }: Props) {
               numberOfLines={3}
             />
           </View>
+
+          <AdvancedFinanceSettings
+            variant="saving"
+            categories={categories}
+            selectedCategoryIds={categoryIds}
+            onChangeCategoryIds={setCategoryIds}
+            bankAccounts={bankAccounts}
+            selectedBankAccountIds={bankAccountIds}
+            onChangeBankAccountIds={setBankAccountIds}
+            autoSync={autoSync}
+            onChangeAutoSync={setAutoSync}
+            calc={calc}
+            onChangeCalc={setCalc}
+            autoSyncError={errors.autoSync}
+          />
         </ScrollView>
 
         {/* Save button */}

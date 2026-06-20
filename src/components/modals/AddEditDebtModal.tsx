@@ -16,9 +16,15 @@ import * as Haptics from 'expo-haptics';
 import { X, Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateDebt, useUpdateDebt } from '../../hooks/useDebts';
+import { useCategories } from '../../hooks/useCategories';
+import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Debt } from '../../api/debts';
+import type { DebtTemplate } from '../../api/templates';
+import type { CalculationSettings } from '../../api/financeShared';
+import { calcToBody, findCategoryIdByName, mergeCalc } from '../../api/financeShared';
+import { AdvancedFinanceSettings } from './AdvancedFinanceSettings';
 import { formatDisplayDate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -27,9 +33,11 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   debt?: Debt;
+  /** When adding, pre-fill the form from a starter template. */
+  template?: DebtTemplate;
 }
 
-export function AddEditDebtModal({ visible, onClose, debt }: Props) {
+export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
@@ -56,6 +64,15 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
   const [errors, setErrors]                   = useState<Record<string, string>>({});
   const [isSaving, setIsSaving]               = useState(false);
 
+  // Advanced settings
+  const [categoryIds, setCategoryIds]         = useState<number[]>([]);
+  const [bankAccountIds, setBankAccountIds]   = useState<number[]>([]);
+  const [autoSync, setAutoSync]               = useState(false);
+  const [calc, setCalc]                       = useState<CalculationSettings>(mergeCalc('debt'));
+
+  const { data: categories = [] } = useCategories();
+  const { data: bankAccounts = [] } = useBankAccounts();
+
   const createMutation = useCreateDebt();
   const updateMutation = useUpdateDebt(debt?.id ?? 0);
 
@@ -72,14 +89,28 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
         setStatus(debt.status === 'paused' ? 'paused' : 'active');
         setNotes(debt.notes ?? '');
         setTargetPayoffDate(debt.target_payoff_date ? new Date(debt.target_payoff_date) : null);
+        setCategoryIds(debt.categories?.map((c) => c.id) ?? []);
+        setBankAccountIds(debt.bank_accounts?.map((a) => a.id) ?? []);
+        setAutoSync(Boolean(debt.auto_sync_transactions));
+        setCalc(mergeCalc('debt', debt.calculation_settings));
       } else {
-        setName(''); setOriginalAmount(''); setCurrentBalance('');
-        setInterestRate(''); setMinimumPayment(''); setDueDay('');
-        setColor(COLORS[3]); setStatus('active'); setNotes(''); setTargetPayoffDate(null);
+        setName(template?.name ?? ''); setOriginalAmount(''); setCurrentBalance('');
+        setInterestRate(template?.suggested_interest_rate != null ? String(template.suggested_interest_rate) : '');
+        setMinimumPayment(''); setDueDay('');
+        setColor(template?.color ?? COLORS[3]); setStatus('active'); setNotes(''); setTargetPayoffDate(null);
+        setCategoryIds([]); setBankAccountIds([]); setAutoSync(false);
+        setCalc(mergeCalc('debt', template?.calculation_settings));
       }
       setErrors({});
     }
-  }, [visible, debt]);
+  }, [visible, debt, template]);
+
+  // Resolve the template's suggested category to the user's own once categories load.
+  useEffect(() => {
+    if (!visible || isEdit || !template?.category_name || categories.length === 0) return;
+    const id = findCategoryIdByName(categories, template.category_name);
+    if (id) setCategoryIds((prev) => (prev.length === 0 ? [id] : prev));
+  }, [visible, isEdit, template, categories]);
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
@@ -91,6 +122,8 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
     if (!isNaN(oa) && !isNaN(cb) && cb > oa) errs.currentBalance = t('debts.addModal.errors.currentBalanceExceedsOriginal');
     const dd = parseInt(dueDay, 10);
     if (dueDay && (isNaN(dd) || dd < 1 || dd > 31)) errs.dueDay = t('debts.addModal.errors.dueDayRange');
+    if (autoSync && categoryIds.length === 0) errs.autoSync = t('advancedSettings.errors.categoriesRequired');
+    else if (autoSync && bankAccountIds.length === 0) errs.autoSync = t('advancedSettings.errors.bankAccountsRequired');
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -110,6 +143,10 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
       status,
       notes: notes.trim() || null,
       target_payoff_date: targetPayoffDate ? toISODate(targetPayoffDate) : null,
+      category_ids: categoryIds,
+      bank_account_ids: bankAccountIds,
+      auto_sync_transactions: autoSync,
+      ...calcToBody(calc),
     };
     try {
       if (isEdit && debt) {
@@ -237,6 +274,21 @@ export function AddEditDebtModal({ visible, onClose, debt }: Props) {
             <TextInput style={[s.input, s.multiline, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]} value={notes} onChangeText={setNotes}
               placeholder={t('debts.addModal.notesPlaceholder')} placeholderTextColor="#94a3b8" multiline numberOfLines={3} />
           </View>
+
+          <AdvancedFinanceSettings
+            variant="debt"
+            categories={categories}
+            selectedCategoryIds={categoryIds}
+            onChangeCategoryIds={setCategoryIds}
+            bankAccounts={bankAccounts}
+            selectedBankAccountIds={bankAccountIds}
+            onChangeBankAccountIds={setBankAccountIds}
+            autoSync={autoSync}
+            onChangeAutoSync={setAutoSync}
+            calc={calc}
+            onChangeCalc={setCalc}
+            autoSyncError={errors.autoSync}
+          />
         </ScrollView>
 
         <TouchableOpacity style={[s.saveBtn, isSaving && s.saveBtnDisabled]} onPress={handleSave} disabled={isSaving}>

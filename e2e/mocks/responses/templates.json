@@ -1,0 +1,52 @@
+{
+  "data": {
+    "savings": [
+      {
+        "key": "emergency_fund",
+        "type": "saving",
+        "name": "Emergency Fund",
+        "description": "Set aside 3–6 months of expenses for unexpected events.",
+        "icon": "shield",
+        "color": "#10B981",
+        "suggested_target_amount": 10000.0,
+        "calculation_settings": { "income": "positive", "expense": "negative", "transfer_in": "positive", "transfer_out": "negative" },
+        "category_name": "Fondo de Emergencia"
+      },
+      {
+        "key": "vacation_fund",
+        "type": "saving",
+        "name": "Vacation Fund",
+        "description": "Save up for your next trip.",
+        "icon": "plane",
+        "color": "#3B82F6",
+        "suggested_target_amount": 5000.0,
+        "calculation_settings": { "income": "positive", "expense": "negative", "transfer_in": "positive", "transfer_out": "negative" },
+        "category_name": "Fondo de Vacaciones"
+      }
+    ],
+    "debts": [
+      {
+        "key": "credit_card",
+        "type": "debt",
+        "name": "Credit Card",
+        "description": "Track and pay off your credit card balance.",
+        "icon": "credit-card",
+        "color": "#EF4444",
+        "suggested_interest_rate": 18.5,
+        "calculation_settings": { "income": "positive", "expense": "negative", "transfer_in": "positive", "transfer_out": "ignore" },
+        "category_name": "Tarjetas de Crédito"
+      },
+      {
+        "key": "car_loan",
+        "type": "debt",
+        "name": "Car Loan",
+        "description": "Track your auto loan payoff.",
+        "icon": "car",
+        "color": "#F97316",
+        "suggested_interest_rate": 4.5,
+        "calculation_settings": { "income": "positive", "expense": "negative", "transfer_in": "positive", "transfer_out": "ignore" },
+        "category_name": "Crédito Automotriz"
+      }
+    ]
+  }
+}

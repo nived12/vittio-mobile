@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { CalculationSettings, CalculationSettingsBody } from './financeShared';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -15,9 +16,13 @@ export interface Saving {
   contribution_mode: 'fixed' | 'calculated' | null;
   contribution_frequency: 'weekly' | 'biweekly' | 'semimonthly' | 'monthly';
   target_contribution_amount: number | null;
+  auto_sync_transactions: boolean;
+  calculation_settings: CalculationSettings;
   progress_percentage: number;
   amount_remaining: number;
   goals: { id: number; name: string; color: string }[];
+  categories: { id: number; name: string; icon: string | null }[];
+  bank_accounts: { id: number; display_name: string; currency: string }[];
 }
 
 export type CreateSavingBody = {
@@ -28,7 +33,10 @@ export type CreateSavingBody = {
   color?: string;
   status?: string;
   notes?: string | null;
-};
+  category_ids?: number[];
+  bank_account_ids?: number[];
+  auto_sync_transactions?: boolean;
+} & CalculationSettingsBody;
 
 export type UpdateSavingBody = Partial<CreateSavingBody>;
 

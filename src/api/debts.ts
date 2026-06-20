@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { CalcRule, CalculationSettings, CalculationSettingsBody } from './financeShared';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -18,10 +19,14 @@ export interface Debt {
   target_payment_amount: number | null;
   target_payoff_date: string | null;
   due_day_of_month: number | null;
+  auto_sync_transactions: boolean;
+  calculation_settings: CalculationSettings;
   progress_percentage: number;
   amount_remaining: number;
   amount_paid: number;
   goals: { id: number; name: string; color: string; strategy?: string }[];
+  categories: { id: number; name: string; icon: string | null }[];
+  bank_accounts: { id: number; display_name: string; currency: string }[];
 }
 
 export type CreateDebtBody = {
@@ -35,7 +40,12 @@ export type CreateDebtBody = {
   color?: string;
   status?: string;
   notes?: string | null;
-};
+  category_ids?: number[];
+  bank_account_ids?: number[];
+  auto_sync_transactions?: boolean;
+} & CalculationSettingsBody;
+
+export type { CalcRule };
 
 export type UpdateDebtBody = Partial<CreateDebtBody>;
 

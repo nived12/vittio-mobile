@@ -34,6 +34,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
   const assistantChatLargestExpenses = readFixture<unknown>("assistant-chat-largest-expenses.json");
   const assistantChatCustom = readFixture<unknown>("assistant-chat-custom.json");
   const assistantConversationDetail = readFixture<unknown>("assistant-conversation-detail.json");
+  const templates = readFixture<unknown>("templates.json");
 
   await page.route("**/*", (route) => {
     const method = route.request().method();
@@ -57,7 +58,10 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.endsWith("/transactions") ||
       pathname.endsWith("/categories") ||
       pathname.endsWith("/user_settings") ||
-      pathname.includes("/assistant/");
+      pathname.includes("/assistant/") ||
+      pathname.endsWith("/savings") ||
+      pathname.endsWith("/debts") ||
+      pathname.endsWith("/templates");
 
     if (!isApiRequest) {
       return route.continue();
@@ -149,7 +153,15 @@ export async function setupApiMocks(page: Page): Promise<void> {
         data: {
           categories: [
             { id: 1, name: "Ingresos", icon: "wallet", parent_id: null, children: [] },
-            { id: 5, name: "Comida", icon: "utensils", parent_id: null, children: [] }
+            { id: 5, name: "Comida", icon: "utensils", parent_id: null, children: [] },
+            {
+              id: 30, name: "Ahorros e Inversiones", icon: "piggy-bank", parent_id: null,
+              children: [{ id: 31, name: "Fondo de Emergencia", icon: "shield", parent_id: 30, children: [] }]
+            },
+            {
+              id: 40, name: "Deudas y Préstamos", icon: "credit-card", parent_id: null,
+              children: [{ id: 41, name: "Tarjetas de Crédito", icon: "credit-card", parent_id: 40, children: [] }]
+            }
           ]
         }
       });
@@ -183,6 +195,19 @@ export async function setupApiMocks(page: Page): Promise<void> {
         return fulfillJson(route, assistantChatLargestExpenses);
       }
       return fulfillJson(route, assistantChatCustom);
+    }
+
+    // ── Starter templates / savings / debts ───────────────────────────────
+    if (pathname.endsWith("/templates")) {
+      return fulfillJson(route, templates);
+    }
+    if (pathname.endsWith("/savings")) {
+      if (method === "GET") return fulfillJson(route, { data: { savings: [] } });
+      return fulfillJson(route, { data: {} }, 201);
+    }
+    if (pathname.endsWith("/debts")) {
+      if (method === "GET") return fulfillJson(route, { data: { debts: [] } });
+      return fulfillJson(route, { data: {} }, 201);
     }
 
     return fulfillJson(route, { data: {} });

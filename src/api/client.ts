@@ -4,6 +4,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios';
 import { Platform } from 'react-native';
+import i18n from '../i18n';
 import { tokenStorage } from '../utils/tokenStorage';
 
 const devBaseURL = Platform.select({
@@ -76,6 +77,11 @@ apiClient.interceptors.request.use(
     const token = await tokenStorage.getAccessToken().catch(() => null);
     if (token && config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Localize server-rendered copy (e.g. template names) to the app language.
+    if (config.headers) {
+      config.headers['Accept-Language'] = i18n.language || 'es';
     }
 
     if (__DEV__) {

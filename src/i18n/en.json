@@ -672,6 +672,11 @@
   },
   "savings": {
     "title": "Savings",
+    "calcOptions": {
+      "positive": "Add to savings",
+      "negative": "Subtract",
+      "ignore": "Ignore"
+    },
     "addButton": "Add saving",
     "editButton": "Edit saving",
     "status": {
@@ -752,6 +757,11 @@
   },
   "debts": {
     "title": "Debts",
+    "calcOptions": {
+      "positive": "Reduce debt",
+      "negative": "Increase debt",
+      "ignore": "Ignore"
+    },
     "addButton": "Add debt",
     "editButton": "Edit debt",
     "dueDay": "Due day {{day}}",
@@ -919,6 +929,35 @@
     "pink": "Pink",
     "teal": "Teal",
     "orange": "Orange"
+  },
+  "templates": {
+    "startFromTemplate": "Start from a template",
+    "pickerHeading": "Start from a template",
+    "pickerSubheading": "Pick a template to pre-fill the form. You can edit everything before saving."
+  },
+  "advancedSettings": {
+    "title": "Advanced Settings",
+    "categories": "Categories",
+    "selectCategories": "Select categories",
+    "bankAccounts": "Bank accounts",
+    "selectBankAccounts": "Select bank accounts",
+    "search": "Search...",
+    "selectedCount": "{{count}} selected",
+    "selectedCount_plural": "{{count}} selected",
+    "autoSync": "Auto-Sync",
+    "autoSyncHelp": "Automatically link transactions that match any selected category and any selected bank account.",
+    "calcTitle": "Calculation Settings",
+    "calcHelp": "Choose how each transaction type affects progress.",
+    "rows": {
+      "income": "Income",
+      "expense": "Expense",
+      "transfer_in": "Transfer in",
+      "transfer_out": "Transfer out"
+    },
+    "errors": {
+      "categoriesRequired": "Select at least one category for auto-sync.",
+      "bankAccountsRequired": "Select at least one bank account for auto-sync."
+    }
   },
   "errors": {
     "INVALID_CREDENTIALS": "Invalid email or password",

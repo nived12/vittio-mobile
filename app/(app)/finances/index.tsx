@@ -21,10 +21,12 @@ import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { AddEditSavingModal } from '../../../src/components/modals/AddEditSavingModal';
 import { AddEditDebtModal } from '../../../src/components/modals/AddEditDebtModal';
 import { AddEditGoalModal } from '../../../src/components/modals/AddEditGoalModal';
+import { TemplatePickerModal } from '../../../src/components/modals/TemplatePickerModal';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
 import type { Saving } from '../../../src/api/savings';
 import type { Debt } from '../../../src/api/debts';
 import type { Goal } from '../../../src/api/goals';
+import type { SavingTemplate, DebtTemplate } from '../../../src/api/templates';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -82,8 +84,10 @@ const skStyles = StyleSheet.create({
 
 function SavingsList({
   onAdd,
+  onUseTemplate,
 }: {
   onAdd: () => void;
+  onUseTemplate: () => void;
 }) {
   const { t } = useTranslation();
   const locale = useUIStore((s) => s.locale);
@@ -131,6 +135,8 @@ function SavingsList({
           ctaLabel={t('savings.empty.cta')}
           ctaVariant="primary"
           onCta={onAdd}
+          secondaryCtaLabel={t('templates.startFromTemplate')}
+          onSecondaryCta={onUseTemplate}
         />
       ) : (
         <FlatList
@@ -218,7 +224,7 @@ function SavingCard({ saving, locale }: { saving: Saving; locale: string }) {
 
 // ── DebtsList ──────────────────────────────────────────────────────────────
 
-function DebtsList({ onAdd }: { onAdd: () => void }) {
+function DebtsList({ onAdd, onUseTemplate }: { onAdd: () => void; onUseTemplate: () => void }) {
   const { t } = useTranslation();
   const locale = useUIStore((s) => s.locale);
   const displayLocale = locale === 'es' ? 'es-MX' : 'en-MX';
@@ -264,6 +270,8 @@ function DebtsList({ onAdd }: { onAdd: () => void }) {
           ctaLabel={t('debts.empty.cta')}
           ctaVariant="primary"
           onCta={onAdd}
+          secondaryCtaLabel={t('templates.startFromTemplate')}
+          onSecondaryCta={onUseTemplate}
         />
       ) : (
         <FlatList
@@ -529,6 +537,10 @@ export default function FinancesScreen() {
   const [showAddSaving, setShowAddSaving] = useState(false);
   const [showAddDebt, setShowAddDebt] = useState(false);
   const [showAddGoal, setShowAddGoal] = useState(false);
+  const [showSavingTemplates, setShowSavingTemplates] = useState(false);
+  const [showDebtTemplates, setShowDebtTemplates] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState<SavingTemplate | undefined>();
+  const [debtTemplate, setDebtTemplate] = useState<DebtTemplate | undefined>();
   const requireConfirmed = useRequireConfirmed();
   const { theme, isDark } = useTheme();
   const bg          = isDark ? theme.background  : '#f8fafc';
@@ -585,16 +597,64 @@ export default function FinancesScreen() {
           contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {activeSegment === 'savings' && <SavingsList onAdd={() => requireConfirmed(() => setShowAddSaving(true))} />}
-          {activeSegment === 'debts'   && <DebtsList   onAdd={() => requireConfirmed(() => setShowAddDebt(true))}   />}
+          {activeSegment === 'savings' && (
+            <SavingsList
+              onAdd={() => requireConfirmed(() => { setSavingTemplate(undefined); setShowAddSaving(true); })}
+              onUseTemplate={() => requireConfirmed(() => setShowSavingTemplates(true))}
+            />
+          )}
+          {activeSegment === 'debts' && (
+            <DebtsList
+              onAdd={() => requireConfirmed(() => { setDebtTemplate(undefined); setShowAddDebt(true); })}
+              onUseTemplate={() => requireConfirmed(() => setShowDebtTemplates(true))}
+            />
+          )}
           {activeSegment === 'goals'   && <GoalsList   onAdd={() => requireConfirmed(() => setShowAddGoal(true))}   />}
         </ScrollView>
       </View>
 
       {/* Modals — mount only when visible to avoid keeping their trees on the JS thread */}
-      {showAddSaving && <AddEditSavingModal visible={showAddSaving} onClose={() => setShowAddSaving(false)} />}
-      {showAddDebt   && <AddEditDebtModal   visible={showAddDebt}   onClose={() => setShowAddDebt(false)}   />}
+      {showAddSaving && (
+        <AddEditSavingModal
+          visible={showAddSaving}
+          template={savingTemplate}
+          onClose={() => { setShowAddSaving(false); setSavingTemplate(undefined); }}
+        />
+      )}
+      {showAddDebt && (
+        <AddEditDebtModal
+          visible={showAddDebt}
+          template={debtTemplate}
+          onClose={() => { setShowAddDebt(false); setDebtTemplate(undefined); }}
+        />
+      )}
       {showAddGoal   && <AddEditGoalModal   visible={showAddGoal}   onClose={() => setShowAddGoal(false)}   />}
+
+      {/* Template pickers — selecting one opens the prefilled add modal */}
+      {showSavingTemplates && (
+        <TemplatePickerModal
+          visible={showSavingTemplates}
+          type="savings"
+          onClose={() => setShowSavingTemplates(false)}
+          onSelect={(template) => {
+            setShowSavingTemplates(false);
+            setSavingTemplate(template);
+            setShowAddSaving(true);
+          }}
+        />
+      )}
+      {showDebtTemplates && (
+        <TemplatePickerModal
+          visible={showDebtTemplates}
+          type="debts"
+          onClose={() => setShowDebtTemplates(false)}
+          onSelect={(template) => {
+            setShowDebtTemplates(false);
+            setDebtTemplate(template);
+            setShowAddDebt(true);
+          }}
+        />
+      )}
     </>
   );
 }
