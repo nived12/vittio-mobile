@@ -24,6 +24,13 @@ module.exports = () => ({
       entitlements: {
         'keychain-access-groups': ['$(AppIdentifierPrefix)io.vitt.app'],
       },
+      infoPlist: {
+        // Export-compliance self-declaration: the app uses only standard
+        // encryption exempt under US export rules (HTTPS/TLS, OS keychain).
+        // Setting this skips the manual encryption question on every
+        // TestFlight/App Store upload.
+        ITSAppUsesNonExemptEncryption: false,
+      },
       // iOS 17+ Privacy Manifest (required for App Store submission).
       // Declares which required-reason APIs we access and why.
       // Reason codes are from Apple's documented list:
