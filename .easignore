@@ -8,6 +8,12 @@
 /ios/
 /android/
 
+# Local env files — production env comes from eas.json (API URL, Sentry, PostHog).
+# .env.local can override those during the cloud `expo export`, so never upload it.
+# Terms/Privacy URLs fall back to the correct vitt.io/legal/* paths in code.
+.env*
+!.env.example
+
 # Downloaded build artifacts and local exports — never needed by EAS Build.
 # (.easignore replaces .gitignore entirely, so these must be listed explicitly.)
 *.apk
