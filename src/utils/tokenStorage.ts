@@ -78,6 +78,18 @@ async function prefSet(key: string, value: string): Promise<void> {
   }
 }
 
+async function prefDelete(key: string): Promise<void> {
+  if (__DEV__ && Platform.OS === 'web') {
+    try { localStorage.removeItem(key); } catch { /* ignore */ }
+    return;
+  }
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch {
+    // Best-effort delete — key may not exist
+  }
+}
+
 // ── Keys ─────────────────────────────────────────────────────────────────
 
 const KEYS = {
@@ -205,6 +217,18 @@ async function getFirstImportCelebrated(): Promise<boolean> {
   return stored === '1';
 }
 
+// Clears account-specific preferences on logout so they don't bleed into the
+// next account on the same device. Device-level prefs (locale, color scheme,
+// biometric lock) are intentionally NOT cleared — the user expects those to
+// persist regardless of which account is signed in.
+async function clearAccountPreferences(): Promise<void> {
+  await Promise.all([
+    prefDelete(KEYS.CELEBRATED_GOALS),
+    prefDelete(KEYS.CELEBRATED_DEBTS),
+    prefDelete(KEYS.FIRST_IMPORT_CELEBRATED),
+  ]);
+}
+
 // ── Exports ──────────────────────────────────────────────────────────────
 
 export const tokenStorage = {
@@ -226,5 +250,6 @@ export const tokenStorage = {
   getCelebratedDebts,
   saveFirstImportCelebrated,
   getFirstImportCelebrated,
+  clearAccountPreferences,
   clearTokens,
 };

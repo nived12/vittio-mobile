@@ -71,6 +71,10 @@ interface UIState {
   };
   setNotificationPref: (key: 'statementImports' | 'goalMilestones' | 'debtReminders', value: boolean) => void;
   hydrateNotificationPrefs: () => Promise<void>;
+
+  /** Resets account-specific UI state on logout. Device prefs (colorScheme,
+   *  locale, biometricLock) are intentionally preserved. */
+  resetForLogout: () => Promise<void>;
 }
 
 let toastIdCounter = 0;
@@ -210,6 +214,26 @@ export const useUIStore = create<UIState>((set, get) => ({
     } catch {
       // offline or unauthenticated — keep defaults
     }
+  },
+
+  // ── Reset on logout ──────────────────────────────────────────────────────
+  resetForLogout: async () => {
+    set({
+      celebratedGoals: [],
+      celebratedDebts: [],
+      hasSeenFirstImportCelebration: false,
+      toasts: [],
+      hideConfirmationBanner: false,
+      pendingDeepLink: null,
+      selectedMonth: undefined,
+      showStatementUpload: false,
+      notificationPrefs: {
+        statementImports: true,
+        goalMilestones: true,
+        debtReminders: true,
+      },
+    });
+    await tokenStorage.clearAccountPreferences();
   },
 
   // ── Biometric lock ─────────────────────────────────────────────────────────

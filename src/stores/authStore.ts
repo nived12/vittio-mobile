@@ -94,6 +94,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   // ── _clearAuth ────────────────────────────────────────────────────────────
+  // Single choke point for all logout paths (manual logout, expired-session
+  // forced logout, failed hydrate). Purges everything tied to the account so
+  // the previous user's data can't bleed into the next session: tokens,
+  // the cached React Query data, and account-specific UI state.
   _clearAuth: async () => {
     await tokenStorage.clearTokens();
     set({
@@ -103,6 +107,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: false,
       isLoading:       false,
     });
+
+    // Clear cached query data (transactions, dashboard, accounts, savings,
+    // debts, categories, etc.). Lazily imported to avoid pulling the React
+    // tree's query client into this plain store at module load.
+    try {
+      const { queryClient } = await import('../lib/queryClient');
+      queryClient.clear();
+    } catch {
+      // Best-effort — never block logout on cache teardown
+    }
+
+    // Reset account-specific UI state (celebration guards, notification prefs,
+    // selected month, banners). Device prefs (theme, locale, biometric) persist.
+    try {
+      const { useUIStore } = await import('./uiStore');
+      await useUIStore.getState().resetForLogout();
+    } catch {
+      // Best-effort
+    }
   },
 
   // ── login ─────────────────────────────────────────────────────────────────
