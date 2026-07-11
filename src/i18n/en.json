@@ -321,6 +321,7 @@
     "uncategorized": "Uncategorized",
     "delete": "Delete",
     "categorize": "Categorize",
+    "fromStatement": "Imported from bank statement",
     "swipeDeleteConfirm": {
       "title": "Delete Transaction?",
       "message": "This cannot be undone.",
@@ -348,6 +349,7 @@
     "title": "Transaction",
     "edit": "Edit",
     "moreOptions": "More options",
+    "statementBadge": "Imported from bank statement",
     "editComingSoonTitle": "Coming soon",
     "editComingSoonMessage": "Editing will be available in a future update.",
     "back": "Transaction",

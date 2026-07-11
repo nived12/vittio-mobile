@@ -210,7 +210,7 @@ export const TransactionRow = React.memo(function TransactionRow({
   }
 
   function renderRightActions() {
-    if (!enableSwipeActions || source !== 'manual') return null;
+    if (!enableSwipeActions) return null;
     return (
       <TouchableOpacity
         style={styles.deleteAction}
@@ -246,7 +246,7 @@ export const TransactionRow = React.memo(function TransactionRow({
       accessibilityRole="button"
       accessibilityLabel={`${primaryLabel}, ${amount} ${bank_account.name}, ${transaction_type}, ${dateLabel}`}
       accessibilityActions={[
-        ...(source === 'manual' ? [{ name: 'delete', label: t('transactionRow.delete') }] : []),
+        { name: 'delete', label: t('transactionRow.delete') },
         { name: 'categorize', label: t('transactionRow.categorize') },
       ]}
       onAccessibilityAction={(event) => {
@@ -264,9 +264,18 @@ export const TransactionRow = React.memo(function TransactionRow({
         <Text style={[styles.primaryLabel, { color: textPrimary }]} numberOfLines={1}>
           {primaryLabel}
         </Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]} numberOfLines={1}>
-          {subtitleText}
-        </Text>
+        <View style={styles.subtitleRow}>
+          {source !== 'manual' ? (
+            <LucideIcons.FileText
+              size={12}
+              color={textSecondary}
+              accessibilityLabel={t('transactionRow.fromStatement')}
+            />
+          ) : null}
+          <Text style={[styles.subtitle, { color: textSecondary }]} numberOfLines={1}>
+            {subtitleText}
+          </Text>
+        </View>
       </View>
 
       {/* Right block */}
@@ -372,11 +381,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
   subtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     lineHeight: 16,
-    marginTop: 2,
+    flexShrink: 1,
   },
   right: {
     alignItems: 'flex-end',

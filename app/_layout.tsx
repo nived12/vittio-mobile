@@ -136,7 +136,7 @@ function RootLayout() {
     SplashScreen.hideAsync();
 
     const inAuth = segments[0] === '(auth)';
-    const onConsentScreen = (segments[1] as string) === 'consent';
+    const onConsentScreen = (segments as string[])[1] === 'consent';
 
     if (!isAuthenticated && !inAuth) {
       router.replace('/(auth)/login');

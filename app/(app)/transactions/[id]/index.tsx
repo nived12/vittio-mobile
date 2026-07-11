@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, FileText } from 'lucide-react-native';
 import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
@@ -146,44 +146,35 @@ export default function TransactionDetailScreen() {
   }
 
   function handleMoreOptions() {
-    const txIsManual = tx?.source === 'manual';
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
     if (Platform.OS === 'ios') {
-      const options = txIsManual
-        ? [
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [
             t('transactionDetail.edit'),
             t('transactionDetail.actions.delete'),
             t('transactionDetail.actions.cancel'),
-          ]
-        : [t('transactionDetail.actions.cancel')];
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options,
-          cancelButtonIndex: txIsManual ? 2 : 0,
-          destructiveButtonIndex: txIsManual ? 1 : undefined,
+          ],
+          cancelButtonIndex: 2,
+          destructiveButtonIndex: 1,
         },
         (buttonIndex) => {
-          if (txIsManual && buttonIndex === 0) {
+          if (buttonIndex === 0) {
             router.push(`/(app)/transactions/${txId}/edit` as never);
-          } else if (txIsManual && buttonIndex === 1) {
+          } else if (buttonIndex === 1) {
             handleDelete();
           }
         },
       );
     } else {
-      const buttons: Array<{ text: string; style?: 'default' | 'cancel' | 'destructive'; onPress?: () => void }> = [
+      Alert.alert(t('transactionDetail.moreOptions'), undefined, [
+        {
+          text: t('transactionDetail.edit'),
+          onPress: () => router.push(`/(app)/transactions/${txId}/edit` as never),
+        },
+        { text: t('transactionDetail.actions.delete'), style: 'destructive', onPress: handleDelete },
         { text: t('transactionDetail.actions.cancel'), style: 'cancel' },
-      ];
-      if (txIsManual) {
-        buttons.unshift(
-          {
-            text: t('transactionDetail.edit'),
-            onPress: () => router.push(`/(app)/transactions/${txId}/edit` as never),
-          },
-          { text: t('transactionDetail.actions.delete'), style: 'destructive', onPress: handleDelete },
-        );
-      }
-      Alert.alert(t('transactionDetail.moreOptions'), undefined, buttons);
+      ]);
     }
   }
 
@@ -342,6 +333,16 @@ export default function TransactionDetailScreen() {
           <View style={[styles.typeBadge, { backgroundColor: typeBadge.bg }]}>
             <Text style={[styles.typeBadgeText, { color: typeBadge.text }]}>{typeBadge.label}</Text>
           </View>
+          {/* Statement-file origin badge — flags imported txns so edits/deletes are made knowingly */}
+          {!isManual ? (
+            <View style={[styles.sourceBadge, { backgroundColor: isDark ? 'rgba(245,158,11,0.15)' : '#fef3c7' }]}>
+              <FileText
+                size={15}
+                color={isDark ? '#fbbf24' : '#92400e'}
+                accessibilityLabel={t('transactionDetail.statementBadge')}
+              />
+            </View>
+          ) : null}
         </View>
 
         {/* Details card */}
@@ -421,21 +422,19 @@ export default function TransactionDetailScreen() {
         </View>
 
         {/* Delete button */}
-        {isManual ? (
-          <TouchableOpacity
-            style={styles.deleteBtn}
-            onPress={handleDelete}
-            disabled={isDeleting}
-            accessibilityRole="button"
-            accessibilityHint="Double-tap to permanently delete this transaction"
-          >
-            {isDeleting ? (
-              <ActivityIndicator size="small" color="#ffffff" />
-            ) : (
-              <Text style={styles.deleteBtnText}>{t('transactionDetail.deleteButton')}</Text>
-            )}
-          </TouchableOpacity>
-        ) : null}
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={handleDelete}
+          disabled={isDeleting}
+          accessibilityRole="button"
+          accessibilityHint="Double-tap to permanently delete this transaction"
+        >
+          {isDeleting ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={styles.deleteBtnText}>{t('transactionDetail.deleteButton')}</Text>
+          )}
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Category picker modal */}
@@ -498,6 +497,13 @@ const styles = StyleSheet.create({
   heroDate: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 18, color: '#64748b' },
   typeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 9999 },
   typeBadgeText: { fontFamily: 'Inter_500Medium', fontSize: 12, lineHeight: 16 },
+  sourceBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    padding: 5,
+    borderRadius: 9999,
+  },
   detailsCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,

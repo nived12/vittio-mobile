@@ -27,7 +27,13 @@ export async function setupApiMocks(page: Page): Promise<void> {
   const authLogin = readFixture<{ data: { user: unknown } }>("auth-login.json");
   const dashboard = readFixture<unknown>("dashboard.json");
   const bankAccounts = readFixture<unknown>("bank-accounts.json");
-  const transactions = readFixture<{ list: unknown; summary: unknown }>("transactions.json");
+  const transactions = readFixture<{
+    list: { data: { transactions: Array<Record<string, unknown>> } };
+    summary: unknown;
+  }>("transactions.json");
+  const importedTransaction = transactions.list.data.transactions.find(
+    (tx) => tx.source === "statement_file"
+  );
 
   const assistantUsage = readFixture<unknown>("assistant-usage.json");
   const assistantConversationsEmpty = readFixture<unknown>("assistant-conversations-empty.json");
@@ -56,6 +62,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.includes("/transactions/summary") ||
       pathname.includes("/recurring") ||
       pathname.endsWith("/transactions") ||
+      /\/transactions\/\d+$/.test(pathname) ||
       pathname.endsWith("/categories") ||
       pathname.endsWith("/user_settings") ||
       pathname.includes("/assistant/") ||
@@ -89,6 +96,19 @@ export async function setupApiMocks(page: Page): Promise<void> {
     }
     if (pathname.includes("/transactions/summary")) {
       return fulfillJson(route, transactions.summary);
+    }
+    // Single transaction detail / update / delete (e.g. /transactions/9002)
+    if (/\/transactions\/\d+$/.test(pathname)) {
+      if (method === "DELETE") {
+        return fulfillJson(route, { data: { message: "Transaction deleted successfully" } });
+      }
+      if (method === "PATCH") {
+        const body = route.request().postDataJSON?.() ?? {};
+        const patch =
+          body && typeof body === "object" && body.transaction ? body.transaction : {};
+        return fulfillJson(route, { data: { ...importedTransaction, ...patch } });
+      }
+      return fulfillJson(route, { data: importedTransaction });
     }
     if (pathname.includes("/recurring/scan")) {
       return fulfillJson(route, { data: { detected: [] } });

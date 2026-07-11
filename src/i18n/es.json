@@ -321,6 +321,7 @@
     "uncategorized": "Sin categoría",
     "delete": "Eliminar",
     "categorize": "Categorizar",
+    "fromStatement": "Importado del estado de cuenta",
     "swipeDeleteConfirm": {
       "title": "¿Eliminar transacción?",
       "message": "Esta acción no se puede deshacer.",
@@ -348,6 +349,7 @@
     "title": "Transacción",
     "edit": "Editar",
     "moreOptions": "Más opciones",
+    "statementBadge": "Importado del estado de cuenta",
     "editComingSoonTitle": "Próximamente",
     "editComingSoonMessage": "La edición estará disponible en una próxima actualización.",
     "back": "Transacción",
