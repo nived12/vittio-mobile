@@ -6,12 +6,14 @@ export interface BankAccount {
   id: number;
   name: string;
   custom_name: string | null;
+  account_number: string | null;
   bank_name: string | null;
   bank_id: number | null;
   bank_logo_url: string | null;
   account_type: 'debit' | 'credit' | 'cash';
   currency: string;
   opening_balance: string;
+  opening_balance_date: string; // ISO date 'YYYY-MM-DD'
   balance: number;
   transactions_count: number;
   archived: boolean;
@@ -32,7 +34,10 @@ export type CreateBankAccountBody = {
 
 export type UpdateBankAccountBody = {
   custom_name?: string;
+  account_number?: string;
+  currency?: string;
   opening_balance?: number;
+  opening_balance_date?: string; // ISO date string: 'YYYY-MM-DD'
 };
 
 // ── API calls ─────────────────────────────────────────────────────────────

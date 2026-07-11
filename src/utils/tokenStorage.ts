@@ -101,7 +101,6 @@ const KEYS = {
   COLOR_SCHEME: 'vittio_color_scheme',
   CELEBRATED_GOALS: 'vittio_celebrated_goals',
   CELEBRATED_DEBTS: 'vittio_celebrated_debts',
-  FIRST_IMPORT_CELEBRATED: 'vittio_first_import_celebrated',
 } as const;
 
 // ── Tokens (sensitive — SecureStore with AsyncStorage fallback) ──────────
@@ -208,15 +207,6 @@ async function getCelebratedDebts(): Promise<string[]> {
   try { return JSON.parse(raw) as string[]; } catch { return []; }
 }
 
-async function saveFirstImportCelebrated(seen: boolean): Promise<void> {
-  await prefSet(KEYS.FIRST_IMPORT_CELEBRATED, seen ? '1' : '0');
-}
-
-async function getFirstImportCelebrated(): Promise<boolean> {
-  const stored = await prefGet(KEYS.FIRST_IMPORT_CELEBRATED);
-  return stored === '1';
-}
-
 // Clears account-specific preferences on logout so they don't bleed into the
 // next account on the same device. Device-level prefs (locale, color scheme,
 // biometric lock) are intentionally NOT cleared — the user expects those to
@@ -225,7 +215,6 @@ async function clearAccountPreferences(): Promise<void> {
   await Promise.all([
     prefDelete(KEYS.CELEBRATED_GOALS),
     prefDelete(KEYS.CELEBRATED_DEBTS),
-    prefDelete(KEYS.FIRST_IMPORT_CELEBRATED),
   ]);
 }
 
@@ -248,8 +237,6 @@ export const tokenStorage = {
   getCelebratedGoals,
   saveCelebratedDebts,
   getCelebratedDebts,
-  saveFirstImportCelebrated,
-  getFirstImportCelebrated,
   clearAccountPreferences,
   clearTokens,
 };

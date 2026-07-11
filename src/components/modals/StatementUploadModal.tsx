@@ -21,7 +21,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { es as dateFnsEs } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
-import { X, FileText, CheckCircle, AlertTriangle, ChevronRight } from 'lucide-react-native';
+import { X, FileText, CheckCircle, AlertTriangle, ChevronRight, ArrowRight, Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { resolveBankAccountName } from '../../utils/displayNames';
 import { useTheme } from '../../theme/ThemeContext';
@@ -68,6 +68,19 @@ function lastDayOfPrevMonth(): Date {
 
 const TERMINAL_STATUSES: StatementFile['status'][] = ['completed', 'parsed', 'error'];
 const MAX_POLLS = 40; // 120s
+
+// Celebration confetti flavors — a random one fires on each import that adds
+// at least one new transaction, so repeat imports stay fresh instead of stale.
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+type ConfettiVariant = { colors: string[]; origin: { x: number; y: number }; count: number; explosionSpeed: number };
+const CONFETTI_VARIANTS: ConfettiVariant[] = [
+  // Rising burst from center — brand indigo + emerald
+  { colors: ['#4f46e5', '#10b981', '#818cf8', '#ffffff'], origin: { x: SCREEN_W / 2, y: SCREEN_H + 10 }, count: 90, explosionSpeed: 320 },
+  // Cannon from the left — warm
+  { colors: ['#f59e0b', '#e11d48', '#4f46e5', '#ffffff'], origin: { x: -10, y: SCREEN_H * 0.7 }, count: 70, explosionSpeed: 380 },
+  // Cannon from the right — cool
+  { colors: ['#10b981', '#4f46e5', '#38bdf8', '#ffffff'], origin: { x: SCREEN_W + 10, y: SCREEN_H * 0.7 }, count: 70, explosionSpeed: 380 },
+];
 
 // ── Progress bar ──────────────────────────────────────────────────────────
 
@@ -121,7 +134,9 @@ function PulseIcon() {
     return () => scale.stopAnimation();
   }, []);
   return (
-    <Animated.Text style={[styles.largeEmoji, { transform: [{ scale }] }]}>🤖</Animated.Text>
+    <Animated.View style={[styles.processingBadge, { transform: [{ scale }] }]}>
+      <Sparkles size={32} color="#4f46e5" strokeWidth={2} />
+    </Animated.View>
   );
 }
 
@@ -130,7 +145,7 @@ function PulseIcon() {
 export function StatementUploadModal({ visible, onClose, preselectedAccount }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { locale, showToast, hasSeenFirstImportCelebration, markFirstImportCelebrated } = useUIStore();
+  const { locale, showToast } = useUIStore();
 
   // ── Dark mode ──
   const { theme, isDark } = useTheme();
@@ -150,6 +165,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [result, setResult] = useState<StatementFile | null>(null);
+  const [confettiVariant, setConfettiVariant] = useState<ConfettiVariant>(CONFETTI_VARIANTS[0]);
   const pollCountRef = useRef(0);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visibleRef = useRef(visible);
@@ -261,9 +277,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
           setStep('success');
           queryClient.invalidateQueries({ queryKey: ['transactions'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-          if (!hasSeenFirstImportCelebration) {
+          // Celebrate every import that actually added new transactions, with a
+          // random confetti flavor so repeat imports don't feel stale.
+          if (sf.transactions_count > 0) {
+            setConfettiVariant(CONFETTI_VARIANTS[Math.floor(Math.random() * CONFETTI_VARIANTS.length)]);
             setTimeout(() => confettiRef.current?.start(), 400);
-            markFirstImportCelebrated();
           }
         }
       } else {
@@ -412,7 +430,9 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   <FlatList
                     data={accounts}
                     keyExtractor={(a) => String(a.id)}
-                    scrollEnabled={false}
+                    scrollEnabled
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator
                     renderItem={({ item }) => {
                       const selected = item.id === selectedAccount?.id;
                       return (
@@ -427,7 +447,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                             <Text style={[styles.accountName, selected && { color: '#4f46e5' }]}>
                               {resolveBankAccountName(item, t)}
                             </Text>
-                            <Text style={styles.accountMeta}>{item.account_type} · {item.currency}</Text>
+                            <Text style={styles.accountMeta}>{t(`accounts.types.${item.account_type}`)} · {item.currency}</Text>
                           </View>
                         </TouchableOpacity>
                       );
@@ -511,8 +531,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   {t('statement_upload.success_body', { count: result.transactions_count })}
                 </Text>
               )}
-              <TouchableOpacity style={[styles.primaryBtn, { marginTop: 32 }]} onPress={handleViewTransactions}>
-                <Text style={styles.primaryBtnLabel}>{t('statement_upload.view_transactions')}</Text>
+              <TouchableOpacity style={[styles.primaryBtn, styles.primaryBtnStretch, { marginTop: 32 }]} onPress={handleViewTransactions}>
+                <View style={styles.primaryBtnRow}>
+                  <Text style={styles.primaryBtnLabel}>{t('statement_upload.view_transactions')}</Text>
+                  <ArrowRight size={18} color="#ffffff" strokeWidth={2.5} />
+                </View>
               </TouchableOpacity>
               <TouchableOpacity style={styles.ghostBtn} onPress={onClose}>
                 <Text style={styles.ghostBtnLabel}>{t('statement_upload.close_button')}</Text>
@@ -534,7 +557,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
               )}
               {result?.error_message !== 'timeout' && (
                 <TouchableOpacity
-                  style={[styles.primaryBtn, { marginTop: 32 }]}
+                  style={[styles.primaryBtn, styles.primaryBtnStretch, { marginTop: 32 }]}
                   onPress={handleRetry}
                 >
                   <ActivityIndicator size="small" color="#fff" style={{ display: 'none' }} />
@@ -550,13 +573,13 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       </View>
       <ConfettiCannon
         ref={confettiRef}
-        count={80}
-        origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height + 10 }}
+        count={confettiVariant.count}
+        origin={confettiVariant.origin}
         autoStart={false}
         fadeOut
         fallSpeed={2500}
-        explosionSpeed={300}
-        colors={['#4f46e5', '#10b981', '#f59e0b', '#e11d48', '#ffffff']}
+        explosionSpeed={confettiVariant.explosionSpeed}
+        colors={confettiVariant.colors}
       />
     </Modal>
   );
@@ -744,8 +767,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#4f46e5',
     borderRadius: 12,
     paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: 'center',
     marginBottom: 8,
+  },
+  primaryBtnStretch: {
+    alignSelf: 'stretch',
+  },
+  primaryBtnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   primaryBtnDisabled: {
     backgroundColor: '#cbd5e1',
@@ -770,8 +803,13 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 8,
   },
-  largeEmoji: {
-    fontSize: 64,
+  processingBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   stepTitle: {

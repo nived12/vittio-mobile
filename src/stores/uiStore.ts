@@ -24,10 +24,8 @@ interface UIState {
   // Confetti guards
   celebratedGoals: string[];
   celebratedDebts: string[];
-  hasSeenFirstImportCelebration: boolean;
   addCelebratedGoal: (id: string) => void;
   addCelebratedDebt: (id: string) => void;
-  markFirstImportCelebrated: () => void;
   hydrateCelebrationState: () => Promise<void>;
 
   // Locale
@@ -98,7 +96,6 @@ export const useUIStore = create<UIState>((set, get) => ({
   // ── Confetti guards ─────────────────────────────────────────────────────────
   celebratedGoals: [],
   celebratedDebts: [],
-  hasSeenFirstImportCelebration: false,
   addCelebratedGoal: (id) => {
     const next = [...get().celebratedGoals, id];
     set({ celebratedGoals: next });
@@ -109,18 +106,13 @@ export const useUIStore = create<UIState>((set, get) => ({
     set({ celebratedDebts: next });
     void tokenStorage.saveCelebratedDebts(next);
   },
-  markFirstImportCelebrated: () => {
-    set({ hasSeenFirstImportCelebration: true });
-    void tokenStorage.saveFirstImportCelebrated(true);
-  },
   hydrateCelebrationState: async () => {
     try {
-      const [goals, debts, firstImport] = await Promise.all([
+      const [goals, debts] = await Promise.all([
         tokenStorage.getCelebratedGoals(),
         tokenStorage.getCelebratedDebts(),
-        tokenStorage.getFirstImportCelebrated(),
       ]);
-      set({ celebratedGoals: goals, celebratedDebts: debts, hasSeenFirstImportCelebration: firstImport });
+      set({ celebratedGoals: goals, celebratedDebts: debts });
     } catch {
       // keep defaults
     }
@@ -221,7 +213,6 @@ export const useUIStore = create<UIState>((set, get) => ({
     set({
       celebratedGoals: [],
       celebratedDebts: [],
-      hasSeenFirstImportCelebration: false,
       toasts: [],
       hideConfirmationBanner: false,
       pendingDeepLink: null,

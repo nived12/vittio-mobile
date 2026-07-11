@@ -88,6 +88,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
   const [accountType, setAccountType] = useState<AccountType>('debit');
   const [accountNumber, setAccountNumber] = useState('');
   const [customName, setCustomName] = useState('');
+  const [currency, setCurrency] = useState('MXN');
   const [openingBalanceStr, setOpeningBalanceStr] = useState('');
   const [openingBalanceDate, setOpeningBalanceDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -106,8 +107,14 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       // Credit balances are stored negative — show the absolute value for display
       setOpeningBalanceStr(Math.abs(bal).toFixed(2));
       setIsCash(account.account_type === 'cash');
-      setAccountNumber('');
-      setOpeningBalanceDate(new Date());
+      setAccountNumber(account.account_number ?? '');
+      setCurrency(account.currency || 'MXN');
+      // Parse the stored 'YYYY-MM-DD' as local midnight to avoid a UTC day shift
+      setOpeningBalanceDate(
+        account.opening_balance_date
+          ? new Date(`${account.opening_balance_date}T00:00:00`)
+          : new Date(),
+      );
     } else {
       // Add mode — blank slate
       setSelectedBank(null);
@@ -115,6 +122,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       setAccountType('debit');
       setAccountNumber('');
       setCustomName('');
+      setCurrency('MXN');
       setOpeningBalanceStr('');
       setOpeningBalanceDate(new Date());
     }
@@ -177,7 +185,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 
   // ── Validation ──
   const canSave = isEditMode
-    ? true
+    ? (isCash || accountNumber.trim().length > 0) // account_number required for non-cash
     : (selectedBank !== null || isCash) &&
       (isCash || accountNumber.trim().length > 0); // account_number required for non-cash
 
@@ -195,7 +203,12 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       if (isEditMode && account) {
         const body: UpdateBankAccountBody = {
           ...(customName.trim() ? { custom_name: customName.trim() } : { custom_name: '' }),
+          ...(account.account_type !== 'cash' && accountNumber.trim()
+            ? { account_number: accountNumber.trim() }
+            : {}),
+          currency: currency.trim() || 'MXN',
           opening_balance: account.account_type === 'credit' ? -Math.abs(openingBalance) : openingBalance,
+          opening_balance_date: toISODate(openingBalanceDate),
         };
         await updateMutation.mutateAsync(body);
         showToast(t('bank_accounts.updated_toast'), 'success');
@@ -205,7 +218,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
           account_type: accountType,
           ...(!isCash ? { account_number: accountNumber.trim() } : {}),
           ...(customName.trim() ? { custom_name: customName.trim() } : {}),
-          currency: 'MXN',
+          currency: currency.trim() || 'MXN',
           // Credit balances are liabilities — store as negative to match web convention
           opening_balance: accountType === 'credit' ? -Math.abs(openingBalance) : openingBalance,
           opening_balance_date: toISODate(openingBalanceDate),
@@ -367,8 +380,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                     </View>
                   )}
 
-                  {/* ── Account number (add mode, non-cash only) ── */}
-                  {!isEditMode && !isCash && (
+                  {/* ── Account number (non-cash only) ── */}
+                  {!isCash && (
                     <View style={styles.fieldBlock}>
                       <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.account_number_label')}</Text>
                       <TextInput
@@ -459,13 +472,21 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                     <Text style={styles.fieldHint}>{t('bank_accounts.name_hint')}</Text>
                   </View>
 
-                  {/* ── Currency — locked MVP ── */}
+                  {/* ── Currency ── */}
                   <View style={styles.fieldBlock}>
                     <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.currency_label')}</Text>
-                    <View style={[styles.fieldRow, styles.fieldRowLocked, { backgroundColor: inputBg }]}>
-                      <Text style={[styles.fieldRowLockedText]}>MXN — Peso mexicano</Text>
-                      <Lock size={14} color="#94a3b8" />
-                    </View>
+                    <TextInput
+                      style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary }]}
+                      value={currency}
+                      onChangeText={(v) => setCurrency(v.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 3))}
+                      placeholder="MXN"
+                      placeholderTextColor="#94a3b8"
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                      maxLength={3}
+                      returnKeyType="next"
+                    />
+                    <Text style={styles.fieldHint}>{t('bank_accounts.currency_hint')}</Text>
                   </View>
 
                   {/* ── Opening balance ── */}
@@ -516,9 +537,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                     <Text style={styles.fieldHint}>{t('bank_accounts.opening_balance_hint')}</Text>
                   </View>
 
-                  {/* ── Opening balance date (add mode only) ── */}
-                  {!isEditMode && (
-                    <View style={styles.fieldBlock}>
+                  {/* ── Opening balance date ── */}
+                  <View style={styles.fieldBlock}>
                       <Text style={[styles.sectionLabel, { color: textSecondary }]}>
                         {t('bank_accounts.opening_balance_date_label')}
                       </Text>
@@ -556,8 +576,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                           )}
                         </>
                       )}
-                    </View>
-                  )}
+                  </View>
 
                   {/* ── Save button ── */}
                   <TouchableOpacity
