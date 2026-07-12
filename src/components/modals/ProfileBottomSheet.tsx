@@ -27,6 +27,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useRequireConfirmed } from '../../hooks/useRequireConfirmed';
 import { useRecurringSummary } from '../../hooks/useRecurringSummary';
 import { apiClient } from '../../api/client';
+import { resolveAvatarUrl } from '../../utils/displayNames';
 import { ReportPickerModal } from './ReportPickerModal';
 import { colors, spacing, textStyles } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
@@ -91,6 +92,7 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
 
   const initials = getInitials(user);
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
+  const avatarUrl = resolveAvatarUrl(user?.avatar_url);
 
   function handleUpload() {
     requireConfirmed(() => {
@@ -210,9 +212,9 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
             accessibilityLabel={t('profile.changeAvatar')}
             style={styles.avatarWrapper}
           >
-            {user?.avatar_url ? (
+            {avatarUrl ? (
               <Image
-                source={{ uri: user.avatar_url }}
+                source={{ uri: avatarUrl }}
                 style={styles.avatar}
               />
             ) : (

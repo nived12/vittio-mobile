@@ -189,6 +189,10 @@
       "placeholder": "Buscar transacciones...",
       "clearFilters": "Limpiar filtros"
     },
+    "statement_filter": {
+      "active": "Mostrando solo este estado de cuenta",
+      "clear": "Quitar"
+    },
     "filter": "Filtrar",
     "income": "Ingreso",
     "expense": "Gasto",

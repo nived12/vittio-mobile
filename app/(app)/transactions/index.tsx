@@ -13,9 +13,9 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Repeat2, Search, SlidersHorizontal, X } from 'lucide-react-native';
+import { FileText, Repeat2, Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import {
   useTransactions,
@@ -303,6 +303,13 @@ export default function TransactionsScreen() {
   const locale = useUIStore((s) => s.locale);
   const showToast = useUIStore((s) => s.showToast);
 
+  // Statement file filter — set when arriving from the upload "Ver transacciones" CTA
+  const { statement_file_id } = useLocalSearchParams<{ statement_file_id?: string }>();
+  const statementFileId = statement_file_id ? Number(statement_file_id) : undefined;
+  const clearStatementFilter = useCallback(() => {
+    router.setParams({ statement_file_id: '' });
+  }, []);
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -321,10 +328,12 @@ export default function TransactionsScreen() {
   const categories = categoriesData ?? [];
 
   const filterBadgeCount = countActiveFilters(activeFilters);
+  const hasActiveFilter = Boolean(debouncedSearch) || filterBadgeCount > 0 || Boolean(statementFileId);
 
   const filters: TransactionFilters = useMemo(() => {
     const f: TransactionFilters = {};
     if (debouncedSearch) f.search = debouncedSearch;
+    if (statementFileId) f.statement_file_id = statementFileId;
     if (activeFilters.period) {
       const range = getDateRange(activeFilters.period);
       f.from_date = range.from_date;
@@ -334,7 +343,7 @@ export default function TransactionsScreen() {
     if (activeFilters.txType === 'income') f.transaction_type = 'income';
     if (activeFilters.txType === 'expense') f.transaction_type = 'variable_expense';
     return f;
-  }, [debouncedSearch, activeFilters]);
+  }, [debouncedSearch, activeFilters, statementFileId]);
 
   const {
     data: infiniteData,
@@ -550,6 +559,26 @@ export default function TransactionsScreen() {
         </View>
       </View>
 
+      {/* Statement file filter banner */}
+      {statementFileId && (
+        <View style={[styles.statementBanner, { backgroundColor: isDark ? theme.surfaceElevated : '#eef2ff', borderColor: isDark ? theme.border : '#c7d2fe' }]}>
+          <FileText size={16} color="#4f46e5" />
+          <Text style={[styles.statementBannerText, { color: textPrimary }]} numberOfLines={1}>
+            {t('transactions.statement_filter.active')}
+          </Text>
+          <TouchableOpacity
+            onPress={clearStatementFilter}
+            hitSlop={8}
+            style={styles.statementBannerClear}
+            accessibilityRole="button"
+            accessibilityLabel={t('transactions.statement_filter.clear')}
+          >
+            <Text style={styles.statementBannerClearText}>{t('transactions.statement_filter.clear')}</Text>
+            <X size={14} color="#4f46e5" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* List */}
       {isLoading ? (
         <FlatList
@@ -570,23 +599,23 @@ export default function TransactionsScreen() {
         />
       ) : transactions.length === 0 ? (
         <EmptyState
-          icon={debouncedSearch || filterBadgeCount > 0 ? 'search-x' : 'receipt'}
-          iconColor={debouncedSearch || filterBadgeCount > 0 ? '#cbd5e1' : '#c7d2fe'}
+          icon={hasActiveFilter ? 'search-x' : 'receipt'}
+          iconColor={hasActiveFilter ? '#cbd5e1' : '#c7d2fe'}
           title={
-            debouncedSearch || filterBadgeCount > 0
+            hasActiveFilter
               ? t('transactions.empty.noResults.title')
               : t('transactions.empty.noTransactions.title')
           }
           subtitle={
-            debouncedSearch || filterBadgeCount > 0
+            hasActiveFilter
               ? t('transactions.empty.noResults.subtitle')
               : t('transactions.empty.noTransactions.subtitle')
           }
-          ctaLabel={debouncedSearch || filterBadgeCount > 0 ? t('transactions.search.clearFilters') : undefined}
+          ctaLabel={hasActiveFilter ? t('transactions.search.clearFilters') : undefined}
           ctaVariant="ghost"
           onCta={
-            debouncedSearch || filterBadgeCount > 0
-              ? () => { setSearch(''); setDebouncedSearch(''); setActiveFilters({}); }
+            hasActiveFilter
+              ? () => { setSearch(''); setDebouncedSearch(''); setActiveFilters({}); clearStatementFilter(); }
               : undefined
           }
           fullScreen
@@ -739,6 +768,20 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   summaryLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#64748b' },
+  statementBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  statementBannerText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13 },
+  statementBannerClear: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  statementBannerClearText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#4f46e5' },
   separator: { height: 1, backgroundColor: '#f1f5f9' },
   footer: { height: 40, alignItems: 'center', justifyContent: 'center' },
   allCaughtUp: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#94a3b8' },

@@ -21,6 +21,16 @@ export function resolveBankAccountName(
     return t('accounts.unknownAccount');
 }
 
+// The API never returns a null avatar_url — when the user hasn't uploaded a
+// photo it falls back to a generated ui-avatars.com placeholder. That external
+// image renders inconsistently (it clips in the small header circle), so we
+// treat it as "no custom avatar" and let the local initials fallback render.
+export function resolveAvatarUrl(avatarUrl?: string | null): string | null {
+    if (!avatarUrl?.trim()) return null;
+    if (avatarUrl.includes('ui-avatars.com')) return null;
+    return avatarUrl;
+}
+
 // Priority: concept → merchant → description → em-dash fallback
 export function resolveTransactionLabel(
     concept?: string | null,

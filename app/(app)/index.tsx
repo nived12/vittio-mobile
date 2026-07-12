@@ -25,6 +25,7 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { AvatarCircle } from '../../src/components/AvatarCircle';
+import { resolveAvatarUrl } from '../../src/utils/displayNames';
 import { ProfileBottomSheet } from '../../src/components/modals/ProfileBottomSheet';
 import { BalanceCard } from '../../src/components/ui/BalanceCard';
 import { ChartBar } from '../../src/components/ui/ChartBar';
@@ -253,7 +254,7 @@ export default function DashboardScreen() {
             />
           </View>
           <View style={styles.topBarSide}>
-            <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} isPremium={isPremium} avatarUrl={user?.avatar_url} />
+            <AvatarCircle initials={initials} onPress={() => setShowProfile(true)} isPremium={isPremium} avatarUrl={resolveAvatarUrl(user?.avatar_url)} />
           </View>
         </View>
 

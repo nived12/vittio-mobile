@@ -189,6 +189,10 @@
       "placeholder": "Search transactions...",
       "clearFilters": "Clear filters"
     },
+    "statement_filter": {
+      "active": "Showing only this statement",
+      "clear": "Clear"
+    },
     "filter": "Filter",
     "income": "Income",
     "expense": "Expense",
