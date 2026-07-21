@@ -114,6 +114,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { queryClient } = await import('../lib/queryClient');
       queryClient.clear();
+      // clear() only wipes memory — also purge the on-disk persisted cache, or
+      // one account's data could rehydrate into the next session on this device.
+      const { queryPersister } = await import('../lib/queryPersister');
+      await queryPersister.removeClient();
     } catch {
       // Best-effort — never block logout on cache teardown
     }

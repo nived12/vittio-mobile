@@ -1,4 +1,7 @@
 {
+  "offline": {
+    "banner": "Offline — showing saved data"
+  },
   "auth": {
     "login": {
       "title": "Welcome back",
