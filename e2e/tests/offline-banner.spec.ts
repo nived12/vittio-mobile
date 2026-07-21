@@ -27,12 +27,16 @@ test.describe("Offline banner (mobile web)", () => {
     // Online: no banner.
     await expect(banner).toHaveCount(0);
 
-    // Go offline → banner appears.
+    // Go offline. context.setOffline() drops the network but does NOT dispatch
+    // the DOM offline event / flip navigator.onLine, which is the signal the
+    // banner (and the whole web platform) listens to — so we emit it explicitly.
     await context.setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event("offline")));
     await expect(banner.first()).toBeVisible();
 
     // Back online → banner disappears.
     await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event("online")));
     await expect(banner).toHaveCount(0);
   });
 });
