@@ -14,22 +14,22 @@
       "ci": {
         "commitHref": "https://github.com/nived12/vittio-mobile/commit/92718cfc778e6750f09d0d59b891d59b70bfbade",
         "commitHash": "92718cfc778e6750f09d0d59b891d59b70bfbade",
-        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/29792063257"
+        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/29800753447"
       },
       "gitCommit": {
-        "shortHash": "928340a",
-        "hash": "928340ab4310d7d23ff6057e090a06c8b2917a56",
-        "subject": "Add read-only offline support via persisted query cache",
-        "body": "Add read-only offline support via persisted query cache\n\nPersist the TanStack Query cache to disk (AsyncStorage) so previously-synced\ndata renders on cold start when offline, instead of falling back to\nloading/error states. Adds a NetInfo-driven banner so users know data may be\nstale. Read-only only — no offline writes, mutation queueing, or sync.\n\n- queryPersister: AsyncStorage-backed persister (VITTIO_RQ_CACHE)\n- _layout: QueryClientProvider -> PersistQueryClientProvider; persist only\n  successful queries; mount OfflineBanner\n- queryClient: gcTime 10m -> 24h (>= persister maxAge) so restored entries\n  survive to cold start; staleTime stays 5m for prompt refetch when online\n- authStore._clearAuth: purge on-disk cache on logout so one account's data\n  can't rehydrate into the next session\n- OfflineBanner + i18n strings (en/es)\n- e2e: offline-banner.spec.ts (banner appears offline / hides online)\n\nLogout-purge cross-account isolation is verified manually on the iOS\nSimulator; no jest infra exists and bootstrapping it for one assertion isn't\nwarranted.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_014FCNefed5zoDxkikmJJ6D9\n",
+        "shortHash": "d8bf7bf",
+        "hash": "d8bf7bf57bd2c4958cd0b9acbc7fbf8cb704babe",
+        "subject": "Fix flaky accounts spec heading selector",
+        "body": "Fix flaky accounts spec heading selector\n\nThe tab-bar \"Cuentas\" label also matches getByRole(\"heading\", {name:\n/accounts|cuentas/i}) on react-native-web, so the assertion hit a strict-mode\nviolation (2 elements) on first attempt and only passed on retry. Add .first()\nto match the other assertions in this spec.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_014FCNefed5zoDxkikmJJ6D9\n",
         "author": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1784595762000
+          "time": 1784596395000
         },
         "committer": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1784595762000
+          "time": 1784596395000
         },
         "branch": "HEAD"
       },
@@ -45,22 +45,22 @@
           "ci": {
             "commitHref": "https://github.com/nived12/vittio-mobile/commit/92718cfc778e6750f09d0d59b891d59b70bfbade",
             "commitHash": "92718cfc778e6750f09d0d59b891d59b70bfbade",
-            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/29792063257"
+            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/29800753447"
           },
           "gitCommit": {
-            "shortHash": "928340a",
-            "hash": "928340ab4310d7d23ff6057e090a06c8b2917a56",
-            "subject": "Add read-only offline support via persisted query cache",
-            "body": "Add read-only offline support via persisted query cache\n\nPersist the TanStack Query cache to disk (AsyncStorage) so previously-synced\ndata renders on cold start when offline, instead of falling back to\nloading/error states. Adds a NetInfo-driven banner so users know data may be\nstale. Read-only only — no offline writes, mutation queueing, or sync.\n\n- queryPersister: AsyncStorage-backed persister (VITTIO_RQ_CACHE)\n- _layout: QueryClientProvider -> PersistQueryClientProvider; persist only\n  successful queries; mount OfflineBanner\n- queryClient: gcTime 10m -> 24h (>= persister maxAge) so restored entries\n  survive to cold start; staleTime stays 5m for prompt refetch when online\n- authStore._clearAuth: purge on-disk cache on logout so one account's data\n  can't rehydrate into the next session\n- OfflineBanner + i18n strings (en/es)\n- e2e: offline-banner.spec.ts (banner appears offline / hides online)\n\nLogout-purge cross-account isolation is verified manually on the iOS\nSimulator; no jest infra exists and bootstrapping it for one assertion isn't\nwarranted.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_014FCNefed5zoDxkikmJJ6D9\n",
+            "shortHash": "d8bf7bf",
+            "hash": "d8bf7bf57bd2c4958cd0b9acbc7fbf8cb704babe",
+            "subject": "Fix flaky accounts spec heading selector",
+            "body": "Fix flaky accounts spec heading selector\n\nThe tab-bar \"Cuentas\" label also matches getByRole(\"heading\", {name:\n/accounts|cuentas/i}) on react-native-web, so the assertion hit a strict-mode\nviolation (2 elements) on first attempt and only passed on retry. Add .first()\nto match the other assertions in this spec.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_014FCNefed5zoDxkikmJJ6D9\n",
             "author": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1784595762000
+              "time": 1784596395000
             },
             "committer": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1784595762000
+              "time": 1784596395000
             },
             "branch": "HEAD"
           },
@@ -137,12 +137,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2686,
+                  "duration": 1639,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:06:29.926Z",
+                  "startTime": "2026-07-21T04:17:56.624Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -178,77 +178,18 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 2199,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /accounts|cuentas/i })\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /accounts|cuentas/i }) resolved to 2 elements:\n    1) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-adyw6z r-eaezby\">Accounts</h1> aka getByRole('heading', { name: 'Accounts', exact: true })\n    2) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-1inkyih r-hbpseb r-5oul0u r-q4m81j\">No bank accounts yet</h1> aka getByRole('heading', { name: 'No bank accounts yet' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /accounts|cuentas/i })\u001b[22m\n",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /accounts|cuentas/i })\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /accounts|cuentas/i }) resolved to 2 elements:\n    1) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-adyw6z r-eaezby\">Accounts</h1> aka getByRole('heading', { name: 'Accounts', exact: true })\n    2) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-1inkyih r-hbpseb r-5oul0u r-q4m81j\">No bank accounts yet</h1> aka getByRole('heading', { name: 'No bank accounts yet' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /accounts|cuentas/i })\u001b[22m\n\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/accounts.spec.ts:10:74",
-                    "location": {
-                      "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/accounts.spec.ts",
-                      "column": 74,
-                      "line": 10
-                    },
-                    "snippet": "\u001b[0m \u001b[90m  8 |\u001b[39m\n \u001b[90m  9 |\u001b[39m test(\u001b[32m\"accounts tab renders list\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/accounts|cuentas/i\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 11 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/total balance|saldo total/i\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 12 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m\"BBVA TDD\"\u001b[39m)\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/accounts.spec.ts",
-                        "column": 74,
-                        "line": 10
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /accounts|cuentas/i })\nExpected: visible\nError: strict mode violation: getByRole('heading', { name: /accounts|cuentas/i }) resolved to 2 elements:\n    1) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-adyw6z r-eaezby\">Accounts</h1> aka getByRole('heading', { name: 'Accounts', exact: true })\n    2) <h1 dir=\"auto\" role=\"heading\" class=\"css-146c3p1 r-1bxoz39 r-1inkyih r-hbpseb r-5oul0u r-q4m81j\">No bank accounts yet</h1> aka getByRole('heading', { name: 'No bank accounts yet' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /accounts|cuentas/i })\u001b[22m\n\n\n   8 |\n   9 | test(\"accounts tab renders list\", async ({ page }) => {\n> 10 |   await expect(page.getByRole(\"heading\", { name: /accounts|cuentas/i })).toBeVisible();\n     |                                                                          ^\n  11 |   await expect(page.getByText(/total balance|saldo total/i).first()).toBeVisible();\n  12 |   await expect(page.getByText(\"BBVA TDD\").first()).toBeVisible();\n  13 | });\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/accounts.spec.ts:10:74"
-                    }
-                  ],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-07-21T01:06:32.872Z",
-                  "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "screenshot",
-                      "contentType": "image/png",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/accounts-accounts-tab-renders-list-chromium/test-failed-1.png"
-                    },
-                    {
-                      "name": "video",
-                      "contentType": "video/webm",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/accounts-accounts-tab-renders-list-chromium/video.webm"
-                    },
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/accounts-accounts-tab-renders-list-chromium/error-context.md"
-                    }
-                  ],
-                  "errorLocation": {
-                    "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/accounts.spec.ts",
-                    "column": 74,
-                    "line": 10
-                  }
-                },
-                {
-                  "workerIndex": 1,
-                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3622,
+                  "duration": 1419,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
-                  "retry": 1,
-                  "startTime": "2026-07-21T01:06:35.686Z",
+                  "retry": 0,
+                  "startTime": "2026-07-21T04:17:58.929Z",
                   "annotations": [],
-                  "attachments": [
-                    {
-                      "name": "trace",
-                      "contentType": "application/zip",
-                      "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/accounts-accounts-tab-renders-list-chromium-retry1/trace.zip"
-                    }
-                  ]
+                  "attachments": []
                 }
               ],
-              "status": "flaky"
+              "status": "expected"
             }
           ],
           "id": "cbe1475516a9f5b841ab-f1143b9a8686cd669be6",
@@ -284,15 +225,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2390,
+                      "duration": 1510,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:39.554Z",
+                      "startTime": "2026-07-21T04:18:00.363Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -318,15 +259,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2488,
+                      "duration": 1673,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:41.956Z",
+                      "startTime": "2026-07-21T04:18:01.879Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -352,15 +293,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2346,
+                      "duration": 1586,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:44.457Z",
+                      "startTime": "2026-07-21T04:18:03.559Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -386,15 +327,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2738,
+                      "duration": 2036,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:46.815Z",
+                      "startTime": "2026-07-21T04:18:05.153Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -420,15 +361,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2464,
+                      "duration": 1609,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:49.566Z",
+                      "startTime": "2026-07-21T04:18:07.196Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -464,15 +405,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1559,
+                  "duration": 1033,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:06:52.044Z",
+                  "startTime": "2026-07-21T04:18:08.813Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -506,15 +447,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2240,
+                  "duration": 1452,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:06:53.613Z",
+                  "startTime": "2026-07-21T04:18:09.853Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -548,15 +489,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 1,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1645,
+                  "duration": 1015,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:06:55.871Z",
+                  "startTime": "2026-07-21T04:18:11.314Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -597,15 +538,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2375,
+                      "duration": 1567,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:57.533Z",
+                      "startTime": "2026-07-21T04:18:12.337Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -631,15 +572,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2206,
+                      "duration": 1426,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:06:59.920Z",
+                      "startTime": "2026-07-21T04:18:13.910Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -671,7 +612,7 @@
           "specs": [
             {
               "title": "shows when offline and hides when back online",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -682,118 +623,20 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 17415,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts:32:34",
-                        "location": {
-                          "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                          "column": 34,
-                          "line": 32
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 30 |\u001b[39m     \u001b[90m// Go offline → banner appears.\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m context\u001b[33m.\u001b[39msetOffline(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m expect(banner\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[90m// Back online → banner disappears.\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m context\u001b[33m.\u001b[39msetOffline(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                            "column": 34,
-                            "line": 32
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n\n\n  30 |     // Go offline → banner appears.\n  31 |     await context.setOffline(true);\n> 32 |     await expect(banner.first()).toBeVisible();\n     |                                  ^\n  33 |\n  34 |     // Back online → banner disappears.\n  35 |     await context.setOffline(false);\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts:32:34"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1034,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-07-21T01:07:02.140Z",
+                      "startTime": "2026-07-21T04:18:15.346Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                        "column": 34,
-                        "line": 32
-                      }
-                    },
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 18158,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts:32:34",
-                        "location": {
-                          "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                          "column": 34,
-                          "line": 32
-                        },
-                        "snippet": "\u001b[0m \u001b[90m 30 |\u001b[39m     \u001b[90m// Go offline → banner appears.\u001b[39m\n \u001b[90m 31 |\u001b[39m     \u001b[36mawait\u001b[39m context\u001b[33m.\u001b[39msetOffline(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 32 |\u001b[39m     \u001b[36mawait\u001b[39m expect(banner\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 33 |\u001b[39m\n \u001b[90m 34 |\u001b[39m     \u001b[90m// Back online → banner disappears.\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m context\u001b[33m.\u001b[39msetOffline(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                            "column": 34,
-                            "line": 32
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/offline — showing saved data|sin conexión — mostrando datos guardados/i).first()\u001b[22m\n\n\n  30 |     // Go offline → banner appears.\n  31 |     await context.setOffline(true);\n> 32 |     await expect(banner.first()).toBeVisible();\n     |                                  ^\n  33 |\n  34 |     // Back online → banner disappears.\n  35 |     await context.setOffline(false);\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts:32:34"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-07-21T01:07:20.179Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium-retry1/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium-retry1/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium-retry1/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/offline-banner-Offline-ban-4f4ce--and-hides-when-back-online-chromium-retry1/trace.zip"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/offline-banner.spec.ts",
-                        "column": 34,
-                        "line": 32
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "05d9a0378c585ccfc14c-e91f8bdf2f38d3161fcb",
@@ -824,15 +667,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2495,
+                  "duration": 1416,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:39.254Z",
+                  "startTime": "2026-07-21T04:18:16.387Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -858,15 +701,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2386,
+                  "duration": 1469,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:41.865Z",
+                  "startTime": "2026-07-21T04:18:17.810Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -892,15 +735,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2318,
+                  "duration": 1464,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:44.267Z",
+                  "startTime": "2026-07-21T04:18:19.286Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -926,15 +769,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2133,
+                  "duration": 1368,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:46.598Z",
+                  "startTime": "2026-07-21T04:18:20.756Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -968,15 +811,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3277,
+                  "duration": 2364,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:48.748Z",
+                  "startTime": "2026-07-21T04:18:22.135Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1002,15 +845,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3029,
+                  "duration": 2126,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:52.039Z",
+                  "startTime": "2026-07-21T04:18:24.510Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1044,15 +887,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 3,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2189,
+                  "duration": 1457,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-21T01:07:55.082Z",
+                  "startTime": "2026-07-21T04:18:26.645Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1070,11 +913,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-21T01:06:28.237Z",
-    "duration": 89109.649,
-    "expected": 18,
+    "startTime": "2026-07-21T04:17:55.261Z",
+    "duration": 32897.026,
+    "expected": 20,
     "skipped": 0,
-    "unexpected": 1,
-    "flaky": 1
+    "unexpected": 0,
+    "flaky": 0
   }
 }
