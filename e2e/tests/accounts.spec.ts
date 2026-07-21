@@ -7,7 +7,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("accounts tab renders list", async ({ page }) => {
-  await expect(page.getByRole("heading", { name: /accounts|cuentas/i })).toBeVisible();
+  // .first() — the tab-bar "Cuentas" label also matches as a heading on web.
+  await expect(page.getByRole("heading", { name: /accounts|cuentas/i }).first()).toBeVisible();
   await expect(page.getByText(/total balance|saldo total/i).first()).toBeVisible();
   await expect(page.getByText("BBVA TDD").first()).toBeVisible();
 });
