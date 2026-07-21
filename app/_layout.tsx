@@ -30,8 +30,9 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import * as Font from 'expo-font';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { queryClient, PERSIST_MAX_AGE } from '@/lib/queryClient';
+import { queryPersister } from '@/lib/queryPersister';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -51,6 +52,7 @@ import { useAuthStore } from '../src/stores/authStore';
 import { useUIStore } from '../src/stores/uiStore';
 import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { AnalyticsPrivacyNotice, OPT_OUT_KEY } from '../src/components/AnalyticsPrivacyNotice';
+import { OfflineBanner } from '../src/components/OfflineBanner';
 import { registerForPushNotifications } from '../src/utils/notifications';
 import { ThemeProvider } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
@@ -203,14 +205,26 @@ function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+              persister: queryPersister,
+              maxAge: PERSIST_MAX_AGE,
+              // Only persist successful queries — never write error/loading
+              // states to disk where they'd rehydrate as broken screens.
+              dehydrateOptions: {
+                shouldDehydrateQuery: (query) => query.state.status === 'success',
+              },
+            }}
+          >
             <StatusBar style="auto" />
             <Slot />
+            <OfflineBanner />
             {showLock && (
               <BiometricLockScreen onUnlock={() => setShowLock(false)} />
             )}
             {isAuthenticated && <AnalyticsPrivacyNotice />}
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

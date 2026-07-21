@@ -1,4 +1,7 @@
 {
+  "offline": {
+    "banner": "Sin conexión — mostrando datos guardados"
+  },
   "auth": {
     "login": {
       "title": "Bienvenido de vuelta",
