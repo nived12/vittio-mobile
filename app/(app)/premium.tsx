@@ -77,8 +77,8 @@ const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api
 const _appBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
 const SUCCESS_URL       = `${_appBase}/checkout/success`;
 const CANCEL_URL        = `${_appBase}/subscription`;
-const MONTHLY_PRICE_MXN = 149;
-const ANNUAL_PRICE_MXN  = 99;
+const MONTHLY_PRICE_MXN = 99;
+const ANNUAL_PRICE_MXN  = 75;
 
 // Stripe webhooks can take 2-5 seconds to process after the browser closes.
 // Poll up to 5 times with 1.5s delays before giving up and navigating home anyway.
@@ -350,7 +350,7 @@ export default function PremiumScreen() {
             activeOpacity={0.8}
           >
             <Text style={[styles.planLabel, { color: textSecondary }]}>{t('premium.monthly.label')}</Text>
-            <Text style={[styles.planPrice, { color: textPrimary }]}>$149</Text>
+            <Text style={[styles.planPrice, { color: textPrimary }]}>${MONTHLY_PRICE_MXN}</Text>
             <Text style={[styles.planUnit, { color: textSecondary }]}>{t('premium.monthly.unit')}</Text>
             <View style={[styles.planCta, { borderColor: colors.primary }]}>
               {loadingInterval === 'month' ? (

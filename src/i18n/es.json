@@ -1095,9 +1095,9 @@
     "annual": {
       "label": "ANUAL",
       "unit": "MXN/mes",
-      "total": "$1,188 MXN/año",
-      "cta": "Ahorra $600/año",
-      "savingsBadge": "-33%"
+      "total": "$899 MXN/año",
+      "cta": "Ahorra $289/año",
+      "savingsBadge": "-24%"
     },
     "ivaNote": "IVA incluido · Cancela cuando quieras",
     "manageBtn": "Gestionar suscripción",

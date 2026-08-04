@@ -1,0 +1,35 @@
+{
+  "_comment": "Order here IS the App Store display order. Apple shows the first 2-3 in search results, so the two strongest go first. Keep captions <= 2 lines and subs <= 1 line at the rendered sizes, or they overflow into the device frame.",
+  "slides": [
+    {
+      "source": "01-dashboard.png",
+      "es": { "caption": "Tus finanzas claras,\nsin conectar tu banco", "sub": "Saldos, ingresos y gastos del mes" },
+      "en": { "caption": "Clear finances,\nno bank login", "sub": "Balances, income and spending at a glance" }
+    },
+    {
+      "source": "04-statement.png",
+      "es": { "caption": "Sube tu estado\nde cuenta en PDF", "sub": "Lo leemos, lo categorizamos y omitimos duplicados" },
+      "en": { "caption": "Upload your\nbank statement PDF", "sub": "We read it, categorize it and skip duplicates" }
+    },
+    {
+      "source": "02-transactions.png",
+      "es": { "caption": "Cada movimiento,\nya categorizado", "sub": "Comercio, cuenta y categoría automáticos" },
+      "en": { "caption": "Every transaction,\nalready categorized", "sub": "Merchant, account and category, automatic" }
+    },
+    {
+      "source": "03-voice.png",
+      "es": { "caption": "Registra un gasto\nhablando", "sub": "O escanea el ticket con la cámara" },
+      "en": { "caption": "Log an expense\nby voice", "sub": "Or scan the receipt with your camera" }
+    },
+    {
+      "source": "05-assistant.png",
+      "es": { "caption": "Pregunta lo que quieras\nsobre tu dinero", "sub": "Respuestas basadas en tus datos reales" },
+      "en": { "caption": "Ask anything\nabout your money", "sub": "Answers based on your real data" }
+    },
+    {
+      "source": "04-statement-fab.png",
+      "es": { "caption": "Tres formas\nde capturar", "sub": "Manual, estado de cuenta o Vittbot" },
+      "en": { "caption": "Three ways\nto capture", "sub": "Manual, statement upload or Vittbot" }
+    }
+  ]
+}

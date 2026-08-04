@@ -1095,9 +1095,9 @@
     "annual": {
       "label": "ANNUAL",
       "unit": "MXN/mo",
-      "total": "$1,188 MXN/yr",
-      "cta": "Save $600/yr",
-      "savingsBadge": "-33%"
+      "total": "$899 MXN/yr",
+      "cta": "Save $289/yr",
+      "savingsBadge": "-24%"
     },
     "ivaNote": "VAT included · Cancel anytime",
     "manageBtn": "Manage subscription",
