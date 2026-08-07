@@ -18,11 +18,28 @@ the point of this file is to look like production, not to invent a catalog.
 npx expo run:ios          # dev build — react-native-purchases is native, Expo Go cannot load it
 ```
 
-Then in Xcode: **Product → Scheme → Edit Scheme → Run → Options →
-StoreKit Configuration → Vittio.storekit**.
+Then, in Xcode (`ios/Vittio.xcworkspace`):
 
-Set the storefront to **Mexico** in the same Options pane if the prices render in
-the wrong currency — `_storefront` in this file is a hint, and the scheme wins.
+1. Drag this file into the project navigator. Uncheck **Copy items if needed** and
+   uncheck every target — it is a debug tool, not app content.
+   The scheme dropdown only lists configs that are in the project, which is why
+   this step cannot be skipped.
+2. **Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration →
+   Vittio.storekit**.
+
+Set the storefront to **Mexico** in the same Options pane if prices render in the
+wrong currency — `_storefront` here is a hint, and the scheme wins.
+
+## Why not just use a sandbox account
+
+You cannot, in the Simulator. Its Settings app has no App Store pane, so there is
+nowhere to sign a Sandbox Apple Account in. Sandbox testing is physical-device
+only. This file is the Simulator's only route to correct prices.
+
+Without it the Simulator falls back to the **US storefront** and renders the US
+equivalents of the Mexican price points — $4.99 and $39.99 instead of $99 and
+$899. The product ids are still correct, so it looks fine until you read the
+currency. Check the `[purchases] offering:` log before screenshotting anything.
 
 ## What this does and does not prove
 
