@@ -88,9 +88,18 @@ const CANCEL_URL        = `${_appBase}/subscription`;
 const MONTHLY_PRICE_MXN = 99;
 const ANNUAL_PRICE_MXN  = 75;
 
-// Stripe webhooks can take 2-5 seconds to process after the browser closes.
-// Poll up to 5 times with 1.5s delays before giving up and navigating home anyway.
-async function pollUntilActive(attempts = 5, delayMs = 1500): Promise<boolean> {
+// Stripe webhooks land in 2-5s after the browser closes. RevenueCat's take longer:
+// a measured sandbox purchase confirmed at 18:06:05 and the webhook arrived at
+// 18:06:14 — nine seconds, one second past the old 5x1.5s window. Missing it tells
+// a buyer their purchase is still "activating" when it already succeeded, which to
+// an App Review tester looks like a purchase that did nothing.
+//
+// Callers pass their own budget; the loop exits as soon as the server says active,
+// so a longer window costs nothing in the common case.
+const STRIPE_POLL = { attempts: 5, delayMs: 1500 };
+const IAP_POLL = { attempts: 15, delayMs: 2000 };
+
+async function pollUntilActive({ attempts, delayMs }: { attempts: number; delayMs: number }): Promise<boolean> {
   for (let i = 0; i < attempts; i++) {
     const s = await fetchSubscriptionStatus();
     if (s.status === 'active') return true;
@@ -204,7 +213,7 @@ export default function PremiumScreen() {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
       });
       // Browser closed — poll for active status (webhook may take a few seconds)
-      const isNowActive = await pollUntilActive();
+      const isNowActive = await pollUntilActive(STRIPE_POLL);
       const freshUser   = await authApi.me();
       setUser(freshUser);
       showToast(
@@ -228,7 +237,7 @@ export default function PremiumScreen() {
       const outcome = await purchasePremium(pkg.id);
       if (outcome === 'cancelled') return;
 
-      const isNowActive = await pollUntilActive();
+      const isNowActive = await pollUntilActive(IAP_POLL);
       const freshUser   = await authApi.me();
       setUser(freshUser);
       showToast(
@@ -247,10 +256,25 @@ export default function PremiumScreen() {
   async function handleRestore() {
     setRestoring(true);
     try {
+      // Apple's answer is the fast path: nothing to restore means nothing to wait for.
       const restored = await restorePremium();
+      if (!restored) {
+        showToast(t('premium.restoreNone'), 'info');
+        return;
+      }
+
+      // Something exists, so give the webhook the same budget a purchase gets — a
+      // restore on a reinstall travels the identical Apple -> RevenueCat -> server
+      // path, and answering before it lands reports "no purchases" to someone who
+      // has one.
+      await pollUntilActive(IAP_POLL);
       const freshUser = await authApi.me();
       setUser(freshUser);
-      if (restored || freshUser.subscription_status === 'active') {
+      // Only the server's answer counts. RevenueCat still reports an active
+      // entitlement after Apple transfers a subscription to another account, where
+      // the server will never grant it — claiming success there sends someone away
+      // believing they have premium they cannot use.
+      if (freshUser.subscription_status === 'active') {
         showToast(t('premium.restoreSuccess'), 'success');
         router.replace('/(app)');
       } else {
