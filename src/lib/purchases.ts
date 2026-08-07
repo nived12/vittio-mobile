@@ -133,6 +133,8 @@ export type PurchaseOutcome = 'purchased' | 'cancelled';
  * error — only real failures throw.
  */
 export async function purchasePremium(packageId: string): Promise<PurchaseOutcome> {
+  if (!purchasesAvailable()) throw new Error('In-app purchase is unavailable');
+
   const Purchases = await sdk();
   const offerings = await Purchases.getOfferings();
   const target = offerings.current?.availablePackages.find((p) => p.identifier === packageId);
@@ -152,6 +154,8 @@ export async function purchasePremium(packageId: string): Promise<PurchaseOutcom
  * active entitlement; the server still confirms it via the webhook.
  */
 export async function restorePremium(): Promise<boolean> {
+  if (!purchasesAvailable()) throw new Error('In-app purchase is unavailable');
+
   const Purchases = await sdk();
   const customerInfo = await Purchases.restorePurchases();
   return Object.keys(customerInfo.entitlements.active).length > 0;

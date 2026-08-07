@@ -26,6 +26,7 @@ import { spacing, textStyles } from '../../src/theme';
 import {
   PremiumPackage,
   getPremiumPackages,
+  identifyPurchaser,
   purchasePremium,
   purchasesAvailable,
   restorePremium,
@@ -149,6 +150,7 @@ export default function PremiumScreen() {
 
   // Prices come from StoreKit, never from a constant — a subscriber on a retired
   // price is not paying today's number, and Apple localises the string for us.
+  const userId = user?.id;
   const loadPackages = useCallback(async () => {
     if (!purchasesAvailable()) {
       setPackagesFailed(true);
@@ -157,13 +159,16 @@ export default function PremiumScreen() {
     setPackagesFailed(false);
     setPackages(null);
     try {
+      // The auth paths configure the SDK, but this screen is the only thing that
+      // breaks if one ever forgets — so it does not rely on them.
+      if (userId) await identifyPurchaser(userId);
       const pkgs = await getPremiumPackages();
       setPackages(pkgs);
       setPackagesFailed(pkgs.length === 0);
     } catch {
       setPackagesFailed(true);
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!showIapPaywall) return;
@@ -421,7 +426,7 @@ export default function PremiumScreen() {
                       <ActivityIndicator size="small" color={annual ? '#ffffff' : colors.primary} />
                     ) : (
                       <Text style={annual ? styles.planCtaAnnualText : styles.planCtaText}>
-                        {t('premium.monthly.cta')}
+                        {t('premium.subscribeCta')}
                       </Text>
                     )}
                   </View>
@@ -431,7 +436,10 @@ export default function PremiumScreen() {
 
             <Text style={[styles.ivaNote, { color: textSecondary }]}>{t('premium.ivaNote')}</Text>
 
-            {/* Required by Apple, and the fix for a reinstall or a second device. */}
+            {/* Required by Apple, so it stays visible even when the offering fetch
+                failed — restore can still succeed. Hidden only when the SDK cannot
+                run at all, where it could do nothing but throw. */}
+            {purchasesAvailable() && (
             <TouchableOpacity
               style={styles.restoreBtn}
               onPress={handleRestore}
@@ -447,6 +455,7 @@ export default function PremiumScreen() {
                 </Text>
               )}
             </TouchableOpacity>
+            )}
           </>
         )}
 

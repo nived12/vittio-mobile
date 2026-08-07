@@ -1116,6 +1116,7 @@
     "purchasePending": "Purchase received — activating your subscription.",
     "plansUnavailable": "Plans are unavailable right now. Please try again later.",
     "retryPlans": "Try again",
+    "subscribeCta": "Subscribe",
     "appleManaged": "Your subscription is billed by Apple.",
     "appleManageBtn": "Manage in Apple settings",
     "storePricePerMonth": "per month",
