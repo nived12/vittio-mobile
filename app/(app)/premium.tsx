@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -23,6 +23,14 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { colors } from '../../src/theme/colors';
 import { spacing, textStyles } from '../../src/theme';
+import {
+  PremiumPackage,
+  getPremiumPackages,
+  identifyPurchaser,
+  purchasePremium,
+  purchasesAvailable,
+  restorePremium,
+} from '../../src/lib/purchases';
 
 // ── UsageRow ───────────────────────────────────────────────────────────────
 
@@ -118,12 +126,10 @@ export default function PremiumScreen() {
   const activeBannerBg   = isDark ? '#064e3b' : '#d1fae5';
   const activeBannerText = isDark ? '#6ee7b7' : '#065f46';
 
-  // iOS App Store guideline 3.1.1 forbids selling digital subscriptions through any
-  // mechanism other than Apple IAP. Vittio uses Stripe (web/Android), so on the native
-  // iOS build we hide all pricing, checkout, and the Stripe billing-portal link. The
-  // screen becomes informational only: existing subscribers keep full access, everyone
-  // else sees a price-free note. Expo web reports 'web' and Android 'android', so both
-  // keep the Stripe paywall untouched.
+  // iOS sells Premium through Apple IAP and nothing else (Guideline 3.1.1): App Store
+  // packages, real StoreKit prices, and no reference to the web — naming or linking to
+  // web checkout from inside the app is steering under 3.1.3. Web and Android keep the
+  // Stripe paywall. Expo web reports 'web', so the e2e suite exercises the Stripe path.
   const isIOS = Platform.OS === 'ios';
 
   const status      = user?.subscription_status ?? 'none';
@@ -131,6 +137,43 @@ export default function PremiumScreen() {
   const isOnTrial   = status === 'trial_active';
   const trialEndsAt = user?.trial_ends_at ?? null;
   const currentInterval = user?.subscription_interval ?? null;
+  // Whoever sold the subscription owns it. Apple-billed users must never be sent to
+  // Stripe: the server refuses, and there is no way to cancel an App Store plan for them.
+  const billedByApple = user?.billing_source === 'apple';
+
+  const [packages, setPackages]         = useState<PremiumPackage[] | null>(null);
+  const [packagesFailed, setPackagesFailed] = useState(false);
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [restoring, setRestoring]       = useState(false);
+
+  const showIapPaywall = isIOS && !isActive;
+
+  // Prices come from StoreKit, never from a constant — a subscriber on a retired
+  // price is not paying today's number, and Apple localises the string for us.
+  const userId = user?.id;
+  const loadPackages = useCallback(async () => {
+    if (!purchasesAvailable()) {
+      setPackagesFailed(true);
+      return;
+    }
+    setPackagesFailed(false);
+    setPackages(null);
+    try {
+      // The auth paths configure the SDK, but this screen is the only thing that
+      // breaks if one ever forgets — so it does not rely on them.
+      if (userId) await identifyPurchaser(userId);
+      const pkgs = await getPremiumPackages();
+      setPackages(pkgs);
+      setPackagesFailed(pkgs.length === 0);
+    } catch {
+      setPackagesFailed(true);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!showIapPaywall) return;
+    void loadPackages();
+  }, [showIapPaywall, loadPackages]);
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return 0;
@@ -173,6 +216,50 @@ export default function PremiumScreen() {
       showToast(t('premium.toastCheckoutError'), 'error');
     } finally {
       setLoadingInterval(null);
+    }
+  }
+
+  // App Store purchase. The RevenueCat webhook is what actually grants premium, so
+  // the client waits on the server rather than trusting the StoreKit callback.
+  async function handleIapPurchase(pkg: PremiumPackage) {
+    setPurchasingId(pkg.id);
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const outcome = await purchasePremium(pkg.id);
+      if (outcome === 'cancelled') return;
+
+      const isNowActive = await pollUntilActive();
+      const freshUser   = await authApi.me();
+      setUser(freshUser);
+      showToast(
+        isNowActive ? t('premium.toastSuccess') : t('premium.purchasePending'),
+        isNowActive ? 'success' : 'info',
+      );
+      router.replace('/(app)');
+    } catch {
+      showToast(t('premium.purchaseError'), 'error');
+    } finally {
+      setPurchasingId(null);
+    }
+  }
+
+  // Apple requires a restore path for anyone reinstalling or on a second device.
+  async function handleRestore() {
+    setRestoring(true);
+    try {
+      const restored = await restorePremium();
+      const freshUser = await authApi.me();
+      setUser(freshUser);
+      if (restored || freshUser.subscription_status === 'active') {
+        showToast(t('premium.restoreSuccess'), 'success');
+        router.replace('/(app)');
+      } else {
+        showToast(t('premium.restoreNone'), 'info');
+      }
+    } catch {
+      showToast(t('premium.restoreError'), 'error');
+    } finally {
+      setRestoring(false);
     }
   }
 
@@ -281,15 +368,103 @@ export default function PremiumScreen() {
           ))}
         </View>
 
-        {/* iOS (Path B): price-free note in place of the paywall. No price, no CTA, no link. */}
-        {isIOS && !isActive && (
-          <Text style={[styles.iosInfo, { color: textSecondary }]}>
-            {t('premium.iosInfo')}
-          </Text>
+        {/* iOS paywall — App Store IAP, priced by StoreKit. This is what satisfies 3.1.1. */}
+        {showIapPaywall && (
+          <>
+            {packages === null && !packagesFailed && (
+              <ActivityIndicator style={styles.iapLoader} size="small" color={colors.primary} />
+            )}
+
+            {/* A dead end here reads to App Review as "no purchase path", so the
+                failure state always offers a way back to one. */}
+            {packagesFailed && (
+              <>
+                <Text style={[styles.iosInfo, { color: textSecondary }]}>
+                  {t('premium.plansUnavailable')}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
+                  onPress={() => loadPackages()}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.manageBtnText, { color: colors.primary }]}>
+                    {t('premium.retryPlans')}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {packages?.map((pkg) => {
+              const annual = pkg.interval === 'year';
+              return (
+                <TouchableOpacity
+                  key={pkg.id}
+                  style={[
+                    styles.iapCard,
+                    annual
+                      ? styles.iapCardAnnual
+                      : { backgroundColor: surface, borderColor: borderCol },
+                  ]}
+                  onPress={() => handleIapPurchase(pkg)}
+                  disabled={purchasingId !== null || restoring}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.planLabel, annual ? styles.planLabelAnnual : { color: textSecondary }]}>
+                    {annual ? t('premium.annual.label') : t('premium.monthly.label')}
+                  </Text>
+                  {/* Store-formatted and already localised — never reformat it. */}
+                  <Text style={[styles.planPrice, annual ? styles.planPriceAnnual : { color: textPrimary }]}>
+                    {pkg.priceString}
+                  </Text>
+                  <Text style={[styles.planUnit, annual ? styles.planUnitAnnual : { color: textSecondary }]}>
+                    {annual ? t('premium.storePricePerYear') : t('premium.storePricePerMonth')}
+                  </Text>
+                  <View style={annual ? styles.planCtaAnnual : [styles.planCta, { borderColor: colors.primary }]}>
+                    {purchasingId === pkg.id ? (
+                      <ActivityIndicator size="small" color={annual ? '#ffffff' : colors.primary} />
+                    ) : (
+                      <Text style={annual ? styles.planCtaAnnualText : styles.planCtaText}>
+                        {t('premium.subscribeCta')}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+
+            <Text style={[styles.ivaNote, { color: textSecondary }]}>{t('premium.ivaNote')}</Text>
+
+            {/* Required by Apple, so it stays visible even when the offering fetch
+                failed — restore can still succeed. Hidden only when the SDK cannot
+                run at all, where it could do nothing but throw. */}
+            {purchasesAvailable() && (
+            <TouchableOpacity
+              style={styles.restoreBtn}
+              onPress={handleRestore}
+              disabled={restoring || purchasingId !== null}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+            >
+              {restoring ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={[styles.restoreBtnText, { color: colors.primary }]}>
+                  {t('premium.restoreBtn')}
+                </Text>
+              )}
+            </TouchableOpacity>
+            )}
+          </>
         )}
 
-        {/* Plan cards — shown to non-subscribers (both cards) and active subscribers (switch card only) */}
-        {!isIOS && (!isActive || currentInterval === 'month') && (
+        {/* Active on iOS: the banner above says everything. No manage button and no
+            mention of the web, whichever processor bills them — that is 3.1.3 steering. */}
+
+        {/* Plan cards — shown to non-subscribers (both cards) and active subscribers (switch
+            card only). Never to an Apple-billed user: their plan changes belong to Apple. */}
+        {!isIOS && !billedByApple && (!isActive || currentInterval === 'month') && (
           <View style={styles.planRow}>
             {/* Monthly — hidden for active monthly subscribers */}
             {!isActive && (
@@ -341,8 +516,8 @@ export default function PremiumScreen() {
           </View>
         )}
 
-        {/* Switch to monthly — shown only to active annual subscribers */}
-        {!isIOS && isActive && currentInterval === 'year' && (
+        {/* Switch to monthly — shown only to active annual Stripe subscribers */}
+        {!isIOS && !billedByApple && isActive && currentInterval === 'year' && (
           <TouchableOpacity
             style={[styles.planCard, { backgroundColor: surface, borderColor: borderCol, flex: 0, width: '100%' }]}
             onPress={() => handleSubscribe('month')}
@@ -363,14 +538,35 @@ export default function PremiumScreen() {
         )}
 
         {/* IVA note — shown whenever plan cards are visible */}
-        {!isIOS && (!isActive || currentInterval !== null) && (
+        {!isIOS && !billedByApple && (!isActive || currentInterval !== null) && (
           <Text style={[styles.ivaNote, { color: textSecondary }]}>
             {t('premium.ivaNote')}
           </Text>
         )}
 
-        {/* Manage subscription (active users) — hidden on iOS (Stripe portal is an external link-out) */}
-        {!isIOS && isActive && (
+        {/* Apple-billed, seen outside iOS. Naming Apple and linking out is fine here —
+            the anti-steering rules govern the app, not the web. */}
+        {!isIOS && billedByApple && (
+          <>
+            <Text style={[styles.iosInfo, { color: textSecondary }]}>
+              {t('premium.appleManaged')}
+            </Text>
+            <TouchableOpacity
+              style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
+              onPress={() => WebBrowser.openBrowserAsync('https://apps.apple.com/account/subscriptions')}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.manageBtnText, { color: colors.primary }]}>
+                {t('premium.appleManageBtn')}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* Manage subscription — Stripe billing portal, so never for Apple-billed users,
+            and never on iOS (an external payment link-out). */}
+        {!isIOS && !billedByApple && isActive && (
           <TouchableOpacity
             style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
             onPress={handleManage}
@@ -491,6 +687,23 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   manageBtnText: { fontSize: 15, fontWeight: '600' },
+
+  // App Store paywall — full-width stacked cards rather than the side-by-side pair,
+  // since StoreKit price strings are long and must not be truncated.
+  iapLoader: { marginVertical: spacing.lg },
+  iapCard: {
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  iapCardAnnual: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  restoreBtn: { paddingVertical: 14, alignItems: 'center', marginTop: spacing.xs, minHeight: 44 },
+  restoreBtnText: { fontSize: 15, fontWeight: '600' },
 
   usageCard:  { borderRadius: 12, borderWidth: 1, padding: spacing.md, marginBottom: spacing.md, gap: 12 },
   usageTitle: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, marginBottom: 4 },

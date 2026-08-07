@@ -12,10 +12,16 @@
       "full_name": "Nived Vengilat",
       "confirmed": true,
       "avatar_url": null,
-      "subscription_status": "trialing",
+      "subscription_status": "trial_active",
+      "subscription_interval": null,
+      "billing_source": null,
       "trial_ends_at": null,
       "legal_version_accepted": "v1.0",
-      "consent_current": true
+      "consent_current": true,
+      "ai_calls_used": 3,
+      "ai_calls_limit": 15,
+      "statement_files_used": 1,
+      "statement_files_limit": 12
     }
   },
   "message": "Login successful"

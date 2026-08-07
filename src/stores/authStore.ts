@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { tokenStorage } from '../utils/tokenStorage';
+import { forgetPurchaser, identifyPurchaser } from '../lib/purchases';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -13,6 +14,8 @@ export interface AuthUser {
   avatar_url: string | null;
   subscription_status: string;
   subscription_interval: 'month' | 'year' | null;
+  /** Who bills them. iOS must not offer to manage a subscription it cannot manage. */
+  billing_source: 'stripe' | 'apple' | null;
   trial_ends_at: string | null;
   legal_version_accepted: string | null;
   consent_current: boolean;
@@ -91,6 +94,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: true,
       isLoading:       false,
     });
+
+    // Tell RevenueCat who is buying before any purchase can start, so App Store
+    // webhooks carry our own user id. Never awaited into the sign-in path —
+    // it degrades the paywall at worst, and must not delay or fail login.
+    void identifyPurchaser(user.id);
   },
 
   // ── _clearAuth ────────────────────────────────────────────────────────────
@@ -100,6 +108,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // the cached React Query data, and account-specific UI state.
   _clearAuth: async () => {
     await tokenStorage.clearTokens();
+    // Detach the RevenueCat identity too, or the next account to sign in on this
+    // device would inherit the previous user's purchases.
+    await forgetPurchaser();
     set({
       user:            null,
       accessToken:     null,
@@ -280,6 +291,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading:       false,
         isHydrated:      true,
       });
+
+      // Every relaunch restores the session through here rather than _setAuth, so
+      // RevenueCat has to be identified here too. Without it the SDK is never
+      // configured after the first launch, getOfferings() throws, and the paywall
+      // shows "plans unavailable" — no purchase path, which is the Guideline 3.1.1
+      // finding all over again.
+      void identifyPurchaser(user.id);
     } catch {
       // Token invalid or network error — treat as logged out
       await tokenStorage.clearTokens();
