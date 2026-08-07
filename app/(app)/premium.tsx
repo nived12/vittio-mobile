@@ -99,7 +99,7 @@ const ANNUAL_PRICE_MXN  = 75;
 const STRIPE_POLL = { attempts: 5, delayMs: 1500 };
 const IAP_POLL = { attempts: 15, delayMs: 2000 };
 
-async function pollUntilActive(attempts = 5, delayMs = 1500): Promise<boolean> {
+async function pollUntilActive({ attempts, delayMs }: { attempts: number; delayMs: number }): Promise<boolean> {
   for (let i = 0; i < attempts; i++) {
     const s = await fetchSubscriptionStatus();
     if (s.status === 'active') return true;
@@ -213,7 +213,7 @@ export default function PremiumScreen() {
         presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
       });
       // Browser closed — poll for active status (webhook may take a few seconds)
-      const isNowActive = await pollUntilActive(STRIPE_POLL.attempts, STRIPE_POLL.delayMs);
+      const isNowActive = await pollUntilActive(STRIPE_POLL);
       const freshUser   = await authApi.me();
       setUser(freshUser);
       showToast(
@@ -237,7 +237,7 @@ export default function PremiumScreen() {
       const outcome = await purchasePremium(pkg.id);
       if (outcome === 'cancelled') return;
 
-      const isNowActive = await pollUntilActive(IAP_POLL.attempts, IAP_POLL.delayMs);
+      const isNowActive = await pollUntilActive(IAP_POLL);
       const freshUser   = await authApi.me();
       setUser(freshUser);
       showToast(
@@ -256,13 +256,24 @@ export default function PremiumScreen() {
   async function handleRestore() {
     setRestoring(true);
     try {
-      await restorePremium();
+      // Apple's answer is the fast path: nothing to restore means nothing to wait for.
+      const restored = await restorePremium();
+      if (!restored) {
+        showToast(t('premium.restoreNone'), 'info');
+        return;
+      }
+
+      // Something exists, so give the webhook the same budget a purchase gets — a
+      // restore on a reinstall travels the identical Apple -> RevenueCat -> server
+      // path, and answering before it lands reports "no purchases" to someone who
+      // has one.
+      await pollUntilActive(IAP_POLL);
       const freshUser = await authApi.me();
       setUser(freshUser);
-      // Only the server's answer counts. RevenueCat reports an active entitlement
-      // after Apple transfers a subscription to another account, but the server has
-      // not granted it — claiming success there sends someone away believing they
-      // have premium they cannot use.
+      // Only the server's answer counts. RevenueCat still reports an active
+      // entitlement after Apple transfers a subscription to another account, where
+      // the server will never grant it — claiming success there sends someone away
+      // believing they have premium they cannot use.
       if (freshUser.subscription_status === 'active') {
         showToast(t('premium.restoreSuccess'), 'success');
         router.replace('/(app)');
