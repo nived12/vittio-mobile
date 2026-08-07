@@ -51,6 +51,10 @@ export async function identifyPurchaser(userId: number): Promise<void> {
   try {
     const Purchases = await sdk();
     if (configuredFor === null) {
+      if (__DEV__) {
+        const { LOG_LEVEL } = await import('react-native-purchases');
+        await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      }
       Purchases.configure({ apiKey: IOS_API_KEY!, appUserID });
     } else {
       // Same install, different account.
@@ -89,6 +93,16 @@ export async function getPremiumPackages(): Promise<PremiumPackage[]> {
   const Purchases = await sdk();
   const offerings = await Purchases.getOfferings();
   const packages = offerings.current?.availablePackages ?? [];
+
+  if (__DEV__) {
+    // Which store actually answered. A price that is not the App Store Connect one
+    // means these products came from somewhere else — RevenueCat's Test Store, or a
+    // local StoreKit configuration — and the screenshot would be wrong.
+    console.log(
+      '[purchases] offering:', offerings.current?.identifier,
+      packages.map((p) => `${p.product.identifier}=${p.product.priceString} ${p.product.currencyCode}`),
+    );
+  }
 
   return packages
     .map((pkg) => {
