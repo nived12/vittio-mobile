@@ -1107,7 +1107,18 @@
     "toastSwitched": "Plan actualizado — tu saldo ha sido prorrateado.",
     "switchToAnnual": "Cambiar a Anual · Ahorra 33%",
     "switchToMonthly": "Cambiar a Mensual",
-    "toastPortalError": "No se pudo abrir el portal de suscripción."
+    "toastPortalError": "No se pudo abrir el portal de suscripción.",
+    "restoreBtn": "Restaurar compras",
+    "restoreSuccess": "Compras restauradas.",
+    "restoreNone": "No se encontraron compras previas con este ID de Apple.",
+    "restoreError": "No se pudieron restaurar las compras. Intenta de nuevo.",
+    "purchaseError": "No se pudo completar la compra. Intenta de nuevo.",
+    "purchasePending": "Compra recibida — activando tu suscripción.",
+    "plansUnavailable": "Los planes no están disponibles en este momento. Intenta más tarde.",
+    "appleManaged": "Tu suscripción se cobra a través de Apple.",
+    "appleManageBtn": "Gestionar en ajustes de Apple",
+    "storePricePerMonth": "al mes",
+    "storePricePerYear": "al año"
   },
   "assistant": {
     "headerTitle": "Vittbot",

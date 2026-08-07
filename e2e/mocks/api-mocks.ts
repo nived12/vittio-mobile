@@ -65,6 +65,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
       /\/transactions\/\d+$/.test(pathname) ||
       pathname.endsWith("/categories") ||
       pathname.endsWith("/user_settings") ||
+      pathname.includes("/subscription") ||
       pathname.includes("/assistant/") ||
       pathname.endsWith("/savings") ||
       pathname.endsWith("/debts") ||
@@ -86,6 +87,25 @@ export async function setupApiMocks(page: Page): Promise<void> {
     }
     if (pathname.includes("/dashboard")) {
       return fulfillJson(route, dashboard);
+    }
+    // Default trial state. Specs that need another billing state register their own
+    // route after setupApiMocks — Playwright matches most-recently-added first.
+    if (pathname.includes("/subscription")) {
+      return fulfillJson(route, {
+        data: {
+          plan: null,
+          status: "trialing",
+          billing_interval: null,
+          billing_source: null,
+          trial_ends_at: null,
+          current_period_end: null,
+          cancel_at_period_end: false,
+          ai_calls_used: 3,
+          ai_calls_limit: 15,
+          statement_files_used: 1,
+          statement_files_limit: 12
+        }
+      });
     }
     if (pathname.endsWith("/bank_accounts")) {
       if (method === "GET") return fulfillJson(route, bankAccounts);

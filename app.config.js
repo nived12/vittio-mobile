@@ -38,7 +38,24 @@ module.exports = () => ({
       privacyManifests: {
         NSPrivacyTracking: false,
         NSPrivacyTrackingDomains: [],
-        NSPrivacyCollectedDataTypes: [],
+        NSPrivacyCollectedDataTypes: [
+          {
+            // RevenueCat records the subscription purchase and links it to the
+            // Vittio user id so entitlements survive reinstall and restore.
+            NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypePurchaseHistory',
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'],
+          },
+          {
+            // app_user_id is the Vittio user id — required to match a purchase
+            // to the account that made it.
+            NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeUserID',
+            NSPrivacyCollectedDataTypeLinked: true,
+            NSPrivacyCollectedDataTypeTracking: false,
+            NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'],
+          },
+        ],
         NSPrivacyAccessedAPITypes: [
           {
             // UserDefaults — used by React Native AsyncStorage and Expo libs

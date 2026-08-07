@@ -2,13 +2,21 @@ import { apiClient } from './client';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+/** Who bills this user. Drives which manage/purchase UI is allowed to render. */
+export type BillingSource = 'stripe' | 'apple' | null;
+
 export interface SubscriptionStatus {
   plan: 'premium' | null;
   status: 'active' | 'trialing' | 'past_due' | 'canceled' | null;
   billing_interval: 'month' | 'year' | null;
+  billing_source: BillingSource;
   trial_ends_at: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  ai_calls_used: number;
+  ai_calls_limit: number;
+  statement_files_used: number;
+  statement_files_limit: number | null;
 }
 
 // ── API calls ──────────────────────────────────────────────────────────────
