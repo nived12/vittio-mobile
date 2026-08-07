@@ -1,0 +1,1033 @@
+{
+  "config": {
+    "configFile": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/playwright.config.ts",
+    "rootDir": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "ci": {
+        "commitHref": "https://github.com/nived12/vittio-mobile/commit/797227e1f64ff290818c7db25ec38e9b2fcb03be",
+        "commitHash": "797227e1f64ff290818c7db25ec38e9b2fcb03be",
+        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31209139785"
+      },
+      "gitCommit": {
+        "shortHash": "e65ccdf",
+        "hash": "e65ccdf47c2edc9941484cc5c00a939282389e58",
+        "subject": "Stop claiming a restore succeeded when the server says otherwise",
+        "body": "Stop claiming a restore succeeded when the server says otherwise\n\nrestorePremium() reports RevenueCat's view, and after Apple moves a subscription\nto another account RevenueCat still reports an active entitlement — while the\nserver has granted nothing. The OR meant the user saw \"Compras restauradas\", was\nsent to the dashboard, and remained locked out.\n\nThe server is the source of truth everywhere else in this design; this line was\nthe one place that forgot. An honest \"no purchases found\" sends them to support\ninstead of leaving them to wonder whether they were charged.\n\nSeen for real: a sandbox purchase transferred from user 1 to user 69, RevenueCat\nactive, server not.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015XAnzXatq9LE84zyNc4yw9\n",
+        "author": {
+          "name": "Nived Vengilat",
+          "email": "nivedvengilat@gmail.com",
+          "time": 1786128286000
+        },
+        "committer": {
+          "name": "Nived Vengilat",
+          "email": "nivedvengilat@gmail.com",
+          "time": 1786128286000
+        },
+        "branch": "HEAD"
+      },
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "ci": {
+            "commitHref": "https://github.com/nived12/vittio-mobile/commit/797227e1f64ff290818c7db25ec38e9b2fcb03be",
+            "commitHash": "797227e1f64ff290818c7db25ec38e9b2fcb03be",
+            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31209139785"
+          },
+          "gitCommit": {
+            "shortHash": "e65ccdf",
+            "hash": "e65ccdf47c2edc9941484cc5c00a939282389e58",
+            "subject": "Stop claiming a restore succeeded when the server says otherwise",
+            "body": "Stop claiming a restore succeeded when the server says otherwise\n\nrestorePremium() reports RevenueCat's view, and after Apple moves a subscription\nto another account RevenueCat still reports an active entitlement — while the\nserver has granted nothing. The OR meant the user saw \"Compras restauradas\", was\nsent to the dashboard, and remained locked out.\n\nThe server is the source of truth everywhere else in this design; this line was\nthe one place that forgot. An honest \"no purchases found\" sends them to support\ninstead of leaving them to wonder whether they were charged.\n\nSeen for real: a sandbox purchase transferred from user 1 to user 69, RevenueCat\nactive, server not.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015XAnzXatq9LE84zyNc4yw9\n",
+            "author": {
+              "name": "Nived Vengilat",
+              "email": "nivedvengilat@gmail.com",
+              "time": 1786128286000
+            },
+            "committer": {
+              "name": "Nived Vengilat",
+              "email": "nivedvengilat@gmail.com",
+              "time": 1786128286000
+            },
+            "branch": "HEAD"
+          },
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "playwright-report/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npx serve dist -p 4173 --no-clipboard",
+      "cwd": "..",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 90000
+    }
+  },
+  "suites": [
+    {
+      "title": "account-deletion.spec.ts",
+      "file": "account-deletion.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can archive their account via the delete-account screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1978,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:57:51.278Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b3c7116fb1a04def5939-99d63bf67ecab322289e",
+          "file": "account-deletion.spec.ts",
+          "line": 4,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "accounts.spec.ts",
+      "file": "accounts.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "accounts tab renders list",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1565,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:57:53.520Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cbe1475516a9f5b841ab-f1143b9a8686cd669be6",
+          "file": "accounts.spec.ts",
+          "line": 9,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "assistant.spec.ts",
+      "file": "assistant.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Vittbot (mobile web)",
+          "file": "assistant.spec.ts",
+          "line": 27,
+          "column": 6,
+          "specs": [
+            {
+              "title": "empty state renders the 9 suggestion chips",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1680,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:57:55.100Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b892f05db9a15b76833-791e3d3c6aa135abdeae",
+              "file": "assistant.spec.ts",
+              "line": 33,
+              "column": 7
+            },
+            {
+              "title": "tapping the largest-expenses chip shows a reply with markdown rendered (no literal **)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1897,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:57:56.788Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b892f05db9a15b76833-5208240e281a40a1c043",
+              "file": "assistant.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "typing a custom message shows an assistant reply",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1714,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:57:58.692Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b892f05db9a15b76833-f5f3669d872c4fd956d1",
+              "file": "assistant.spec.ts",
+              "line": 71,
+              "column": 7
+            },
+            {
+              "title": "history modal lists conversations and loads one on tap",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2572,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:58:00.415Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b892f05db9a15b76833-e14e51d13bfcb72bc583",
+              "file": "assistant.spec.ts",
+              "line": 83,
+              "column": 7
+            },
+            {
+              "title": "new chat button clears the messages back to empty state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2081,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:58:02.998Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7b892f05db9a15b76833-31a7f65b72572cce400d",
+              "file": "assistant.spec.ts",
+              "line": 121,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "login renders app tabs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1149,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:05.089Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-5e675921eb1ddb994a9c",
+          "file": "auth.spec.ts",
+          "line": 4,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bottom-nav-structure.spec.ts",
+      "file": "bottom-nav-structure.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "bottom nav shows exactly the expected tabs (no leaked routes)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1568,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:06.249Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9b1231552f12aa2e8197-1f36c85303c821106130",
+          "file": "bottom-nav-structure.spec.ts",
+          "line": 29,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dashboard.spec.ts",
+      "file": "dashboard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "dashboard shows key sections",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1088,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:07.827Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "90cda532ab82d274b30b-0ba765d34161f0d93c2e",
+          "file": "dashboard.spec.ts",
+          "line": 8,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "imported-transactions.spec.ts",
+      "file": "imported-transactions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Imported (statement-file) transactions",
+          "file": "imported-transactions.spec.ts",
+          "line": 32,
+          "column": 6,
+          "specs": [
+            {
+              "title": "detail screen flags the statement origin and exposes delete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1683,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:58:08.924Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e16e10e8497a530eae99-3a7861ece60f383517a5",
+              "file": "imported-transactions.spec.ts",
+              "line": 39,
+              "column": 7
+            },
+            {
+              "title": "transaction list flags statement-file rows",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1556,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:58:10.615Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e16e10e8497a530eae99-67fe8190e81152e1aac1",
+              "file": "imported-transactions.spec.ts",
+              "line": 59,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "offline-banner.spec.ts",
+      "file": "offline-banner.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Offline banner (mobile web)",
+          "file": "offline-banner.spec.ts",
+          "line": 13,
+          "column": 6,
+          "specs": [
+            {
+              "title": "shows when offline and hides when back online",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-07T18:58:12.180Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "05d9a0378c585ccfc14c-e91f8bdf2f38d3161fcb",
+              "file": "offline-banner.spec.ts",
+              "line": 22,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "premium.spec.ts",
+      "file": "premium.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "trialing user is offered both Stripe plans",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1579,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:13.385Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1fb7ddc5863c49f0e0e5-a38948864f1f4000e2bc",
+          "file": "premium.spec.ts",
+          "line": 14,
+          "column": 5
+        },
+        {
+          "title": "Apple-billed user is sent to Apple, never to the Stripe portal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1561,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:14.974Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1fb7ddc5863c49f0e0e5-8787fbc9cab10f8fa5ae",
+          "file": "premium.spec.ts",
+          "line": 24,
+          "column": 5
+        },
+        {
+          "title": "Stripe-billed user keeps the billing portal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1519,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:16.541Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1fb7ddc5863c49f0e0e5-0e821284af5dc47033ee",
+          "file": "premium.spec.ts",
+          "line": 42,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "recurring.spec.ts",
+      "file": "recurring.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "recurring index renders hero totals and the seeded Netflix series",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1560,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:18.069Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f84c9309ee23b83fa7f3-f1a7314efd504d07d26c",
+          "file": "recurring.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "scan button is present and does not crash on no-detection result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6631,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:19.636Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f84c9309ee23b83fa7f3-3eb917ee1f510c426598",
+          "file": "recurring.spec.ts",
+          "line": 15,
+          "column": 5
+        },
+        {
+          "title": "New recurring modal opens with form fields",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1632,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:26.275Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f84c9309ee23b83fa7f3-f32c28697a8e7c61620d",
+          "file": "recurring.spec.ts",
+          "line": 24,
+          "column": 5
+        },
+        {
+          "title": "Transactions header shows the 'Recurrentes' chip when active count > 0",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1505,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:27.914Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f84c9309ee23b83fa7f3-5437476cb5b30d939e26",
+          "file": "recurring.spec.ts",
+          "line": 36,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "templates.spec.ts",
+      "file": "templates.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "savings empty state offers a template; picking one opens a pre-filled add form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2496,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:29.428Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1772d640e91cdbbb6eb8-93f1f9ef869f88cfb485",
+          "file": "templates.spec.ts",
+          "line": 12,
+          "column": 5
+        },
+        {
+          "title": "debts empty state offers a template; picking one opens a pre-filled add form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2207,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:31.932Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1772d640e91cdbbb6eb8-2f12552083487f9743d7",
+          "file": "templates.spec.ts",
+          "line": 34,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "transactions.spec.ts",
+      "file": "transactions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "transactions tab renders and supports search",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1531,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-08-07T18:58:34.147Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "78b059fa1bcc48924caf-9dd2ed6200715497a235",
+          "file": "transactions.spec.ts",
+          "line": 9,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-07T18:57:49.859Z",
+    "duration": 45862.328,
+    "expected": 23,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
