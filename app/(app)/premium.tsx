@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -149,23 +149,26 @@ export default function PremiumScreen() {
 
   // Prices come from StoreKit, never from a constant — a subscriber on a retired
   // price is not paying today's number, and Apple localises the string for us.
-  useEffect(() => {
-    if (!showIapPaywall || !purchasesAvailable()) {
-      if (showIapPaywall) setPackagesFailed(true);
+  const loadPackages = useCallback(async () => {
+    if (!purchasesAvailable()) {
+      setPackagesFailed(true);
       return;
     }
-    let cancelled = false;
-    getPremiumPackages()
-      .then((pkgs) => {
-        if (cancelled) return;
-        setPackages(pkgs);
-        setPackagesFailed(pkgs.length === 0);
-      })
-      .catch(() => {
-        if (!cancelled) setPackagesFailed(true);
-      });
-    return () => { cancelled = true; };
-  }, [showIapPaywall]);
+    setPackagesFailed(false);
+    setPackages(null);
+    try {
+      const pkgs = await getPremiumPackages();
+      setPackages(pkgs);
+      setPackagesFailed(pkgs.length === 0);
+    } catch {
+      setPackagesFailed(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showIapPaywall) return;
+    void loadPackages();
+  }, [showIapPaywall, loadPackages]);
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return 0;
@@ -367,10 +370,24 @@ export default function PremiumScreen() {
               <ActivityIndicator style={styles.iapLoader} size="small" color={colors.primary} />
             )}
 
+            {/* A dead end here reads to App Review as "no purchase path", so the
+                failure state always offers a way back to one. */}
             {packagesFailed && (
-              <Text style={[styles.iosInfo, { color: textSecondary }]}>
-                {t('premium.plansUnavailable')}
-              </Text>
+              <>
+                <Text style={[styles.iosInfo, { color: textSecondary }]}>
+                  {t('premium.plansUnavailable')}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
+                  onPress={() => loadPackages()}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.manageBtnText, { color: colors.primary }]}>
+                    {t('premium.retryPlans')}
+                  </Text>
+                </TouchableOpacity>
+              </>
             )}
 
             {packages?.map((pkg) => {

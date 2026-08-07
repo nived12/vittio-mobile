@@ -1115,6 +1115,7 @@
     "purchaseError": "No se pudo completar la compra. Intenta de nuevo.",
     "purchasePending": "Compra recibida — activando tu suscripción.",
     "plansUnavailable": "Los planes no están disponibles en este momento. Intenta más tarde.",
+    "retryPlans": "Reintentar",
     "appleManaged": "Tu suscripción se cobra a través de Apple.",
     "appleManageBtn": "Gestionar en ajustes de Apple",
     "storePricePerMonth": "al mes",

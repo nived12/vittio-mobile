@@ -291,6 +291,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading:       false,
         isHydrated:      true,
       });
+
+      // Every relaunch restores the session through here rather than _setAuth, so
+      // RevenueCat has to be identified here too. Without it the SDK is never
+      // configured after the first launch, getOfferings() throws, and the paywall
+      // shows "plans unavailable" — no purchase path, which is the Guideline 3.1.1
+      // finding all over again.
+      void identifyPurchaser(user.id);
     } catch {
       // Token invalid or network error — treat as logged out
       await tokenStorage.clearTokens();
