@@ -256,10 +256,14 @@ export default function PremiumScreen() {
   async function handleRestore() {
     setRestoring(true);
     try {
-      const restored = await restorePremium();
+      await restorePremium();
       const freshUser = await authApi.me();
       setUser(freshUser);
-      if (restored || freshUser.subscription_status === 'active') {
+      // Only the server's answer counts. RevenueCat reports an active entitlement
+      // after Apple transfers a subscription to another account, but the server has
+      // not granted it — claiming success there sends someone away believing they
+      // have premium they cannot use.
+      if (freshUser.subscription_status === 'active') {
         showToast(t('premium.restoreSuccess'), 'success');
         router.replace('/(app)');
       } else {
