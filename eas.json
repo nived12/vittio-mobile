@@ -21,6 +21,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://app.vitt.io/api/v1",
@@ -30,6 +31,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "channel": "production",
       "android": { "buildType": "app-bundle" },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://app.vitt.io/api/v1",
@@ -47,6 +49,11 @@
         "ascApiKeyIssuerId": "3d8c0891-d338-4629-8173-03c9324e42b8",
         "appleTeamId": "9Y84K3A2BJ",
         "ascAppId": "6782220685"
+      },
+      "android": {
+        "serviceAccountKeyPath": "../vittio-secrets/gen-lang-client-0595350943-1cc6ab372067.json",
+        "track": "alpha",
+        "releaseStatus": "draft"
       }
     }
   }
