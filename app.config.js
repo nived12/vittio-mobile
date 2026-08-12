@@ -8,10 +8,23 @@ module.exports = () => ({
   expo: {
     name: 'Vittio',
     slug: 'vittio',
-    version: '1.0.0',
+    version: '1.0.1',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
+    updates: {
+      url: 'https://u.expo.dev/13d18490-59b1-4dfc-9fd0-99d6f55978e5',
+      // 0 means never block launch on the network: the app starts on the bundle
+      // it already has, fetches any new one in the background, and applies it on
+      // the NEXT cold start. Raising this to apply updates immediately would make
+      // every launch — including offline ones — wait on a network round trip.
+      // Accepting "fix lands on second launch" is the correct trade here.
+      fallbackToCacheTimeout: 0,
+    },
+    // fingerprint hashes the native layer, so an update whose JS needs a native
+    // module the installed build lacks is simply never offered to it. This is the
+    // build #6/netinfo problem prevented by construction rather than by memory.
+    runtimeVersion: { policy: 'fingerprint' },
     // Splash configured via the expo-splash-screen plugin below (SDK 50+).
     // The legacy root-level `splash` block was deprecated and caused a
     // conflicting white background to render on Android.
