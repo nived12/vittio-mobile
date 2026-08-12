@@ -107,17 +107,34 @@ function RootLayout() {
   const segments = useSegments();
   const appState = useRef<AppStateStatus>(AppState.currentState);
   const [showLock, setShowLock] = useState(false);
+  // Nothing may render until Inter is registered. Text measured with the system
+  // font and then drawn in Inter comes out wider than the frame it was given, so
+  // the last glyph is clipped — "Agregar cuenta" rendered as "Agregar cuent".
+  // It reached production because the mis-measured layout happens *behind* the
+  // splash screen, and which elements lose the race varies per launch, so it
+  // never reproduced the same way twice.
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const pushRegistered = useRef(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
   useEffect(() => {
     async function prepare() {
-      await Font.loadAsync({
-        Inter_400Regular,
-        Inter_500Medium,
-        Inter_600SemiBold,
-        Inter_700Bold,
-      });
+      try {
+        await Font.loadAsync({
+          Inter_400Regular,
+          Inter_500Medium,
+          Inter_600SemiBold,
+          Inter_700Bold,
+        });
+      } catch (err) {
+        // Deliberately swallowed. fontsLoaded gates the entire screen tree, so a
+        // throw here without the finally below would strand every user on the
+        // splash screen permanently. Falling back to the system font is ugly;
+        // an app that never opens is not recoverable.
+        Sentry.captureException(err);
+      } finally {
+        setFontsLoaded(true);
+      }
       const [optedOut] = await Promise.all([
         AsyncStorage.getItem(OPT_OUT_KEY),
         hydrate(),
@@ -133,7 +150,12 @@ function RootLayout() {
 
   // ── 2. Once hydrated: hide splash + enforce auth routing ───────────────
   useEffect(() => {
-    if (!isHydrated) return;
+    // fontsLoaded is checked here as well as at the render gate below. Font
+    // loading currently resolves before hydrate() starts, so isHydrated alone
+    // happens to be sufficient — but that is an ordering coincidence inside
+    // prepare(), and relying on it is what shipped the clipping bug. Reordering
+    // those awaits must not be able to uncover the splash over unmeasured text.
+    if (!isHydrated || !fontsLoaded) return;
 
     SplashScreen.hideAsync();
 
@@ -156,7 +178,7 @@ function RootLayout() {
     if (isAuthenticated && inAuth && !onConsentScreen) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated, isHydrated, segments, user]);
+  }, [isAuthenticated, isHydrated, fontsLoaded, segments, user]);
 
   // ── 3. Register push + hydrate server-side notification prefs after auth ─
   useEffect(() => {
@@ -200,6 +222,11 @@ function RootLayout() {
     );
     return () => subscription.remove();
   }, [biometricLock, isAuthenticated]);
+
+  // The splash screen is still up at this point, so returning null shows nothing
+  // new — it only keeps the screen tree from mounting and measuring text before
+  // Inter exists. Every hook above runs regardless, so prepare() still completes.
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

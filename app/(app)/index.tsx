@@ -265,7 +265,13 @@ export default function DashboardScreen() {
           accessibilityRole="button"
           accessibilityLabel={`${t('dashboard.monthPicker.label')}: ${monthLabel}, tap to change`}
         >
-          <Text style={[styles.monthPickerText, { color: textPrimary }]}>{monthLabel}</Text>
+          {/* numberOfLines is required, not cosmetic: monthPickerText carries
+              flexShrink so the chevron never gets pushed off-screen, and a
+              shrinkable Text with no truncation rule clips mid-glyph instead of
+              ellipsizing — this rendered as "agosto 202" in production. */}
+          <Text style={[styles.monthPickerText, { color: textPrimary }]} numberOfLines={1}>
+            {monthLabel}
+          </Text>
           <ChevronDown size={16} color="#94a3b8" />
         </TouchableOpacity>
 
