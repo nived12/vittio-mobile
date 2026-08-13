@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
+import axios from 'axios';
 
 // Single shared TanStack Query client for the whole app.
 // Lives in src/ (not app/_layout.tsx) so non-React modules — notably the auth
@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
       gcTime: 24 * 60 * 60 * 1000, // 24 hours
       // Retry network and 5xx failures only — a 4xx repeats identically.
       retry: (failureCount, error) => {
-        const status = (error as AxiosError).response?.status;
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
         if (status && status >= 400 && status < 500) return false;
         return failureCount < 2;
       },
