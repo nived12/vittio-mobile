@@ -14,22 +14,22 @@
       "ci": {
         "commitHref": "https://github.com/nived12/vittio-mobile/commit/b3f90ff4c640872001b9bfc3144a53062879355e",
         "commitHash": "b3f90ff4c640872001b9bfc3144a53062879355e",
-        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31655540348"
+        "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31657880955"
       },
       "gitCommit": {
-        "shortHash": "39855fe",
-        "hash": "39855febff943d1d97a6a2be80df3bdcba9f60f1",
-        "subject": "Stop retrying requests the server already refused",
-        "body": "Stop retrying requests the server already refused\n\nretry: 2 applied to every failure, including 4xx. A 403 or 404 is a decision\nthe server will repeat identically, so each screen load fired three of them —\nnoticed as three consecutive 403s from GET /recurring on an unconfirmed\naccount.\n\nNetwork failures and 5xx still retry twice, which is what the setting was for\non mobile connections.\n\nConsidered exempting 408 and 429 and deliberately did not: an axios timeout\nraises ECONNABORTED with no response, so it never arrives as a 408, and\nretrying a 429 within React Query's ~1-2s backoff cannot outlast a rack-attack\nwindow — it only spends more requests against the limit.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n",
+        "shortHash": "abac2d5",
+        "hash": "abac2d581153d6162c7b7e9e5af84fdb4b1d89f3",
+        "subject": "Stop the privacy notice covering every screen in mobile e2e",
+        "body": "Stop the privacy notice covering every screen in mobile e2e\n\nThe /user_settings mock omitted analytics_notice_seen_at, so\nAnalyticsPrivacyNotice rendered in every logged-in spec. It is a bottom sheet\nover the composer and tab bar, and it is accessibilityViewIsModal, so clicks\nunderneath it were intercepted — assistant.spec.ts \"typing a custom message\"\nfailed with the notice body swallowing the Enviar press.\n\nFixed in the mock rather than by dismissing it per-spec: no spec is testing the\nnotice, and a dismiss step would add a wait to every login. Specs that do want\nit can override the route.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n",
         "author": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1786581820000
+          "time": 1786584497000
         },
         "committer": {
           "name": "Nived Vengilat",
           "email": "nivedvengilat@gmail.com",
-          "time": 1786581820000
+          "time": 1786584497000
         },
         "branch": "HEAD"
       },
@@ -45,22 +45,22 @@
           "ci": {
             "commitHref": "https://github.com/nived12/vittio-mobile/commit/b3f90ff4c640872001b9bfc3144a53062879355e",
             "commitHash": "b3f90ff4c640872001b9bfc3144a53062879355e",
-            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31655540348"
+            "buildHref": "https://github.com/nived12/vittio-mobile/actions/runs/31657880955"
           },
           "gitCommit": {
-            "shortHash": "39855fe",
-            "hash": "39855febff943d1d97a6a2be80df3bdcba9f60f1",
-            "subject": "Stop retrying requests the server already refused",
-            "body": "Stop retrying requests the server already refused\n\nretry: 2 applied to every failure, including 4xx. A 403 or 404 is a decision\nthe server will repeat identically, so each screen load fired three of them —\nnoticed as three consecutive 403s from GET /recurring on an unconfirmed\naccount.\n\nNetwork failures and 5xx still retry twice, which is what the setting was for\non mobile connections.\n\nConsidered exempting 408 and 429 and deliberately did not: an axios timeout\nraises ECONNABORTED with no response, so it never arrives as a 408, and\nretrying a 429 within React Query's ~1-2s backoff cannot outlast a rack-attack\nwindow — it only spends more requests against the limit.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n",
+            "shortHash": "abac2d5",
+            "hash": "abac2d581153d6162c7b7e9e5af84fdb4b1d89f3",
+            "subject": "Stop the privacy notice covering every screen in mobile e2e",
+            "body": "Stop the privacy notice covering every screen in mobile e2e\n\nThe /user_settings mock omitted analytics_notice_seen_at, so\nAnalyticsPrivacyNotice rendered in every logged-in spec. It is a bottom sheet\nover the composer and tab bar, and it is accessibilityViewIsModal, so clicks\nunderneath it were intercepted — assistant.spec.ts \"typing a custom message\"\nfailed with the notice body swallowing the Enviar press.\n\nFixed in the mock rather than by dismissing it per-spec: no spec is testing the\nnotice, and a dismiss step would add a wait to every login. Specs that do want\nit can override the route.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n",
             "author": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1786581820000
+              "time": 1786584497000
             },
             "committer": {
               "name": "Nived Vengilat",
               "email": "nivedvengilat@gmail.com",
-              "time": 1786581820000
+              "time": 1786584497000
             },
             "branch": "HEAD"
           },
@@ -137,12 +137,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2506,
+                  "duration": 2478,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:50:05.601Z",
+                  "startTime": "2026-08-13T01:33:15.192Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -179,12 +179,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2107,
+                  "duration": 2141,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:50:09.774Z",
+                  "startTime": "2026-08-13T01:33:17.913Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -228,12 +228,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2269,
+                      "duration": 2221,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:50:11.901Z",
+                      "startTime": "2026-08-13T01:33:20.074Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -262,12 +262,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2339,
+                      "duration": 2283,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:50:14.185Z",
+                      "startTime": "2026-08-13T01:33:22.311Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -282,7 +282,7 @@
             },
             {
               "title": "typing a custom message shows an assistant reply",
-              "ok": false,
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -295,100 +295,18 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 45141,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/assistant.spec.ts",
-                            "column": 38,
-                            "line": 77
-                          },
-                          "message": "Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel(/Enviar/i)\u001b[22m\n\u001b[2m    - locator resolved to <button role=\"button\" type=\"button\" aria-label=\"Enviar\" class=\"css-g5y9jx r-1i6wzkk r-lrvibr r-1loqt21 r-1otgn73 r-1awozwy r-rxdyg0 r-16uyjmq r-1ugchlj r-1777fci r-usgzl9\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div dir=\"auto\" class=\"css-146c3p1 r-vsb09d r-a023e6 r-hbpseb r-1peese0\">Registramos algunas acciones (registro, subida de…</div> from <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    83 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div dir=\"auto\" class=\"css-146c3p1 r-vsb09d r-a023e6 r-hbpseb r-1peese0\">Registramos algunas acciones (registro, subida de…</div> from <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  75 |     await composer.fill(\"Hola Vittbot\");\n  76 |\n> 77 |     await page.getByLabel(/Enviar/i).click();\n     |                                      ^\n  78 |\n  79 |     await expect(page.getByText(/Hola Vittbot/i).first()).toBeVisible();\n  80 |     await expect(page.getByText(/asistente financiero/i).first()).toBeVisible({ timeout: 10_000 });\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/assistant.spec.ts:77:38"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 2275,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:50:16.538Z",
+                      "startTime": "2026-08-13T01:33:24.604Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium/error-context.md"
-                        }
-                      ]
-                    },
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 45497,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/assistant.spec.ts",
-                            "column": 38,
-                            "line": 77
-                          },
-                          "message": "Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel(/Enviar/i)\u001b[22m\n\u001b[2m    - locator resolved to <button role=\"button\" type=\"button\" aria-label=\"Enviar\" class=\"css-g5y9jx r-1i6wzkk r-lrvibr r-1loqt21 r-1otgn73 r-1awozwy r-rxdyg0 r-16uyjmq r-1ugchlj r-1777fci r-usgzl9\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div dir=\"auto\" class=\"css-146c3p1 r-1bxoz39 r-1x35g6 r-17rnw9f r-5oul0u\">Recopilamos datos de uso anónimos</div> from <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div dir=\"auto\" class=\"css-146c3p1 r-vsb09d r-a023e6 r-hbpseb r-1peese0\">Registramos algunas acciones (registro, subida de…</div> from <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    81 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div dir=\"auto\" class=\"css-146c3p1 r-vsb09d r-a023e6 r-hbpseb r-1peese0\">Registramos algunas acciones (registro, subida de…</div> from <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-1p0dtai r-65fb02 r-1d2f490 r-vf1w16 r-cxgwc0 r-95jzfe r-u8s1d r-zchlnj r-1s3egr7\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n\n  75 |     await composer.fill(\"Hola Vittbot\");\n  76 |\n> 77 |     await page.getByLabel(/Enviar/i).click();\n     |                                      ^\n  78 |\n  79 |     await expect(page.getByText(/Hola Vittbot/i).first()).toBeVisible();\n  80 |     await expect(page.getByText(/asistente financiero/i).first()).toBeVisible({ timeout: 10_000 });\n    at /home/runner/work/vittio-mobile/vittio-mobile/e2e/tests/assistant.spec.ts:77:38"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2026-08-13T00:51:02.301Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium-retry1/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium-retry1/video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium-retry1/error-context.md"
-                        },
-                        {
-                          "name": "trace",
-                          "contentType": "application/zip",
-                          "path": "/home/runner/work/vittio-mobile/vittio-mobile/e2e/test-results/assistant-Vittbot-mobile-w-fba7d-ge-shows-an-assistant-reply-chromium-retry1/trace.zip"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
               "id": "7b892f05db9a15b76833-f5f3669d872c4fd956d1",
@@ -409,15 +327,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2745,
+                      "duration": 2602,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:51:48.923Z",
+                      "startTime": "2026-08-13T01:33:26.893Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -443,15 +361,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2336,
+                      "duration": 2316,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:51:51.778Z",
+                      "startTime": "2026-08-13T01:33:29.507Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -487,15 +405,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1583,
+                  "duration": 1625,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:51:54.130Z",
+                  "startTime": "2026-08-13T01:33:31.836Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -529,15 +447,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2137,
+                  "duration": 2434,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:51:55.730Z",
+                  "startTime": "2026-08-13T01:33:33.475Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -571,15 +489,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1535,
+                  "duration": 1727,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:51:57.884Z",
+                  "startTime": "2026-08-13T01:33:35.927Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -620,15 +538,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2347,
+                      "duration": 2603,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:51:59.438Z",
+                      "startTime": "2026-08-13T01:33:37.670Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -654,15 +572,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2220,
+                      "duration": 2229,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:52:01.798Z",
+                      "startTime": "2026-08-13T01:33:40.287Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -705,15 +623,15 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1598,
+                      "duration": 1574,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-08-13T00:52:04.032Z",
+                      "startTime": "2026-08-13T01:33:42.530Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -749,15 +667,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2020,
+                  "duration": 2057,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:05.645Z",
+                  "startTime": "2026-08-13T01:33:44.120Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -783,15 +701,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1995,
+                  "duration": 2017,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:07.679Z",
+                  "startTime": "2026-08-13T01:33:46.192Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -817,15 +735,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1975,
+                  "duration": 1992,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:09.686Z",
+                  "startTime": "2026-08-13T01:33:48.221Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -859,15 +777,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2388,
+                  "duration": 2348,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:11.676Z",
+                  "startTime": "2026-08-13T01:33:50.228Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -893,15 +811,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2337,
+                  "duration": 2341,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:14.073Z",
+                  "startTime": "2026-08-13T01:33:52.590Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -927,15 +845,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2483,
+                  "duration": 2418,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:16.422Z",
+                  "startTime": "2026-08-13T01:33:54.942Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -961,15 +879,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3936,
+                  "duration": 2185,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:18.917Z",
+                  "startTime": "2026-08-13T01:33:57.371Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1003,15 +921,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3222,
+                  "duration": 2842,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:22.869Z",
+                  "startTime": "2026-08-13T01:33:59.570Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1037,15 +955,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2901,
+                  "duration": 2898,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:26.108Z",
+                  "startTime": "2026-08-13T01:34:02.422Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1079,15 +997,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 2,
+                  "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2087,
+                  "duration": 2048,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-08-13T00:52:29.033Z",
+                  "startTime": "2026-08-13T01:34:05.337Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1105,11 +1023,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-08-13T00:50:03.903Z",
-    "duration": 147280.421,
-    "expected": 22,
+    "startTime": "2026-08-13T01:33:13.495Z",
+    "duration": 53958.907,
+    "expected": 23,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
