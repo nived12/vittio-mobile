@@ -152,6 +152,7 @@ export function AddEditCategoryModal({ visible, onClose, category, parentCategor
             style={styles.scroll}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            automaticallyAdjustKeyboardInsets
           >
             {/* Name field */}
             <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('categories.nameLabel')}</Text>
