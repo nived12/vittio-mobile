@@ -211,7 +211,11 @@ export async function setupApiMocks(page: Page): Promise<void> {
         data: {
           notify_statement_imports: true,
           notify_goal_milestones: true,
-          notify_debt_reminders: true
+          notify_debt_reminders: true,
+          // Without this the privacy notice renders in every logged-in spec as a
+          // bottom sheet, covering the composer and tab bar. Specs that want it
+          // should override this route.
+          analytics_notice_seen_at: "2026-01-01T00:00:00Z"
         }
       });
     }

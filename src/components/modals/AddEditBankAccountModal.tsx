@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -141,6 +143,8 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
 
   // ── Bank selection ──
   const handleBankSelect = (bank: Bank | null) => {
+    // autoFocus on the search input leaves the keyboard up over the next screen.
+    Keyboard.dismiss();
     setSelectedBank(bank);
     if (bank === null) {
       setIsCash(true);
@@ -242,7 +246,12 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       animationType="slide"
       onRequestClose={isSaving ? undefined : onClose}
     >
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        // iOS does not resize the window for the keyboard, so the sheet keeps its
+        // full height and the bank list ends up underneath it.
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <TouchableOpacity
           style={styles.backdrop}
           activeOpacity={1}
@@ -256,7 +265,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
               <>
                 <View style={[styles.header, { borderBottomColor: dividerCol }]}>
                   <TouchableOpacity
-                    onPress={() => { setShowBankPicker(false); setBankQuery(''); }}
+                    onPress={() => { Keyboard.dismiss(); setShowBankPicker(false); setBankQuery(''); }}
                     hitSlop={12}
                   >
                     <ChevronLeft size={22} color={textSecondary} />
@@ -599,7 +608,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
               </>
             )}
           </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

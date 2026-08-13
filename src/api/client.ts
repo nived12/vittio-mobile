@@ -29,9 +29,7 @@ interface QueueItem {
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
 let isRedirectingToConsent = false;
-let isRedirectingToPremium = false;
 export function resetConsentRedirect(): void { isRedirectingToConsent = false; }
-export function resetPremiumRedirect(): void { isRedirectingToPremium = false; }
 
 const SENSITIVE_KEYS = ['password', 'password_confirmation', 'current_password'];
 
@@ -196,21 +194,10 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (
-      error.response?.status === 402 ||
-      getApiErrorCode(error) === 'SUBSCRIPTION_REQUIRED'
-    ) {
-      if (!isRedirectingToPremium) {
-        isRedirectingToPremium = true;
-        const { router } = await import('expo-router');
-        router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
-        // Reset flag after navigation so future 402s can also redirect
-        const PREMIUM_REDIRECT_DEBOUNCE_MS = 2000;
-        setTimeout(() => { isRedirectingToPremium = false; }, PREMIUM_REDIRECT_DEBOUNCE_MS);
-      }
-      return Promise.reject(error);
-    }
-
+    // No 402 handling here on purpose. Background queries produce 402s too, so
+    // redirecting from the interceptor threw expired users onto the paywall the
+    // moment they opened the app. The screens that offer a premium feature push
+    // to /premium themselves, which is the only place it belongs.
     if (__DEV__) {
       if (error.response) {
         console.error(

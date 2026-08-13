@@ -14,7 +14,7 @@ export function useDashboard(month?: string) {
     queryFn: () => getDashboard(month),
     staleTime: 300_000,       // 5 minutes
     gcTime: 600_000,          // 10 minutes
-    retry: 2,
+    // retry deliberately omitted — inherits the client default, which skips 4xx.
     networkMode: 'offlineFirst',
   });
 }
