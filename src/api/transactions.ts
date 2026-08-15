@@ -7,7 +7,11 @@ export type TransactionType =
   | 'fixed_expense'
   | 'variable_expense'
   | 'transfer_in'
-  | 'transfer_out';
+  | 'transfer_out'
+  // A charge and the credit that cancels it — an installment reversal, a refund, a points
+  // redemption. Both halves keep their natural signs but sit outside income and expense
+  // totals, so a cancelled purchase inflates neither.
+  | 'excluded';
 
 export interface TransactionItem {
   id: number;

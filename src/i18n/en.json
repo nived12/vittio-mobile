@@ -342,7 +342,8 @@
       "fixed_expense": "Fixed",
       "variable_expense": "Expense",
       "transfer_in": "Transfer",
-      "transfer_out": "Transfer"
+      "transfer_out": "Transfer",
+      "excluded": "Cancelled"
     },
     "longPress": {
       "edit": "Edit",
@@ -598,6 +599,38 @@
     "nextMonth": "Next month",
     "downloadButton": "Download PDF",
     "downloadError": "Couldn't generate the report. Please try again."
+  },
+  "transferCandidates": {
+    "title": "Possible transfers",
+    "subtitle": "These could be transfers between your accounts",
+    "lastCardHint": "Swiping this last one saves your decisions",
+    "from": "From",
+    "to": "To",
+    "sameDay": "Same day",
+    "daysApart": "{{count}} day apart",
+    "daysApart_plural": "{{count}} days apart",
+    "link": "Link",
+    "dismiss": "Dismiss",
+    "stampLink": "LINK",
+    "stampDismiss": "DISMISS",
+    "progress": "{{current}} of {{total}}",
+    "linkLabel": "Link {{accounts}} as a transfer",
+    "dismissLabel": "Dismiss {{accounts}}",
+    "cardLabel": "{{amount}}, {{accounts}}, {{gap}}",
+    "undo": "Undo",
+    "summary": "{{linked}} to link · {{dismissed}} to dismiss",
+    "summaryHint": "Saving your decisions…",
+    "saved": "{{count}} transfer linked",
+    "saved_plural": "{{count}} transfers linked",
+    "saveFailed": "Couldn't save your decisions. Please try again.",
+    "empty": {
+      "title": "Nothing to review",
+      "subtitle": "Vittio linked every transfer it found"
+    },
+    "error": {
+      "title": "Couldn't load candidates",
+      "subtitle": "Check your connection and try again"
+    }
   },
   "common": {
     "search": "Search...",
