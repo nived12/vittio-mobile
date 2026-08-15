@@ -1,47 +1,46 @@
+import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Linking } from 'react-native';
+import { apiClient } from './client';
 import { tokenStorage } from '../utils/tokenStorage';
 
 /**
  * Download monthly PDF report and open the native share sheet.
- * Falls back to opening a browser URL if the device can't share.
+ * Throws on failure so the caller can surface an error — never opens the raw
+ * API URL in a browser, which has no auth header and renders a JSON 401.
  */
 export async function downloadMonthlyReport(year: number, month: number): Promise<void> {
-  const accessToken = await tokenStorage.getAccessToken();
-
-  const baseURL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1').replace(/\/$/, '');
+  const baseURL = (apiClient.defaults.baseURL ?? '').replace(/\/$/, '');
   const apiUrl = `${baseURL}/reports/monthly?year=${year}&month=${month}`;
-
-  // Download PDF to a temp file then share it
   const fileName = `vittio_report_${year}_${String(month).padStart(2, '0')}.pdf`;
 
+  let file: Awaited<ReturnType<typeof download>>;
   try {
-    // Dynamic import to avoid TypeScript version conflicts
-    const FileSystem = await import('expo-file-system');
-    const cacheDir: string = (FileSystem as any).cacheDirectory as string ?? '';
-    const fileUri = `${cacheDir}${fileName}`;
-
-    const downloadResult = await (FileSystem as any).downloadAsync(apiUrl, fileUri, {
-      headers: { Authorization: `Bearer ${accessToken ?? ''}` },
-    });
-
-    if (downloadResult.status !== 200) {
-      throw new Error(`HTTP ${downloadResult.status}`);
-    }
-
-    const canShare = await Sharing.isAvailableAsync();
-    if (canShare) {
-      await Sharing.shareAsync(downloadResult.uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Vittio Monthly Report',
-        UTI: 'com.adobe.pdf',
-      });
-      return;
-    }
-  } catch {
-    // Fall through to browser fallback
+    file = await download(apiUrl, fileName);
+  } catch (err) {
+    // Access tokens live 15 minutes; this request bypasses the axios refresh
+    // interceptor, so refresh by hand and retry once.
+    if (!String(err).includes('401')) throw err;
+    const { useAuthStore } = await import('../stores/authStore');
+    await useAuthStore.getState().refreshTokens();
+    file = await download(apiUrl, fileName);
   }
 
-  // Fallback: open in browser (simulator / web)
-  await Linking.openURL(apiUrl);
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error('Sharing is unavailable on this platform');
+  }
+
+  await Sharing.shareAsync(file.uri, {
+    mimeType: 'application/pdf',
+    dialogTitle: 'Vittio Monthly Report',
+    UTI: 'com.adobe.pdf',
+  });
+}
+
+async function download(apiUrl: string, fileName: string) {
+  const accessToken = await tokenStorage.getAccessToken();
+
+  return File.downloadFileAsync(apiUrl, new File(Paths.cache, fileName), {
+    headers: { Authorization: `Bearer ${accessToken ?? ''}` },
+    idempotent: true,
+  });
 }
