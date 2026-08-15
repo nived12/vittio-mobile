@@ -27,7 +27,8 @@ type TransactionType =
   | 'fixed_expense'
   | 'variable_expense'
   | 'transfer_in'
-  | 'transfer_out';
+  | 'transfer_out'
+  | 'excluded';
 
 interface TransactionRowProps {
   id: number;
@@ -118,6 +119,12 @@ function getBadge(txType: TransactionType, isDark: boolean, t: (k: string) => st
       return isDark
         ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionRow.types.transfer_in') }
         : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionRow.types.transfer_in') };
+    // Excluded rows do get a badge, unlike variable_expense. Without one the row looks
+    // like an ordinary charge or deposit that mysteriously fails to move any total.
+    case 'excluded':
+      return isDark
+        ? { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', label: t('transactionRow.types.excluded') }
+        : { bg: '#f1f5f9', text: '#475569', label: t('transactionRow.types.excluded') };
     default:
       return null; // variable_expense — no badge (most common, reduces noise)
   }

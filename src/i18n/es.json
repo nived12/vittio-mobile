@@ -342,7 +342,8 @@
       "fixed_expense": "Fijo",
       "variable_expense": "Gasto",
       "transfer_in": "Transferencia",
-      "transfer_out": "Transferencia"
+      "transfer_out": "Transferencia",
+      "excluded": "Cancelada"
     },
     "longPress": {
       "edit": "Editar",
@@ -598,6 +599,37 @@
     "nextMonth": "Mes siguiente",
     "downloadButton": "Descargar PDF",
     "downloadError": "No se pudo generar el reporte. Inténtalo de nuevo."
+  },
+  "transferCandidates": {
+    "title": "Posibles transferencias",
+    "chip": "Transferencias",
+    "subtitle": "Estas transacciones podrían ser transferencias entre tus cuentas",
+    "dismissWarning": "Descartar es permanente",
+    "from": "De",
+    "to": "A",
+    "sameDay": "Mismo día",
+    "daysApart_one": "{{count}} día de diferencia",
+    "daysApart_other": "{{count}} días de diferencia",
+    "link": "Vincular",
+    "dismiss": "Descartar",
+    "linkLabel": "Vincular {{accounts}} como transferencia",
+    "dismissLabel": "Descartar {{accounts}}",
+    "cardLabel": "{{amount}}, {{accounts}}, {{gap}}",
+    "undo": "Deshacer",
+    "save_one": "Guardar ({{count}})",
+    "save_other": "Guardar ({{count}})",
+    "summary": "{{linked}} para vincular · {{dismissed}} para descartar",
+    "saved_one": "{{count}} transferencia vinculada",
+    "saved_other": "{{count}} transferencias vinculadas",
+    "saveFailed": "No se pudieron guardar tus decisiones. Inténtalo de nuevo.",
+    "empty": {
+      "title": "Nada por revisar",
+      "subtitle": "Vittio vinculó todas las transferencias que encontró"
+    },
+    "error": {
+      "title": "No se pudieron cargar",
+      "subtitle": "Revisa tu conexión e inténtalo de nuevo"
+    }
   },
   "common": {
     "search": "Buscar...",

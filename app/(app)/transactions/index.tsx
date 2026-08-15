@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { FileText, Repeat2, Search, SlidersHorizontal, X } from 'lucide-react-native';
+import { ArrowLeftRight, FileText, Repeat2, Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import {
   useTransactions,
@@ -24,6 +24,7 @@ import {
 } from '../../../src/hooks/useTransactions';
 import { useCategories } from '../../../src/hooks/useCategories';
 import { useRecurringSummary } from '../../../src/hooks/useRecurringSummary';
+import { useTransferCandidates } from '../../../src/hooks/useTransferCandidates';
 import { useDeferredReady } from '../../../src/hooks/useDeferredReady';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
@@ -324,6 +325,8 @@ export default function TransactionsScreen() {
 
   const { data: categoriesData } = useCategories();
   const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
+  const { data: transferCandidates } = useTransferCandidates();
+  const transferCandidateCount = transferCandidates?.length ?? 0;
 
   const categories = categoriesData ?? [];
 
@@ -499,6 +502,24 @@ export default function TransactionsScreen() {
                   <Text style={styles.recurringChipBadgeText}>{recurringDetectedCount}</Text>
                 </View>
               )}
+            </TouchableOpacity>
+          )}
+          {/* Only rendered when something is waiting — an always-present chip leading to
+              an empty screen is noise, and these arrive in rare bursts after an upload. */}
+          {transferCandidateCount > 0 && (
+            <TouchableOpacity
+              style={[styles.recurringChip, { borderColor: borderCol }]}
+              onPress={() => router.push('/(app)/transactions/candidates' as never)}
+              accessibilityLabel={t('transferCandidates.title')}
+              accessibilityRole="button"
+            >
+              <ArrowLeftRight size={14} color="#4f46e5" />
+              <Text style={[styles.recurringChipText, { color: textPrimary }]}>
+                {t('transferCandidates.chip')}
+              </Text>
+              <View style={styles.recurringChipBadge}>
+                <Text style={styles.recurringChipBadgeText}>{transferCandidateCount}</Text>
+              </View>
             </TouchableOpacity>
           )}
           <TouchableOpacity
