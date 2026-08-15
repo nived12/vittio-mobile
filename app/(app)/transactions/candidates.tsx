@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -53,8 +53,13 @@ export default function TransferCandidatesScreen() {
     return (candidates ?? []).filter((c) => !decided.has(c.id));
   }, [candidates, decisions]);
 
-  const linkedIds = decisions.filter((d) => d.decision === 'link').map((d) => d.candidateId);
-  const dismissedIds = decisions.filter((d) => d.decision === 'dismiss').map((d) => d.candidateId);
+  const { linkedIds, dismissedIds } = useMemo(
+    () => ({
+      linkedIds: decisions.filter((d) => d.decision === 'link').map((d) => d.candidateId),
+      dismissedIds: decisions.filter((d) => d.decision === 'dismiss').map((d) => d.candidateId),
+    }),
+    [decisions],
+  );
   const total = candidates?.length ?? 0;
   const topCandidate = remaining[0];
 
@@ -64,15 +69,15 @@ export default function TransferCandidatesScreen() {
 
   // Submitted once, when the deck runs out. Until then every decision is undoable and
   // nothing has been written — which matters because dismissing is permanent and the
-  // reconciler never re-offers a rejected pair. The ref guards against a second fire from
-  // a re-render while the request is in flight.
+  // reconciler never re-offers a rejected pair. The ref guards a second fire while the
+  // request is in flight.
   const submitted = useRef(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
-  useEffect(() => {
-    if (submitted.current) return;
-    if (decisions.length === 0 || remaining.length > 0) return;
-
+  const submit = useCallback(() => {
     submitted.current = true;
+    setSaveFailed(false);
+
     resolve.mutate(
       { accepted_ids: linkedIds, rejected_ids: dismissedIds },
       {
@@ -81,13 +86,25 @@ export default function TransferCandidatesScreen() {
           router.back();
         },
         onError: () => {
-          // Let them try again: the decisions are still in state, so the deck is not lost.
+          // The decisions stay in state, so retrying does not mean deciding again.
           submitted.current = false;
+          setSaveFailed(true);
           showToast(t('transferCandidates.saveFailed'), 'error');
         },
       },
     );
-  }, [decisions.length, remaining.length, linkedIds, dismissedIds, resolve, showToast, t]);
+  }, [linkedIds, dismissedIds, resolve, showToast, t]);
+
+  // Auto-submit fires once, and never again after a failure: the retry is the button in
+  // the summary. An earlier version relied on unmemoised id arrays changing identity every
+  // render to re-run this effect, which happened to make retry work — an accident, and one
+  // that would have vanished the moment those arrays were memoised.
+  useEffect(() => {
+    if (submitted.current || saveFailed) return;
+    if (decisions.length === 0 || remaining.length > 0) return;
+
+    submit();
+  }, [decisions.length, remaining.length, saveFailed, submit]);
 
   function body() {
     if (isLoading) {
@@ -119,16 +136,31 @@ export default function TransferCandidatesScreen() {
     if (remaining.length === 0) {
       return (
         <View style={[styles.summary, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <CheckCircle2 size={36} color={theme.positive} />
+          <CheckCircle2 size={36} color={saveFailed ? theme.negative : theme.positive} />
           <Text style={[styles.summaryText, { color: theme.textPrimary }]}>
             {t('transferCandidates.summary', {
               linked: linkedIds.length,
               dismissed: dismissedIds.length,
             })}
           </Text>
-          <Text style={[styles.summaryHint, { color: theme.textSecondary }]}>
-            {t('transferCandidates.summaryHint')}
-          </Text>
+
+          {/* The only way back from a failed save. The auto-submit deliberately does not
+              fire again on its own, so without this the decisions would be stranded. */}
+          {saveFailed ? (
+            <TouchableOpacity
+              onPress={submit}
+              disabled={resolve.isPending}
+              style={[styles.retryButton, { backgroundColor: theme.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.retry')}
+            >
+              <Text style={styles.retryText}>{t('common.retry')}</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.summaryHint, { color: theme.textSecondary }]}>
+              {t('transferCandidates.summaryHint')}
+            </Text>
+          )}
         </View>
       );
     }
@@ -296,6 +328,18 @@ const styles = StyleSheet.create({
   summaryHint: {
     ...textStyles.bodySm,
     textAlign: 'center',
+  },
+  retryButton: {
+    minHeight: 44,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.button,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryText: {
+    ...textStyles.bodyMd,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   actions: {
     flexDirection: 'row',
