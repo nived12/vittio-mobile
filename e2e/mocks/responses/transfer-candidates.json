@@ -1,0 +1,103 @@
+{
+  "data": {
+    "candidates": [
+      {
+        "id": 501,
+        "similarity_score": 0.5,
+        "amount": 5555.0,
+        "days_apart": 2,
+        "outgoing": {
+          "id": 9001,
+          "date": "2026-08-15",
+          "description": "E2E SPEI ENVIADO SANTANDER SEGUNDA TRANSFERENCIA",
+          "concept": "E2E SPEI ENVIADO SANTANDER SEGUNDA TRANSFERENCIA",
+          "amount": -5555.0,
+          "transaction_type": "variable_expense",
+          "source": "statement_file",
+          "merchant": null,
+          "reference": null,
+          "statement_file_id": null,
+          "tax_amount": null,
+          "tip_amount": null,
+          "items": [],
+          "bank_account": { "id": 5, "name": "Banorte TDD • 5678", "account_type": "debit" },
+          "category": null,
+          "is_transfer": false,
+          "transfer_account": null,
+          "created_at": "2026-08-15T01:00:13Z",
+          "updated_at": "2026-08-15T01:00:13Z"
+        },
+        "incoming": {
+          "id": 9002,
+          "date": "2026-08-17",
+          "description": "E2E SPEI RECIBIDO BANORTE SEGUNDA TRANSFERENCIA",
+          "concept": "E2E SPEI RECIBIDO BANORTE SEGUNDA TRANSFERENCIA",
+          "amount": 5555.0,
+          "transaction_type": "income",
+          "source": "statement_file",
+          "merchant": null,
+          "reference": null,
+          "statement_file_id": null,
+          "tax_amount": null,
+          "tip_amount": null,
+          "items": [],
+          "bank_account": { "id": 6, "name": "Santander TDD • 9012", "account_type": "debit" },
+          "category": null,
+          "is_transfer": false,
+          "transfer_account": null,
+          "created_at": "2026-08-15T01:00:13Z",
+          "updated_at": "2026-08-15T01:00:13Z"
+        }
+      },
+      {
+        "id": 502,
+        "similarity_score": 0.5,
+        "amount": 7777.0,
+        "days_apart": 0,
+        "outgoing": {
+          "id": 9003,
+          "date": "2026-08-11",
+          "description": "E2E SPEI ENVIADO SANTANDER TRANSFERENCIA PROPIA",
+          "concept": "E2E SPEI ENVIADO SANTANDER TRANSFERENCIA PROPIA",
+          "amount": -7777.0,
+          "transaction_type": "variable_expense",
+          "source": "statement_file",
+          "merchant": null,
+          "reference": null,
+          "statement_file_id": null,
+          "tax_amount": null,
+          "tip_amount": null,
+          "items": [],
+          "bank_account": { "id": 5, "name": "Banorte TDD • 5678", "account_type": "debit" },
+          "category": null,
+          "is_transfer": false,
+          "transfer_account": null,
+          "created_at": "2026-08-15T01:00:13Z",
+          "updated_at": "2026-08-15T01:00:13Z"
+        },
+        "incoming": {
+          "id": 9004,
+          "date": "2026-08-11",
+          "description": "E2E SPEI RECIBIDO BANORTE TRANSFERENCIA PROPIA",
+          "concept": "E2E SPEI RECIBIDO BANORTE TRANSFERENCIA PROPIA",
+          "amount": 7777.0,
+          "transaction_type": "income",
+          "source": "statement_file",
+          "merchant": null,
+          "reference": null,
+          "statement_file_id": null,
+          "tax_amount": null,
+          "tip_amount": null,
+          "items": [],
+          "bank_account": { "id": 6, "name": "Santander TDD • 9012", "account_type": "debit" },
+          "category": null,
+          "is_transfer": false,
+          "transfer_account": null,
+          "created_at": "2026-08-15T01:00:13Z",
+          "updated_at": "2026-08-15T01:00:13Z"
+        }
+      }
+    ]
+  },
+  "meta": { "pagination": { "total_items": 2, "current_page": 1, "total_pages": 1, "page_size": 25 } }
+}

@@ -325,8 +325,8 @@ export default function TransactionsScreen() {
 
   const { data: categoriesData } = useCategories();
   const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
-  const { data: transferCandidates, refetch: refetchTransferCandidates } = useTransferCandidates();
-  const transferCandidateCount = transferCandidates?.length ?? 0;
+  const { data: transferCandidatePage, refetch: refetchTransferCandidates } = useTransferCandidates();
+  const transferCandidateCount = transferCandidatePage?.total ?? 0;
 
   // This screen is a tab and never unmounts, so a query alone would show a count captured
   // once and never corrected — no chip after an upload creates candidates, or a stale one

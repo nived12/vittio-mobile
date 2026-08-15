@@ -38,7 +38,8 @@ export default function TransferCandidatesScreen() {
   const { theme } = useTheme();
   const showToast = useUIStore((s) => s.showToast);
 
-  const { data: candidates, isLoading, isError, refetch } = useTransferCandidates();
+  const { data: page, isLoading, isError, refetch } = useTransferCandidates();
+  const candidates = page?.candidates;
   const resolve = useResolveTransferCandidates();
 
   // Decisions live here and nowhere else until the user saves. A dismissed pair is

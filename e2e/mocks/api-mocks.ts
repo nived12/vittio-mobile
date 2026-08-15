@@ -41,6 +41,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
   const assistantChatCustom = readFixture<unknown>("assistant-chat-custom.json");
   const assistantConversationDetail = readFixture<unknown>("assistant-conversation-detail.json");
   const templates = readFixture<unknown>("templates.json");
+  const transferCandidates = readFixture<unknown>("transfer-candidates.json");
 
   await page.route("**/*", (route) => {
     const method = route.request().method();
@@ -69,6 +70,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.includes("/assistant/") ||
       pathname.endsWith("/savings") ||
       pathname.endsWith("/debts") ||
+      pathname.includes("/transfer_candidates") ||
       pathname.endsWith("/templates");
 
     if (!isApiRequest) {
@@ -129,6 +131,14 @@ export async function setupApiMocks(page: Page): Promise<void> {
         return fulfillJson(route, { data: { ...importedTransaction, ...patch } });
       }
       return fulfillJson(route, { data: importedTransaction });
+    }
+    // Resolve is checked first: it is a POST to a path that also contains
+    // "/transfer_candidates", so the list branch would swallow it.
+    if (pathname.includes("/transfer_candidates/resolve")) {
+      return fulfillJson(route, { data: { linked_count: 1, rejected_count: 1 } });
+    }
+    if (pathname.includes("/transfer_candidates")) {
+      return fulfillJson(route, transferCandidates);
     }
     if (pathname.includes("/recurring/scan")) {
       return fulfillJson(route, { data: { detected: [] } });

@@ -21,7 +21,13 @@ export interface TransferCandidate {
 
 export interface TransferCandidateListResponse {
   data: { candidates: TransferCandidate[] };
-  meta: { total: number };
+  meta: { pagination: { total_items: number } };
+}
+
+export interface TransferCandidatePage {
+  candidates: TransferCandidate[];
+  /** Across all pages — the header chip counts everything waiting, not just this page. */
+  total: number;
 }
 
 export interface ResolveTransferCandidatesBody {
@@ -35,9 +41,12 @@ export interface ResolveTransferCandidatesResponse {
 
 // ── Requests ───────────────────────────────────────────────────────────────
 
-export async function fetchTransferCandidates(): Promise<TransferCandidate[]> {
+export async function fetchTransferCandidates(): Promise<TransferCandidatePage> {
   const { data } = await apiClient.get<TransferCandidateListResponse>('/transfer_candidates');
-  return data.data.candidates;
+  return {
+    candidates: data.data.candidates,
+    total: data.meta?.pagination?.total_items ?? data.data.candidates.length,
+  };
 }
 
 /**
