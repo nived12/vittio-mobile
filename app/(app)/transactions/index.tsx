@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { ArrowLeftRight, FileText, Repeat2, Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -325,8 +325,17 @@ export default function TransactionsScreen() {
 
   const { data: categoriesData } = useCategories();
   const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
-  const { data: transferCandidates } = useTransferCandidates();
+  const { data: transferCandidates, refetch: refetchTransferCandidates } = useTransferCandidates();
   const transferCandidateCount = transferCandidates?.length ?? 0;
+
+  // This screen is a tab and never unmounts, so a query alone would show a count captured
+  // once and never corrected — no chip after an upload creates candidates, or a stale one
+  // after they are reviewed. Refetch whenever the tab is focused.
+  useFocusEffect(
+    useCallback(() => {
+      refetchTransferCandidates();
+    }, [refetchTransferCandidates]),
+  );
 
   const categories = categoriesData ?? [];
 
@@ -505,21 +514,19 @@ export default function TransactionsScreen() {
             </TouchableOpacity>
           )}
           {/* Only rendered when something is waiting — an always-present chip leading to
-              an empty screen is noise, and these arrive in rare bursts after an upload. */}
+              an empty screen is noise, and these arrive in rare bursts after an upload.
+              Icon and count only: the header is a fixed 56pt row, and a second labelled
+              chip alongside "Recurrentes" overflows it and gets cropped at the edge. The
+              accessibility label carries the full name. */}
           {transferCandidateCount > 0 && (
             <TouchableOpacity
-              style={[styles.recurringChip, { borderColor: borderCol }]}
+              style={[styles.transferChip, { borderColor: borderCol }]}
               onPress={() => router.push('/(app)/transactions/candidates' as never)}
               accessibilityLabel={t('transferCandidates.title')}
               accessibilityRole="button"
             >
-              <ArrowLeftRight size={14} color="#4f46e5" />
-              <Text style={[styles.recurringChipText, { color: textPrimary }]}>
-                {t('transferCandidates.chip')}
-              </Text>
-              <View style={styles.recurringChipBadge}>
-                <Text style={styles.recurringChipBadgeText}>{transferCandidateCount}</Text>
-              </View>
+              <ArrowLeftRight size={16} color="#4f46e5" />
+              <Text style={styles.transferChipCount}>{transferCandidateCount}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -727,6 +734,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   recurringChipText: { fontFamily: 'Inter_500Medium', fontSize: 12 },
+  transferChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 32,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  transferChipCount: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#4f46e5' },
   recurringChipBadge: {
     minWidth: 18,
     height: 18,

@@ -15,7 +15,11 @@ export function useTransferCandidates() {
   return useQuery({
     queryKey: transferCandidateKeys.list(),
     queryFn: () => fetchTransferCandidates(),
-    staleTime: 30_000,
+    // Deliberately always stale. The transactions tab that renders the entry chip stays
+    // mounted for the life of the session, so anything cached here would keep a count on
+    // screen that no longer matches — including a chip that never appears after an upload
+    // creates candidates. The payload is a handful of rows.
+    staleTime: 0,
     gcTime: 300_000,
     networkMode: 'offlineFirst',
   });

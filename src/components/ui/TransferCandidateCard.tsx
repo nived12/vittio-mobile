@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   interpolate,
@@ -21,12 +21,13 @@ import { useTheme } from '../../theme/ThemeContext';
 import { Springs } from '../../theme/animations';
 import { spacing } from '../../theme/spacing';
 import { radius } from '../../theme/radius';
+import { shadows } from '../../theme/shadows';
 import { textStyles } from '../../theme/typography';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.35;
-const VELOCITY_THRESHOLD = 800;
-const TINT_TRAVEL = SCREEN_WIDTH * 0.15;
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
+const VELOCITY_THRESHOLD = 700;
+const STAMP_TRAVEL = SCREEN_WIDTH * 0.12;
 const EXIT_MS = 220;
 
 export type CandidateDecision = 'link' | 'dismiss';
@@ -34,7 +35,6 @@ export type CandidateDecision = 'link' | 'dismiss';
 interface Props {
   candidate: TransferCandidate;
   onDecide: (decision: CandidateDecision) => void;
-  /** Cards behind the top one render static and inert. */
   interactive?: boolean;
   stackIndex?: number;
 }
@@ -52,20 +52,18 @@ export function TransferCandidateCard({
   const translateY = useSharedValue(0);
 
   const dateLocale = i18n.language.startsWith('es') ? es : enUS;
-  const formatDate = (iso: string) => format(parseISO(iso), 'd MMM yyyy', { locale: dateLocale });
+  const formatDate = (iso: string) => format(parseISO(iso), "d 'de' MMMM", { locale: dateLocale });
 
   function commit(decision: CandidateDecision) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     onDecide(decision);
   }
 
-  // Swipe is an accelerator, never the only route — the two buttons below do exactly the
-  // same thing and carry the accessibility labels.
   const pan = Gesture.Pan()
     .enabled(interactive)
     .onUpdate((event) => {
       translateX.value = event.translationX;
-      translateY.value = event.translationY * 0.2;
+      translateY.value = event.translationY * 0.15;
     })
     .onEnd((event) => {
       const passed =
@@ -80,7 +78,7 @@ export function TransferCandidateCard({
 
       const decision: CandidateDecision = event.translationX > 0 ? 'link' : 'dismiss';
       translateX.value = withTiming(
-        Math.sign(event.translationX) * SCREEN_WIDTH * 1.4,
+        Math.sign(event.translationX) * SCREEN_WIDTH * 1.5,
         { duration: EXIT_MS, easing: Easing.out(Easing.cubic) },
         (finished) => {
           if (finished) runOnJS(commit)(decision);
@@ -92,16 +90,19 @@ export function TransferCandidateCard({
     transform: [
       { translateX: translateX.value },
       { translateY: translateY.value },
-      { rotate: `${interpolate(translateX.value, [-SCREEN_WIDTH, 0, SCREEN_WIDTH], [-8, 0, 8])}deg` },
+      { rotate: `${interpolate(translateX.value, [-SCREEN_WIDTH, 0, SCREEN_WIDTH], [-10, 0, 10])}deg` },
     ],
   }));
 
-  const linkTint = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [TINT_TRAVEL, SWIPE_THRESHOLD], [0, 1], 'clamp'),
+  // The stamps are the whole reason a swipe feels decisive rather than accidental: the
+  // verdict appears while the finger is still down, so a wrong direction is obvious
+  // before release. Borrowed straight from the LIKE/NOPE convention.
+  const linkStamp = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [STAMP_TRAVEL, SWIPE_THRESHOLD], [0, 1], 'clamp'),
   }));
 
-  const dismissTint = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [-SWIPE_THRESHOLD, -TINT_TRAVEL], [1, 0], 'clamp'),
+  const dismissStamp = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [-SWIPE_THRESHOLD, -STAMP_TRAVEL], [1, 0], 'clamp'),
   }));
 
   const gapLabel =
@@ -110,18 +111,26 @@ export function TransferCandidateCard({
       : t('transferCandidates.daysApart', { count: candidate.days_apart });
 
   const gapTint = candidate.days_apart === 0
-    ? { backgroundColor: isDark ? 'rgba(16,185,129,0.18)' : '#d1fae5', color: theme.positive }
-    : { backgroundColor: isDark ? 'rgba(245,158,11,0.18)' : '#fef3c7', color: theme.warning };
+    ? { bg: isDark ? 'rgba(16,185,129,0.18)' : '#d1fae5', fg: theme.positive }
+    : { bg: isDark ? 'rgba(245,158,11,0.18)' : '#fef3c7', fg: theme.warning };
 
   const accountLabel = `${candidate.outgoing.bank_account.name} → ${candidate.incoming.bank_account.name}`;
+  const behind = stackIndex > 0;
 
   return (
     <GestureDetector gesture={pan}>
       <Animated.View
+        pointerEvents={behind ? 'none' : 'auto'}
         style={[
           styles.card,
-          { backgroundColor: theme.surface, borderColor: theme.border, top: stackIndex * 8 },
-          cardStyle,
+          { backgroundColor: theme.surface, borderColor: theme.border },
+          // The top card sits in normal flow so it gives the deck its height; the one
+          // behind is absolute and nudged down, which is what makes this read as a stack.
+          behind && styles.behindCard,
+          // translateY has to out-run the shrink or the card behind never shows: scaling
+          // about the centre already lifts its bottom edge by half the height lost.
+          behind && { transform: [{ scale: 1 - stackIndex * 0.05 }, { translateY: stackIndex * 34 }] },
+          !behind && cardStyle,
         ]}
         accessibilityLabel={t('transferCandidates.cardLabel', {
           amount: formatCurrency(candidate.amount, i18n.language),
@@ -129,60 +138,46 @@ export function TransferCandidateCard({
           gap: gapLabel,
         })}
       >
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.tint, { backgroundColor: theme.positive }, linkTint]}
-        />
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.tint, { backgroundColor: theme.negative }, dismissTint]}
-        />
+        <Animated.View style={[styles.stamp, styles.stampLeft, { borderColor: theme.positive }, linkStamp]}>
+          <Text style={[text.stampText, { color: theme.positive }]}>
+            {t('transferCandidates.stampLink')}
+          </Text>
+        </Animated.View>
+        <Animated.View style={[styles.stamp, styles.stampRight, { borderColor: theme.negative }, dismissStamp]}>
+          <Text style={[text.stampText, { color: theme.negative }]}>
+            {t('transferCandidates.stampDismiss')}
+          </Text>
+        </Animated.View>
+
+        <View style={[styles.gapPill, { backgroundColor: gapTint.bg }]}>
+          <Text style={[text.gapText, { color: gapTint.fg }]}>{gapLabel}</Text>
+        </View>
 
         <Text style={[text.amount, { color: theme.textPrimary }]}>
           {formatCurrency(candidate.amount, i18n.language)}
         </Text>
-        <View style={[styles.gapPill, { backgroundColor: gapTint.backgroundColor }]}>
-          <Text style={[text.gapText, { color: gapTint.color }]}>{gapLabel}</Text>
-        </View>
 
         <Side
           label={t('transferCandidates.from')}
+          accent={theme.negative}
           accountName={candidate.outgoing.bank_account.name}
           date={formatDate(candidate.outgoing.date)}
           description={candidate.outgoing.description}
         />
 
-        <ArrowDown size={20} color={theme.primary} style={styles.arrow} />
+        <View style={styles.arrowRow}>
+          <View style={[styles.arrowCircle, { backgroundColor: theme.surfaceElevated }]}>
+            <ArrowDown size={16} color={theme.textSecondary} />
+          </View>
+        </View>
 
         <Side
           label={t('transferCandidates.to')}
+          accent={theme.positive}
           accountName={candidate.incoming.bank_account.name}
           date={formatDate(candidate.incoming.date)}
           description={candidate.incoming.description}
         />
-
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.button, styles.dismissButton, { borderColor: theme.border }]}
-            onPress={() => commit('dismiss')}
-            accessibilityRole="button"
-            accessibilityLabel={t('transferCandidates.dismissLabel', { accounts: accountLabel })}
-          >
-            <Text style={[text.buttonText, { color: theme.textSecondary }]}>
-              {t('transferCandidates.dismiss')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: theme.primary }]}
-            onPress={() => commit('link')}
-            accessibilityRole="button"
-            accessibilityLabel={t('transferCandidates.linkLabel', { accounts: accountLabel })}
-          >
-            <Text style={[text.buttonText, text.linkButtonText]}>
-              {t('transferCandidates.link')}
-            </Text>
-          </TouchableOpacity>
-        </View>
       </Animated.View>
     </GestureDetector>
   );
@@ -190,11 +185,13 @@ export function TransferCandidateCard({
 
 function Side({
   label,
+  accent,
   accountName,
   date,
   description,
 }: {
   label: string;
+  accent: string;
   accountName: string;
   date: string;
   description: string;
@@ -202,94 +199,114 @@ function Side({
   const { theme } = useTheme();
 
   return (
-    <View style={styles.side}>
+    <View style={[styles.side, { backgroundColor: theme.surfaceElevated, borderLeftColor: accent }]}>
       <Text style={[text.sideLabel, { color: theme.textSecondary }]}>{label}</Text>
-      <Text style={[text.account, { color: theme.textPrimary }]}>{accountName}</Text>
-      <Text style={[text.meta, { color: theme.textSecondary }]}>{date}</Text>
-      <Text style={[text.meta, { color: theme.textSecondary }]} numberOfLines={2} ellipsizeMode="tail">
+      <Text style={[text.account, { color: theme.textPrimary }]} numberOfLines={1}>
+        {accountName}
+      </Text>
+      <Text style={[text.date, { color: theme.textSecondary }]}>{date}</Text>
+      <Text style={[text.description, { color: theme.textSecondary }]} numberOfLines={2} ellipsizeMode="tail">
         {description}
       </Text>
     </View>
   );
 }
 
-// View and text styles are deliberately in separate StyleSheets. Mixing them widens every
-// value to `ViewStyle | TextStyle | ImageStyle`, and Reanimated's Animated.View rejects
-// that union — which is why `styles` here holds only what a View consumes.
 const styles = StyleSheet.create({
+  // Kept deliberately compact. Descriptions run long (bank statements are verbose), and a
+  // card taller than the centred content area overflows it in both directions — which put
+  // the card over the screen header.
   card: {
+    borderRadius: radius.xxl,
+    borderWidth: 1,
+    padding: spacing.md,
+    ...shadows.lg,
+  },
+  behindCard: {
     position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    padding: spacing.lg,
-    overflow: 'hidden',
+    // No negative zIndex: the deck renders back-to-front, so this card is painted first
+    // and sits underneath naturally. A zIndex of -1 dropped it out of view on iOS.
+    opacity: 0.55,
   },
-  tint: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0,
+  stamp: {
+    position: 'absolute',
+    top: spacing.lg,
+    zIndex: 2,
+    borderWidth: 3,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  stampLeft: {
+    left: spacing.lg,
+    transform: [{ rotate: '-14deg' }],
+  },
+  stampRight: {
+    right: spacing.lg,
+    transform: [{ rotate: '14deg' }],
   },
   gapPill: {
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    marginTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
   },
   side: {
-    marginTop: spacing.md,
+    borderRadius: radius.lg,
+    borderLeftWidth: 3,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
-  arrow: {
-    alignSelf: 'center',
-    marginTop: spacing.sm,
+  arrowRow: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
   },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  button: {
-    flex: 1,
-    minHeight: 44,
-    borderRadius: radius.button,
+  arrowCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  dismissButton: {
-    borderWidth: 1,
   },
 });
 
 const text = StyleSheet.create({
-  amount: {
-    ...textStyles.amountMd,
-    // Restated as a mutable array. textStyles.amountMd declares it `as const`, and a
-    // readonly tuple is not assignable to TextStyle's FontVariant[], which widens the
-    // whole StyleSheet to ViewStyle | TextStyle | ImageStyle. Every other amount in the
-    // app sets fontVariant inline for the same reason (AmountDisplay, BalanceCard).
-    fontVariant: ['tabular-nums' as const],
+  stampText: {
+    ...textStyles.label,
+    fontSize: 16,
+    lineHeight: 20,
+    letterSpacing: 1.5,
   },
   gapText: {
     ...textStyles.caption,
+    fontWeight: '600',
+  },
+  amount: {
+    fontSize: 32,
+    lineHeight: 40,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+    fontVariant: ['tabular-nums' as const],
   },
   sideLabel: {
     ...textStyles.label,
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   account: {
     ...textStyles.bodyMd,
     fontWeight: '600',
     marginTop: 2,
   },
-  meta: {
+  date: {
     ...textStyles.bodySm,
   },
-  buttonText: {
-    ...textStyles.bodyMd,
-    fontWeight: '600',
-  },
-  linkButtonText: {
-    color: '#ffffff',
+  description: {
+    ...textStyles.caption,
+    marginTop: 2,
   },
 });
