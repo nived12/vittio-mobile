@@ -395,6 +395,11 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
   // ── Type switching ──
   const handleTopTypeChange = (t: TopLevelType) => {
     Haptics.selectionAsync();
+    // Types with no tab of their own (investment, excluded) map to `expense`, so tapping
+    // the already-selected tab would retype them as spending and put them back into the
+    // totals they are meant to sit outside of.
+    if (t === topType) return;
+
     setTopType(t);
     setSubType(defaultSubType(t));
     if (t !== 'transfer') setTransferToAccount(null);
