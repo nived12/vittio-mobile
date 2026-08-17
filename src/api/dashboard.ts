@@ -1,4 +1,6 @@
 import { apiClient } from './client';
+import type { TransactionType } from './transactions';
+import type { AccountType } from './bankAccounts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -7,7 +9,7 @@ export interface DashboardBankAccount {
   name: string;
   custom_name: string | null;
   bank_name: string;
-  account_type: 'debit' | 'credit' | 'cash';
+  account_type: AccountType;
   opening_balance: string;
   balance: number;
   currency: string;
@@ -19,12 +21,12 @@ export interface DashboardTransaction {
   description: string;
   concept: string | null;
   amount: number;
-  transaction_type: 'income' | 'fixed_expense' | 'variable_expense' | 'transfer_in' | 'transfer_out';
+  transaction_type: TransactionType;
   source: 'manual' | 'statement_file';
   merchant: string | null;
   reference: string | null;
   statement_file_id: number | null;
-  bank_account: { id: number; name: string; account_type: 'debit' | 'credit' | 'cash' };
+  bank_account: { id: number; name: string; account_type: AccountType };
   category: { id: number; name: string; icon: string } | null;
   is_transfer: boolean;
   transfer_account: { name: string } | null;

@@ -19,6 +19,7 @@ import { AmountDisplay } from './AmountDisplay';
 import { SkeletonBox } from './SkeletonLoader';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
+import type { AccountType } from '../../api/bankAccounts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -28,7 +29,8 @@ type TransactionType =
   | 'variable_expense'
   | 'transfer_in'
   | 'transfer_out'
-  | 'excluded';
+  | 'excluded'
+  | 'investment';
 
 interface TransactionRowProps {
   id: number;
@@ -40,7 +42,7 @@ interface TransactionRowProps {
   date: string;
   merchant?: string | null;
   category?: { id: number; name: string; icon: string } | null;
-  bank_account: { id: number; name: string; account_type: 'debit' | 'credit' | 'cash' };
+  bank_account: { id: number; name: string; account_type: AccountType };
   is_transfer: boolean;
   transfer_account?: { name: string } | null;
   onPress: () => void;
@@ -125,6 +127,10 @@ function getBadge(txType: TransactionType, isDark: boolean, t: (k: string) => st
       return isDark
         ? { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', label: t('transactionRow.types.excluded') }
         : { bg: '#f1f5f9', text: '#475569', label: t('transactionRow.types.excluded') };
+    case 'investment':
+      return isDark
+        ? { bg: 'rgba(56,189,248,0.15)', text: '#38bdf8', label: t('transactionRow.types.investment') }
+        : { bg: '#e0f2fe', text: '#075985', label: t('transactionRow.types.investment') };
     default:
       return null; // variable_expense — no badge (most common, reduces noise)
   }

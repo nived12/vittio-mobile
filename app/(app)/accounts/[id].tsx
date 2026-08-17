@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { CreditCard, Banknote } from 'lucide-react-native';
+import { CreditCard, Banknote, TrendingUp } from 'lucide-react-native';
 import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -326,6 +326,7 @@ export default function AccountDetailScreen() {
     debit: { bg: '#dbeafe', iconColor: '#1e40af', Icon: CreditCard, label: t('accounts.types.debit') },
     credit: { bg: '#ede9fe', iconColor: '#5b21b6', Icon: CreditCard, label: t('accounts.types.credit') },
     cash: { bg: '#d1fae5', iconColor: '#065f46', Icon: Banknote, label: t('accounts.types.cash') },
+    investment: { bg: '#e0f2fe', iconColor: '#075985', Icon: TrendingUp, label: t('accounts.types.investment') },
   } as const;
 
   // ── Error ────────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { AccountType } from './bankAccounts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -11,7 +12,10 @@ export type TransactionType =
   // A charge and the credit that cancels it — an installment reversal, a refund, a points
   // redemption. Both halves keep their natural signs but sit outside income and expense
   // totals, so a cancelled purchase inflates neither.
-  | 'excluded';
+  | 'excluded'
+  // Value moving between a brokerage's own cash and its own assets — a repo rolling over,
+  // shares bought. Outside income and spending, but still part of the account's worth.
+  | 'investment';
 
 export interface TransactionItem {
   id: number;
@@ -34,7 +38,7 @@ export interface Transaction {
   tax_amount: number | null;
   tip_amount: number | null;
   items: TransactionItem[];
-  bank_account: { id: number; name: string; account_type: 'debit' | 'credit' | 'cash' };
+  bank_account: { id: number; name: string; account_type: AccountType };
   category: { id: number; name: string; icon: string } | null;
   is_transfer: boolean;
   transfer_account: { id: number; name: string } | null;

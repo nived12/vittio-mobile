@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Plus, PlusCircle, ChevronRight, CreditCard, Banknote } from 'lucide-react-native';
+import { Plus, PlusCircle, ChevronRight, CreditCard, Banknote, TrendingUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useArchivedBankAccounts, useBankAccounts } from '../../../src/hooks/useBankAccounts';
 import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
@@ -28,6 +28,7 @@ const accountTypeConfig = {
   debit: { bg: '#dbeafe', iconColor: '#1e40af', Icon: CreditCard },
   credit: { bg: '#ede9fe', iconColor: '#5b21b6', Icon: CreditCard },
   cash: { bg: '#d1fae5', iconColor: '#065f46', Icon: Banknote },
+  investment: { bg: '#e0f2fe', iconColor: '#075985', Icon: TrendingUp },
 } as const;
 
 interface AccountRowProps {
@@ -44,9 +45,7 @@ const AccountRow = React.memo(function AccountRow({ account, locale }: AccountRo
   const { Icon } = config;
 
   const typeLabel =
-    account.account_type === 'debit' ? t('accounts.types.debit') :
-      account.account_type === 'credit' ? t('accounts.types.credit') :
-        t('accounts.types.cash');
+    t(`accounts.types.${account.account_type}`);
 
   const fmtBalance = currencyFormatter(locale, account.currency).format(account.balance);
 

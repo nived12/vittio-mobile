@@ -301,6 +301,7 @@
     "type_debit": "Débito",
     "type_credit": "Crédito",
     "type_cash": "Efectivo",
+    "type_investment": "Inversión",
     "name_label": "NOMBRE",
     "name_placeholder": "Deja en blanco para usar el nombre del banco",
     "name_hint": "Si lo dejas vacío, se usará el nombre del banco",
@@ -343,7 +344,8 @@
       "variable_expense": "Gasto",
       "transfer_in": "Transferencia",
       "transfer_out": "Transferencia",
-      "excluded": "Cancelada"
+      "excluded": "Cancelada",
+      "investment": "Inversión"
     },
     "longPress": {
       "edit": "Editar",
@@ -420,7 +422,8 @@
     "types": {
       "debit": "Débito",
       "credit": "Crédito",
-      "cash": "Efectivo"
+      "cash": "Efectivo",
+      "investment": "Inversión"
     },
     "empty": {
       "title": "Sin cuentas bancarias",

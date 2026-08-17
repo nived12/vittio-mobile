@@ -15,7 +15,7 @@ import {
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { X, ChevronRight, Lock, Search, CreditCard, Banknote, ChevronLeft, Calendar } from 'lucide-react-native';
+import { X, ChevronRight, Lock, Search, CreditCard, Banknote, ChevronLeft, Calendar, TrendingUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useBanks } from '../../hooks/useBanks';
 import { useCreateBankAccount, useUpdateBankAccount } from '../../hooks/useBankAccounts';
@@ -28,7 +28,7 @@ import { formatDisplayDate, toISODate } from '../../utils/format';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type AccountType = 'debit' | 'credit' | 'cash';
+import type { AccountType } from '../../api/bankAccounts';
 
 interface Props {
   visible: boolean;
@@ -164,15 +164,17 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     { type: 'debit',  label: t('bank_accounts.type_debit'),  Icon: CreditCard },
     { type: 'credit', label: t('bank_accounts.type_credit'), Icon: CreditCard },
     { type: 'cash',   label: t('bank_accounts.type_cash'),   Icon: Banknote },
+    { type: 'investment', label: t('bank_accounts.type_investment'), Icon: TrendingUp },
   ];
 
+  // `supported_type` says whether we have a hand-written parser for that bank, not which
+  // accounts the user is allowed to own — anything without one is parsed by AI instead.
+  // Gating on it hid real accounts (a card at a bank we only wrote a debit parser for)
+  // and diverged from web, which offers every type.
   const availableTypes = useMemo((): AccountType[] => {
     if (isCash) return ['cash'];
-    if (!selectedBank) return ['debit', 'credit'];
-    if (selectedBank.supported_type === 'debit') return ['debit'];
-    if (selectedBank.supported_type === 'credit') return ['credit'];
-    return ['debit', 'credit'];
-  }, [selectedBank, isCash]);
+    return ['debit', 'credit', 'investment'];
+  }, [isCash]);
 
   // ── Opening balance ──
   const openingBalance = parseFloat(openingBalanceStr) || 0;
@@ -422,7 +424,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                           .map(({ type, label, Icon }) => {
                             const active = accountType === type;
                             const btnColor =
-                              type === 'debit' ? '#0ea5e9' : type === 'credit' ? '#8b5cf6' : '#10b981';
+                              type === 'debit' ? '#0ea5e9'
+                                : type === 'credit' ? '#8b5cf6'
+                                  : type === 'investment' ? '#0284c7' : '#10b981';
                             return (
                               <TouchableOpacity
                                 key={type}
