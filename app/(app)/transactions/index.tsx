@@ -32,7 +32,7 @@ import { SectionHeader } from '../../../src/components/ui/SectionHeader';
 import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/ui/TransactionRow';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import type { TransactionFilters } from '../../../src/api/transactions';
-import type { Transaction } from '../../../src/api/transactions';
+import type { Transaction, TransactionType } from '../../../src/api/transactions';
 import type { Category } from '../../../src/api/categories';
 
 // ── Date grouping ──────────────────────────────────────────────────────────
@@ -42,6 +42,12 @@ interface Section {
   data: Transaction[];
   dailyTotal: number;
 }
+
+// Matches the server everywhere else: totals count only what entered or left the user's
+// finances, so transfers between their own accounts, cancelled card pairs and a
+// brokerage's internal churn are excluded. Summing every row made a day of repo
+// rollovers read as +$4,898.15 when nothing had actually been earned.
+const COUNTS_TOWARD_DAILY_TOTAL: TransactionType[] = ['income', 'fixed_expense', 'variable_expense'];
 
 function groupByDate(transactions: Transaction[]): Section[] {
   const map = new Map<string, Transaction[]>();
@@ -53,7 +59,10 @@ function groupByDate(transactions: Transaction[]): Section[] {
   return Array.from(map.entries()).map(([date, data]) => ({
     title: date,
     data,
-    dailyTotal: data.reduce((sum, tx) => sum + tx.amount, 0),
+    dailyTotal: data.reduce(
+      (sum, tx) => (COUNTS_TOWARD_DAILY_TOTAL.includes(tx.transaction_type) ? sum + tx.amount : sum),
+      0,
+    ),
   }));
 }
 
