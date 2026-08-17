@@ -380,7 +380,9 @@
       "fixed_expense": "Fixed Expense",
       "variable_expense": "Variable Expense",
       "transfer_in": "Transfer In",
-      "transfer_out": "Transfer Out"
+      "transfer_out": "Transfer Out",
+      "excluded": "Cancelled",
+      "investment": "Investment"
     },
     "actions": {
       "copyAmount": "Copy amount",

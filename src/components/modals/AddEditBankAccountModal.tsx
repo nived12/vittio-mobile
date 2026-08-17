@@ -151,9 +151,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
       setAccountType('cash');
     } else {
       setIsCash(false);
-      if (bank.supported_type === 'debit') setAccountType('debit');
-      else if (bank.supported_type === 'credit') setAccountType('credit');
-      else setAccountType('debit');
+      setAccountType('debit');
     }
     setShowBankPicker(false);
     setBankQuery('');
@@ -459,11 +457,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                       <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('bank_accounts.type_label')}</Text>
                       <View style={[styles.fieldRow, styles.fieldRowLocked, { backgroundColor: inputBg }]}>
                         <Text style={[styles.fieldRowLockedText]}>
-                          {account?.account_type === 'debit'
-                            ? t('bank_accounts.type_debit')
-                            : account?.account_type === 'credit'
-                              ? t('bank_accounts.type_credit')
-                              : t('bank_accounts.type_cash')}
+                          {t(`bank_accounts.type_${account?.account_type ?? 'debit'}`)}
                         </Text>
                         <Lock size={14} color="#94a3b8" />
                       </View>

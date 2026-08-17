@@ -380,7 +380,9 @@
       "fixed_expense": "Gasto fijo",
       "variable_expense": "Gasto variable",
       "transfer_in": "Transferencia entrante",
-      "transfer_out": "Transferencia saliente"
+      "transfer_out": "Transferencia saliente",
+      "excluded": "Cancelada",
+      "investment": "Inversión"
     },
     "actions": {
       "copyAmount": "Copiar monto",

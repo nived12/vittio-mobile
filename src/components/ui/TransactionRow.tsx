@@ -20,17 +20,9 @@ import { SkeletonBox } from './SkeletonLoader';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { AccountType } from '../../api/bankAccounts';
+import type { TransactionType } from '../../api/transactions';
 
 // ── Types ──────────────────────────────────────────────────────────────────
-
-type TransactionType =
-  | 'income'
-  | 'fixed_expense'
-  | 'variable_expense'
-  | 'transfer_in'
-  | 'transfer_out'
-  | 'excluded'
-  | 'investment';
 
 interface TransactionRowProps {
   id: number;

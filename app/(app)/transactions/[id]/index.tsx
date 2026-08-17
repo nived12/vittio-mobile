@@ -48,6 +48,8 @@ function getTypeBadge(type: string, isDark: boolean, t: (k: string) => string): 
     variable_expense: isDark ? { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: t('transactionDetail.types.variable_expense') } : { bg: '#fee2e2', text: '#991b1b', label: t('transactionDetail.types.variable_expense') },
     transfer_in: isDark ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionDetail.types.transfer_in') } : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_in') },
     transfer_out: isDark ? { bg: 'rgba(139,92,246,0.15)', text: '#a78bfa', label: t('transactionDetail.types.transfer_out') } : { bg: '#ede9fe', text: '#5b21b6', label: t('transactionDetail.types.transfer_out') },
+    excluded: isDark ? { bg: 'rgba(148,163,184,0.15)', text: '#94a3b8', label: t('transactionDetail.types.excluded') } : { bg: '#f1f5f9', text: '#475569', label: t('transactionDetail.types.excluded') },
+    investment: isDark ? { bg: 'rgba(56,189,248,0.15)', text: '#38bdf8', label: t('transactionDetail.types.investment') } : { bg: '#e0f2fe', text: '#075985', label: t('transactionDetail.types.investment') },
   };
   return map[type] ?? (isDark ? { bg: 'rgba(255,255,255,0.06)', text: '#94a3b8', label: type } : { bg: '#f1f5f9', text: '#334155', label: type });
 }
