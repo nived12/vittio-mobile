@@ -93,10 +93,18 @@ function defaultSubType(top: TopLevelType): SubType {
   return 'variable_expense';
 }
 
-function amountToApi(amount: number, subType: SubType): number {
-  // Income and transfer_in are positive; expenses and transfer_out are negative
-  const positive: SubType[] = ['income', 'transfer_in'];
-  return positive.includes(subType) ? Math.abs(amount) : -Math.abs(amount);
+// `investment` and `excluded` are the two types whose sign is not implied by the type:
+// it records which way money moved inside the account, so it is carried over from the row
+// being edited. Deriving it would flip a repo maturing at +8,500 to -8,500 on every save.
+const POSITIVE_TYPES: SubType[] = ['income', 'transfer_in'];
+const SIGN_NOT_IMPLIED: SubType[] = ['investment', 'excluded'];
+
+function amountToApi(amount: number, subType: SubType, originalAmount?: number): number {
+  const magnitude = Math.abs(amount);
+  if (SIGN_NOT_IMPLIED.includes(subType)) {
+    return originalAmount !== undefined && originalAmount < 0 ? -magnitude : magnitude;
+  }
+  return POSITIVE_TYPES.includes(subType) ? magnitude : -magnitude;
 }
 
 // ── Account Picker Sheet ───────────────────────────────────────────────────
@@ -121,11 +129,9 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
   const borderCol = isDark ? theme.border : '#e2e8f0';
   const dividerCol = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
 
-  const typeLabel = (type: BankAccount['account_type']) => {
-    if (type === 'debit') return t('accounts.types.debit');
-    if (type === 'credit') return t('accounts.types.credit');
-    return t('accounts.types.cash');
-  };
+  // Keyed off the type rather than branched, so a new account type cannot silently
+  // fall through to "Cash" the way `investment` did.
+  const typeLabel = (type: BankAccount['account_type']) => t(`accounts.types.${type}`);
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -682,7 +688,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
       bank_account_id: selectedAccount.id,
       date: format(date, 'yyyy-MM-dd'),
       description: description.trim(),
-      amount: amountToApi(amountNum, subType),
+      amount: amountToApi(amountNum, subType, transaction?.amount),
       transaction_type: subType,
       ...(concept.trim() ? { concept: concept.trim() } : {}),
       ...(merchant.trim() ? { merchant: merchant.trim() } : {}),
