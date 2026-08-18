@@ -2,6 +2,10 @@ import { apiClient } from './client';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+// `investment` covers brokerages and crypto exchanges, whose statements are mostly
+// internal churn rather than money entering or leaving.
+export type AccountType = 'debit' | 'credit' | 'cash' | 'investment';
+
 export interface BankAccount {
   id: number;
   name: string;
@@ -10,7 +14,7 @@ export interface BankAccount {
   bank_name: string | null;
   bank_id: number | null;
   bank_logo_url: string | null;
-  account_type: 'debit' | 'credit' | 'cash';
+  account_type: AccountType;
   currency: string;
   opening_balance: string;
   opening_balance_date: string; // ISO date 'YYYY-MM-DD'
@@ -25,7 +29,7 @@ export interface BankAccount {
 export type CreateBankAccountBody = {
   bank_id?: number;
   account_number?: string;
-  account_type: 'debit' | 'credit' | 'cash';
+  account_type: AccountType;
   custom_name?: string;
   currency?: string;
   opening_balance?: number;

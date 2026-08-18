@@ -58,6 +58,7 @@ const ACCOUNT_DOT_COLORS: Record<string, string> = {
   debit: '#0ea5e9',
   credit: '#8b5cf6',
   cash: '#10b981',
+  investment: '#0369a1',
 };
 
 interface RecentTransactionsListProps {

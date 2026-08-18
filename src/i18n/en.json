@@ -301,6 +301,7 @@
     "type_debit": "Debit",
     "type_credit": "Credit",
     "type_cash": "Cash",
+    "type_investment": "Investment",
     "name_label": "NAME",
     "name_placeholder": "Leave blank to use bank name",
     "name_hint": "If left blank, the bank name will be used",
@@ -343,7 +344,8 @@
       "variable_expense": "Expense",
       "transfer_in": "Transfer",
       "transfer_out": "Transfer",
-      "excluded": "Cancelled"
+      "excluded": "Cancelled",
+      "investment": "Investment"
     },
     "longPress": {
       "edit": "Edit",
@@ -378,7 +380,9 @@
       "fixed_expense": "Fixed Expense",
       "variable_expense": "Variable Expense",
       "transfer_in": "Transfer In",
-      "transfer_out": "Transfer Out"
+      "transfer_out": "Transfer Out",
+      "excluded": "Cancelled",
+      "investment": "Investment"
     },
     "actions": {
       "copyAmount": "Copy amount",
@@ -420,7 +424,8 @@
     "types": {
       "debit": "Debit",
       "credit": "Credit",
-      "cash": "Cash"
+      "cash": "Cash",
+      "investment": "Investment"
     },
     "empty": {
       "title": "No bank accounts yet",

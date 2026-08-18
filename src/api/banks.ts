@@ -13,9 +13,7 @@ export interface Bank {
 // ── API calls ─────────────────────────────────────────────────────────────
 
 /** GET /api/v1/banks — public, no auth required */
-export async function getBanks(account_type?: 'debit' | 'credit'): Promise<Bank[]> {
-  const response = await apiClient.get<{ data: { banks: Bank[] } }>('/banks', {
-    params: account_type ? { account_type } : undefined,
-  });
+export async function getBanks(): Promise<Bank[]> {
+  const response = await apiClient.get<{ data: { banks: Bank[] } }>('/banks');
   return response.data.data.banks;
 }
