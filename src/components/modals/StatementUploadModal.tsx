@@ -604,6 +604,9 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
+                  <Text style={[styles.passwordHelp, { color: textSecondary }]}>
+                    {t('statement_upload.file_password_help')}
+                  </Text>
                 </>
               ) : (
                 <TouchableOpacity
@@ -616,11 +619,6 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   </Text>
                 </TouchableOpacity>
               )}
-
-              {/* Info note */}
-              <View style={styles.infoBox}>
-                <Text style={styles.infoText}>ℹ️  {t('statement_upload.duplicate_note')}</Text>
-              </View>
 
               {/* Upload button */}
               <TouchableOpacity
@@ -913,22 +911,9 @@ const styles = StyleSheet.create({
   },
   // Info box
   passwordInput: { fontSize: 15 },
+  passwordHelp: { fontSize: 12, lineHeight: 17, marginTop: 8, marginBottom: 20 },
   passwordToggle: { paddingVertical: 10 },
   passwordToggleText: { fontSize: 14, color: '#4f46e5', fontWeight: '600' },
-  infoBox: {
-    backgroundColor: '#fffbeb',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-    padding: 12,
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#92400e',
-    lineHeight: 18,
-  },
   // Buttons
   primaryBtn: {
     backgroundColor: '#4f46e5',
