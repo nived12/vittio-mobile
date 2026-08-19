@@ -185,7 +185,6 @@
   },
   "transactions": {
     "title": "Transactions",
-    "empty": "No transactions yet",
     "emptySubtitle": "Add your first transaction",
     "addTransaction": "Add transaction",
     "search": {
@@ -407,7 +406,6 @@
   },
   "accounts": {
     "title": "Accounts",
-    "empty": "No accounts yet",
     "emptySubtitle": "Add your first bank account",
     "addAccount": "Add account",
     "archived": {
@@ -519,7 +517,6 @@
     "language": "Language",
     "editProfile": "Edit profile",
     "manageCategories": "Manage categories",
-    "statementUpload": "Upload bank statement",
     "statementUploadTitle": "Coming soon",
     "statementUploadMessage": "Bank statement upload will be available in a future update.",
     "downloadReport": "Download monthly report",
@@ -660,29 +657,111 @@
     "offlineSubtitle": "Showing cached data",
     "confirm": "Confirm"
   },
+  "statement_files": {
+    "title": "Statements",
+    "detailTitle": "Statement",
+    "summaryTitle": "Financial summary",
+    "initialBalance": "Opening balance",
+    "finalBalance": "Closing balance",
+    "netMovement": "Net movement",
+    "totalDeposits": "Total deposits",
+    "totalWithdrawals": "Total withdrawals",
+    "totalPayments": "Total payments",
+    "totalCharges": "Total charges",
+    "creditLimit": "Credit limit",
+    "availableCredit": "Available credit",
+    "minimumPayment": "Minimum payment",
+    "totalCommissions": "Fees",
+    "totalFees": "Other charges",
+    "daysInPeriod": "Days in period",
+    "bankAccount": "Account",
+    "periodStart": "Period from",
+    "uploadedAt": "Uploaded",
+    "processedAt": "Processed",
+    "transactionsImported": "Transactions imported",
+    "pendingReview": "Pending review",
+    "viewTransactions": "View {{count}} transaction",
+    "viewTransactions_plural": "View {{count}} transactions",
+    "emptyTitle": "You haven't uploaded any statements yet",
+    "emptySubtitle": "Upload your bank's PDF and we'll sort your transactions automatically.",
+    "errorTitle": "We couldn't load your statements",
+    "transactionCount": "{{count}} transaction",
+    "transactionCount_plural": "{{count}} transactions",
+    "deletedToast": "Statement deleted",
+    "retryStartedToast": "We're processing it again",
+    "retryTitle": "Couldn't process it",
+    "passwordTitle": "This PDF is password protected",
+    "passwordBody": "Enter the password your bank uses to open the file.",
+    "deleteConfirmTitle": "Delete this statement?",
+    "deleteConfirmMessageNone": "This file imported no transactions, so nothing else will be removed.",
+    "deleteConfirmMessage": "The transaction imported from this file will be deleted too.",
+    "deleteConfirmMessage_plural": "The {{count}} transactions imported from this file will be deleted too.",
+    "status": {
+      "pending": "Queued",
+      "processing": "Processing",
+      "parsed": "Done",
+      "completed": "Done",
+      "error": "Failed"
+    }
+  },
   "statement_upload": {
     "modal_title": "Upload statement",
     "pick_file": "Select PDF file",
     "file_card_label": "Selected file",
     "cutoff_date_label": "Statement end date",
     "account_question": "Which account does this belong to?",
-    "duplicate_note": "Only new transactions are imported. Duplicates are handled automatically.",
     "upload_button": "Upload statement",
     "uploading_title": "Uploading file...",
     "uploading_hint": "Don't close the app",
     "processing_title": "Analyzing your statement...",
     "processing_subtitle": "We're reading and categorizing your transactions with AI.",
-    "processing_wait": "This may take up to a minute.",
+    "processing_wait": "Usually under a minute.",
     "success_title": "Statement imported!",
     "success_body": "{{count}} new transactions were found.",
     "partial_body": "{{new}} new · {{dupes}} pending review",
     "view_transactions": "View transactions",
-    "failure_title": "Could not process",
-    "failure_body": "We couldn't read this file. Make sure it's a bank statement PDF.",
     "retry_button": "Try again",
     "close_button": "Close",
-    "timeout_message": "This is taking longer than expected. Check back in a moment.",
-    "cancel_confirm": "Cancel the upload?"
+    "cancel_confirm": "Cancel the upload?",
+    "file_password": "PDF password",
+    "file_password_placeholder": "Enter the password if the PDF is protected",
+    "file_password_help": "We only use it to open the file. It is deleted as soon as processing finishes and is never stored.",
+    "file_password_toggle": "Is the PDF password protected?",
+    "file_too_large": "The file is larger than 10 MB",
+    "saving_title": "Saving your file...",
+    "saving_hint": "Almost there, don't close the app",
+    "processing_slow": "This is taking longer than usual, but we're still working.",
+    "processing_close": "Close and keep using the app",
+    "stages": {
+      "queued": "Your statement is queued...",
+      "reading": "Reading the PDF...",
+      "merchants": "Identifying merchants...",
+      "categorising": "Sorting into categories...",
+      "duplicates": "Checking for duplicates...",
+      "balance": "Calculating your balance..."
+    },
+    "errors": {
+      "network": {
+        "title": "Connection lost",
+        "body": "We couldn't send the file. Check your connection and try again."
+      },
+      "session": {
+        "title": "Your session expired",
+        "body": "Sign in again to upload your statement."
+      },
+      "validation": {
+        "title": "Check the file",
+        "body": "There's something in this file we couldn't accept."
+      },
+      "processing": {
+        "title": "Couldn't process it",
+        "body": "We couldn't read this file. Make sure it's a PDF bank statement."
+      },
+      "timeout": {
+        "title": "This is taking a while",
+        "body": "We're still processing it. Check Statements in a few minutes."
+      }
+    }
   },
   "navigation": {
     "home": "Home",
@@ -698,6 +777,7 @@
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
     "assistant": "Vittbot",
     "fab": {
+        "longPressHint": "Press and hold for more options",
       "cancel": "Cancel",
       "newTransaction": "New transaction",
       "newTransactionSubtitle": "Voice, photo, or manual entry",
@@ -1024,7 +1104,8 @@
     "SERVER_ERROR": "A server error occurred. Please try again.",
     "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
     "UNKNOWN_ERROR": "An unexpected error occurred",
-    "generic": "Something went wrong. Please try again."
+    "generic": "Something went wrong. Please try again.",
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "aiInput": {
     "voice": {
@@ -1099,9 +1180,6 @@
     "accept": "Accept & Continue",
     "acceptError": "Something went wrong. Please try again.",
     "version": "Document version: {{version}}"
-  },
-  "errors": {
-    "sessionExpired": "Your session has expired. Please log in again."
   },
   "premium": {
     "headerTitle": "Vittio Premium",

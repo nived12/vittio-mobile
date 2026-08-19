@@ -117,6 +117,7 @@ export default function AccountDetailScreen() {
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
   const showToast = useUIStore((s) => s.showToast);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
   const { theme, isDark } = useTheme();
@@ -278,34 +279,49 @@ export default function AccountDetailScreen() {
     const onArchiveToggle = () =>
       requireConfirmed(isArchived ? handleUnarchiveAccount : handleArchiveAccount);
 
+    // Statement upload lives here as well as on the FAB: this is where the user
+    // is already looking at the bank the statement belongs to, so the account
+    // can be pre-selected.
+    const onUploadStatement = () =>
+      requireConfirmed(() => openStatementUpload(account ?? undefined));
+
     if (Platform.OS === 'ios') {
       // Delete is only offered for archived accounts (two-step safety, matches desktop/web).
       const options = isArchived
         ? [
+            t('statement_upload.modal_title'),
             t('accountDetail.edit'),
             archiveLabel,
             t('accountDetail.actions.deleteAccount'),
             t('accountDetail.actions.cancel'),
           ]
-        : [t('accountDetail.edit'), archiveLabel, t('accountDetail.actions.cancel')];
+        : [
+            t('statement_upload.modal_title'),
+            t('accountDetail.edit'),
+            archiveLabel,
+            t('accountDetail.actions.cancel'),
+          ];
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options,
-          cancelButtonIndex: isArchived ? 3 : 2,
-          destructiveButtonIndex: isArchived ? 2 : undefined,
+          cancelButtonIndex: isArchived ? 4 : 3,
+          destructiveButtonIndex: isArchived ? 3 : undefined,
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
-            requireConfirmed(() => setShowEditAccount(true));
+            onUploadStatement();
           } else if (buttonIndex === 1) {
+            requireConfirmed(() => setShowEditAccount(true));
+          } else if (buttonIndex === 2) {
             onArchiveToggle();
-          } else if (isArchived && buttonIndex === 2) {
+          } else if (isArchived && buttonIndex === 3) {
             handleDeleteAccount();
           }
         },
       );
     } else {
       const buttons: Parameters<typeof Alert.alert>[2] = [
+        { text: t('statement_upload.modal_title'), onPress: onUploadStatement },
         { text: t('accountDetail.edit'), onPress: () => requireConfirmed(() => setShowEditAccount(true)) },
         { text: archiveLabel, onPress: onArchiveToggle },
       ];

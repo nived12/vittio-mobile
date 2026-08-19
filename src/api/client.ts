@@ -7,6 +7,14 @@ import { Platform } from 'react-native';
 import i18n from '../i18n';
 import { tokenStorage } from '../utils/tokenStorage';
 
+// Lets a request opt out of the 401 replay-after-refresh path. Declared here so
+// callers can set it as a normal config field instead of casting.
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _noReplay?: boolean;
+  }
+}
+
 const devBaseURL = Platform.select({
   ios: 'http://localhost:3000/api/v1',
   android: 'http://10.0.2.2:3000/api/v1',
@@ -123,6 +131,7 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
+      _noReplay?: boolean;
     };
 
     // Only attempt refresh on 401 responses that haven't already been retried.
@@ -130,10 +139,14 @@ apiClient.interceptors.response.use(
     // (login/signup) — otherwise we'd swallow INVALID_CREDENTIALS and surface
     // a misleading network/refresh error.
     const url = originalRequest.url ?? '';
+    // _noReplay opts a request out of the replay-after-refresh path. Replaying
+    // re-sends the whole body, which for a multipart upload means the user
+    // watches the progress bar drop back to 0% and pays for the bytes twice.
     const skipsRefresh =
       url.includes('/refresh') ||
       url.includes('/login') ||
-      url.includes('/signup');
+      url.includes('/signup') ||
+      originalRequest._noReplay === true;
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&

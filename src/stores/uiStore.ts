@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import i18n from '../i18n';
 import { tokenStorage } from '../utils/tokenStorage';
 import { fetchNotificationPrefs, updateNotificationPref } from '../api/settings';
+import type { BankAccount } from '../api/bankAccounts';
 
 type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
@@ -51,9 +52,12 @@ interface UIState {
   selectedMonth: string | undefined;
   setSelectedMonth: (month: string | undefined) => void;
 
-  // Statement upload modal trigger (opened from profile or account detail)
+  // Statement upload modal trigger (opened from the FAB, account detail, or
+  // the statement files screen). The account is carried so entry points that
+  // already know it can skip the picker.
   showStatementUpload: boolean;
-  openStatementUpload: () => void;
+  statementUploadAccount: BankAccount | null;
+  openStatementUpload: (account?: BankAccount) => void;
   closeStatementUpload: () => void;
 
   // Biometric lock setting
@@ -173,8 +177,11 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   // ── Statement upload modal ─────────────────────────────────────────────────
   showStatementUpload: false,
-  openStatementUpload: () => set({ showStatementUpload: true }),
-  closeStatementUpload: () => set({ showStatementUpload: false }),
+  statementUploadAccount: null,
+  openStatementUpload: (account) =>
+    set({ showStatementUpload: true, statementUploadAccount: account ?? null }),
+  closeStatementUpload: () =>
+    set({ showStatementUpload: false, statementUploadAccount: null }),
 
   // ── Notification preferences ────────────────────────────────────────────────
   notificationPrefs: {
@@ -218,6 +225,7 @@ export const useUIStore = create<UIState>((set, get) => ({
       pendingDeepLink: null,
       selectedMonth: undefined,
       showStatementUpload: false,
+      statementUploadAccount: null,
       notificationPrefs: {
         statementImports: true,
         goalMilestones: true,
