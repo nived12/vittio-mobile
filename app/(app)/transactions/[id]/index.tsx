@@ -19,6 +19,7 @@ import { ChevronRight, FileText } from 'lucide-react-native';
 import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../../src/hooks/useTransactions';
 import { useCategories } from '../../../../src/hooks/useCategories';
@@ -214,9 +215,9 @@ export default function TransactionDetailScreen() {
     try {
       await updateMutation.mutateAsync({ category_id: category.id });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
-      showToast('Categoría actualizada', 'success');
+      showToast(t('transactions.category_updated'), 'success');
     } catch {
-      showToast('Error al actualizar categoría', 'error');
+      showToast(t('transactions.category_update_error'), 'error');
     }
   }
 
@@ -292,7 +293,11 @@ export default function TransactionDetailScreen() {
         '#94a3b8';
 
   const typeBadge = getTypeBadge(tx.transaction_type, isDark, t);
-  const formattedDate = format(parseISO(tx.date), 'MMMM d, yyyy');
+  const formattedDate = format(
+    parseISO(tx.date),
+    locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy',
+    { locale: locale === 'es' ? es : enUS },
+  );
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
@@ -311,7 +316,7 @@ export default function TransactionDetailScreen() {
           style={styles.moreBtn}
           onPress={handleMoreOptions}
           accessibilityRole="button"
-          accessibilityLabel="Más opciones"
+          accessibilityLabel={t('transactionDetail.moreOptions')}
         >
           <DotsThreeOutline size={22} color="#475569" weight="regular" />
         </TouchableOpacity>

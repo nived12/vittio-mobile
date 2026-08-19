@@ -185,12 +185,21 @@ export default function DashboardScreen() {
     );
   }, [surface, borderCol, textSecondary, textPrimary, resolvedLocale, t]);
 
-  const monthLabel = useMemo(() => {
-    const dateFnsLocale = locale === 'es' ? es : enUS;
-    return data?.summary.selected_month
-      ? format(parseISO(data.summary.selected_month + '-01'), 'MMMM yyyy', { locale: dateFnsLocale })
-      : format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
-  }, [locale, data?.summary.selected_month]);
+  // The API's available_months labels are strftime("%B %Y") — English for every
+  // user — so the month is always formatted here from the "YYYY-MM" value.
+  const formatMonth = useCallback(
+    (value: string) =>
+      format(parseISO(`${value}-01`), 'MMMM yyyy', { locale: locale === 'es' ? es : enUS }),
+    [locale],
+  );
+
+  const monthLabel = useMemo(
+    () =>
+      data?.summary.selected_month
+        ? formatMonth(data.summary.selected_month)
+        : format(new Date(), 'MMMM yyyy', { locale: locale === 'es' ? es : enUS }),
+    [locale, formatMonth, data?.summary.selected_month],
+  );
 
   if (isError && !data) {
     return (
@@ -441,7 +450,7 @@ export default function DashboardScreen() {
                     }}
                   >
                     <Text style={[styles.monthRowText, { color: textPrimary }, isSelected && styles.monthRowActive]}>
-                      {item.label}
+                      {formatMonth(item.value)}
                     </Text>
                     {isSelected && <Check size={16} color="#4f46e5" />}
                   </TouchableOpacity>

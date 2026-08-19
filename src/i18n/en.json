@@ -289,7 +289,12 @@
       "adjustments_label": "Adjustments",
       "count": "1 item",
       "count_plural": "{{count}} items"
-    }
+    },
+    "concept_placeholder": "More details...",
+    "merchant_placeholder": "Walmart, Cinemark...",
+    "reference_placeholder": "Folio, order number...",
+    "category_updated": "Category updated",
+    "category_update_error": "Couldn't update the category"
   },
   "bank_accounts": {
     "add_title": "New Account",
@@ -777,7 +782,7 @@
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
     "assistant": "Vittbot",
     "fab": {
-        "longPressHint": "Press and hold for more options",
+      "longPressHint": "Press and hold for more options",
       "cancel": "Cancel",
       "newTransaction": "New transaction",
       "newTransactionSubtitle": "Voice, photo, or manual entry",

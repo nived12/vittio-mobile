@@ -51,8 +51,10 @@ export function TransferCandidateCard({
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
-  const dateLocale = i18n.language.startsWith('es') ? es : enUS;
-  const formatDate = (iso: string) => format(parseISO(iso), "d 'de' MMMM", { locale: dateLocale });
+  const isEs = i18n.language.startsWith('es');
+  const dateLocale = isEs ? es : enUS;
+  const formatDate = (iso: string) =>
+    format(parseISO(iso), isEs ? "d 'de' MMMM" : 'MMMM d', { locale: dateLocale });
 
   function commit(decision: CandidateDecision) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});

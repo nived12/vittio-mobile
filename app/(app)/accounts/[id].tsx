@@ -199,10 +199,10 @@ export default function AccountDetailScreen() {
       const { updateTransaction } = await import('../../../src/api/transactions');
       await updateTransaction(txId, { category_id: category.id });
       refetchTx();
-      showToast('Categoría actualizada', 'success');
+      showToast(t('transactions.category_updated'), 'success');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } catch {
-      showToast('Error al actualizar categoría', 'error');
+      showToast(t('transactions.category_update_error'), 'error');
     }
   }
 
@@ -397,7 +397,7 @@ export default function AccountDetailScreen() {
             style={styles.moreBtn}
             onPress={handleMoreOptions}
             accessibilityRole="button"
-            accessibilityLabel="Más opciones"
+            accessibilityLabel={t('transactionDetail.moreOptions')}
           >
             <DotsThreeOutline size={22} color={textSecondary} weight="regular" />
           </TouchableOpacity>

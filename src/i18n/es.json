@@ -289,7 +289,12 @@
       "adjustments_label": "Ajustes",
       "count": "1 artículo",
       "count_plural": "{{count}} artículos"
-    }
+    },
+    "concept_placeholder": "Más detalles...",
+    "merchant_placeholder": "Walmart, Cinépolis...",
+    "reference_placeholder": "Folio, número de orden...",
+    "category_updated": "Categoría actualizada",
+    "category_update_error": "No se pudo actualizar la categoría"
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
@@ -777,7 +782,7 @@
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
     "assistant": "Vittbot",
     "fab": {
-        "longPressHint": "Mantén presionado para más opciones",
+      "longPressHint": "Mantén presionado para más opciones",
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "newTransactionSubtitle": "Voz, foto o ingreso manual",

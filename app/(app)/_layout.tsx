@@ -57,7 +57,10 @@ const fabButtonStyle = {
 // ── Tab navigator ──────────────────────────────────────────────────────────
 
 export default function AppLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Tab titles are memoized strings, so they must also re-derive on a language
+  // change that leaves `t` identical (a listener registered after the event).
+  const language = i18n.language;
   const [showFabSheet, setShowFabSheet] = useState(false);
   const showUploadStatement = useUIStore((s) => s.showStatementUpload);
   const statementUploadAccount = useUIStore((s) => s.statementUploadAccount);
@@ -154,7 +157,7 @@ export default function AppLayout() {
       subtitle: t('navigation.fab.aiAssistantSubtitle'),
       onPress: () => router.push('/(app)/assistant'),
     },
-  ], [t, requireConfirmed, openStatementUpload]);
+  ], [t, language, requireConfirmed, openStatementUpload]);
 
   // Stable haptic handler for every tab's tabPress listener.
   const tabPressListeners = useMemo(
@@ -183,25 +186,25 @@ export default function AppLayout() {
     title: t('navigation.home'),
     tabBarIcon: renderHomeIcon,
     tabBarAccessibilityLabel: t('navigation.homeTab'),
-  }), [t]);
+  }), [t, language]);
 
   const activityOptions = useMemo(() => ({
     title: t('navigation.activity'),
     tabBarIcon: renderActivityIcon,
     tabBarAccessibilityLabel: t('navigation.activityTab'),
-  }), [t]);
+  }), [t, language]);
 
   const accountsOptions = useMemo(() => ({
     title: t('navigation.accounts'),
     tabBarIcon: renderAccountsIcon,
     tabBarAccessibilityLabel: t('navigation.accountsTab'),
-  }), [t]);
+  }), [t, language]);
 
   const financesOptions = useMemo(() => ({
     title: t('navigation.finances'),
     tabBarIcon: renderFinancesIcon,
     tabBarAccessibilityLabel: t('navigation.financesTab'),
-  }), [t]);
+  }), [t, language]);
 
   // The FAB tab options depend on showFabSheet + iconRotate so we don't memoize
   // it aggressively — its rotation animation needs to stay reactive.
@@ -230,7 +233,7 @@ export default function AppLayout() {
         </TouchableOpacity>
       </View>
     ),
-  }), [showFabSheet, requireConfirmed, handleFabLongPress, revealFabHintOnce, iconRotate, t]);
+  }), [showFabSheet, requireConfirmed, handleFabLongPress, revealFabHintOnce, iconRotate, t, language]);
 
   return (
     <>
