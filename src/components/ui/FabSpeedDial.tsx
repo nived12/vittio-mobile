@@ -30,6 +30,8 @@ const TINT_COLORS: Record<FabActionTint, string> = {
 
 const MINI_SIZE = 48;
 const ITEM_GAP = 16;
+const LABEL_GAP = 10;
+const SCREEN_EDGE_MARGIN = 16;
 // Distance from screen bottom to the first item's bottom edge:
 // tab bar (64) + FAB lift (16) + FAB radius (28) + breathing room (12)
 // tab bar (64) + FAB lift (16) + FAB radius (28) - tab bar center offset (32) + gap (12) = 88
@@ -106,6 +108,13 @@ export function FabSpeedDial({ visible, onClose, actions }: FabSpeedDialProps) {
   const rightPadding = screenWidth / 2 - MINI_SIZE / 2;
   const bottomStart = insets.bottom + BOTTOM_OFFSET_BASE;
 
+  // Rows are right-anchored at screenWidth/2 + MINI_SIZE/2 and grow leftward, so a
+  // label only ever has the left half of the screen minus the mini FAB and its gap.
+  // Without a cap it runs off-screen instead of wrapping: "Subir estado de cuenta"
+  // clipped on a 393pt iPhone 15 Pro while fitting a 402pt device.
+  const labelMaxWidth =
+    screenWidth / 2 + MINI_SIZE / 2 - MINI_SIZE - LABEL_GAP - SCREEN_EDGE_MARGIN;
+
   const miniFabBg = isDark ? '#1e293b' : '#ffffff';
   const labelBg = isDark ? '#1e293b' : '#ffffff';
   const labelColor = isDark ? '#f1f5f9' : '#0f172a';
@@ -169,7 +178,7 @@ export function FabSpeedDial({ visible, onClose, actions }: FabSpeedDialProps) {
               ]}
             >
               {/* Label pill — flexShrink:0 so it never compresses */}
-              <View style={[styles.label, { backgroundColor: labelBg }]}>
+              <View style={[styles.label, { backgroundColor: labelBg, maxWidth: labelMaxWidth }]}>
                 <Text style={[styles.labelText, { color: labelColor }]}>
                   {action.title}
                 </Text>
@@ -230,7 +239,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     letterSpacing: -0.2,
   },
-  gap: { width: 10, flexShrink: 0 },
+  gap: { width: LABEL_GAP, flexShrink: 0 },
   miniFab: {
     width: MINI_SIZE,
     height: MINI_SIZE,
