@@ -506,7 +506,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                 <TouchableOpacity style={styles.pickPrompt} onPress={pickFile}>
                   <FileText size={32} color="#818cf8" />
                   <Text style={styles.pickPromptLabel}>{t('statement_upload.pick_file')}</Text>
-                  <Text style={styles.pickPromptSub}>PDF · máx 10 MB</Text>
+                  <Text style={styles.pickPromptSub}>{t('statement_upload.file_hint')}</Text>
                 </TouchableOpacity>
               )}
 

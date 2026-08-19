@@ -223,7 +223,10 @@
       "amountRange": "Amount Range",
       "minAmount": "Min amount",
       "maxAmount": "Max amount",
-      "apply": "Show {{count}} transactions"
+      "apply": "Show {{count}} transactions",
+      "allCategories": "All categories",
+      "allTypes": "All",
+      "applyButton": "Apply"
     },
     "empty": {
       "noTransactions": {
@@ -766,7 +769,8 @@
         "title": "This is taking a while",
         "body": "We're still processing it. Check Statements in a few minutes."
       }
-    }
+    },
+    "file_hint": "PDF · max 10 MB"
   },
   "navigation": {
     "home": "Home",

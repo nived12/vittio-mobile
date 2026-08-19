@@ -130,6 +130,7 @@ interface CategoryPickerProps {
 }
 
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
@@ -146,7 +147,7 @@ function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedI
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
           <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
           <FlatList
             data={categories}
             keyExtractor={(item) => String(item.id)}
@@ -180,6 +181,7 @@ interface FilterSheetProps {
 }
 
 function FilterSheet({ visible, current, categories, onApply, onClose }: FilterSheetProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
@@ -218,17 +220,21 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
         <View style={[styles.filterSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
           <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
           <View style={styles.filterHeader}>
-            <Text style={[styles.sheetTitle, { color: textPrimary }]}>Filtros</Text>
+            <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.filters.title')}</Text>
             <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
-              <Text style={styles.resetLabel}>Limpiar</Text>
+              <Text style={styles.resetLabel}>{t('transactions.filters.reset')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Period */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>PERÍODO</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.dateRange')}</Text>
           <View style={styles.pillRow}>
             {(['current', 'last', 'three_months'] as const).map((p) => {
-              const labels = { current: 'Este mes', last: 'Mes pasado', three_months: 'Últimos 3 meses' };
+              const labels = {
+                current: t('transactions.filters.thisMonth'),
+                last: t('transactions.filters.lastMonth'),
+                three_months: t('transactions.filters.last3Months'),
+              };
               return (
                 <TouchableOpacity
                   key={p}
@@ -244,13 +250,13 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
           </View>
 
           {/* Category */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>CATEGORÍA</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.category')}</Text>
           <TouchableOpacity
             style={[styles.categorySelector, { backgroundColor: surfaceEl, borderColor: borderCol }]}
             onPress={() => setShowCategoryPicker(true)}
           >
             <Text style={[styles.categorySelectorText, !!categoryId && { color: textPrimary }]}>
-              {selectedCategory ? selectedCategory.name : 'Todas las categorías'}
+              {selectedCategory ? selectedCategory.name : t('transactions.filters.allCategories')}
             </Text>
             {categoryId && (
               <TouchableOpacity
@@ -263,10 +269,13 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
           </TouchableOpacity>
 
           {/* Type */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>TIPO</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.type')}</Text>
           <View style={styles.pillRow}>
             {(['income', 'expense'] as const).map((type) => {
-              const labels = { income: 'Ingresos', expense: 'Gastos' };
+              const labels = {
+                income: t('transactions.filters.income'),
+                expense: t('transactions.filters.expenses'),
+              };
               return (
                 <TouchableOpacity
                   key={type}
@@ -283,13 +292,13 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
               style={[styles.pill, { backgroundColor: surface, borderColor: borderCol }, !txType && styles.pillActive]}
               onPress={() => setTxType(undefined)}
             >
-              <Text style={[styles.pillText, { color: textPrimary }, !txType && styles.pillTextActive]}>Todos</Text>
+              <Text style={[styles.pillText, { color: textPrimary }, !txType && styles.pillTextActive]}>{t('transactions.filters.allTypes')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Apply */}
           <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-            <Text style={styles.applyBtnText}>Aplicar</Text>
+            <Text style={styles.applyBtnText}>{t('transactions.filters.applyButton')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -879,6 +888,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.55,
+    textTransform: 'uppercase',
     color: '#64748b',
     marginBottom: 8,
     marginTop: 4,

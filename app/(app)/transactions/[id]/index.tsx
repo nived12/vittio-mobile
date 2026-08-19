@@ -66,6 +66,7 @@ interface CategoryPickerProps {
 }
 
 function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
@@ -82,7 +83,7 @@ function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedI
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
           <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
+          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
           <FlatList
             data={categories}
             keyExtractor={(item) => String(item.id)}

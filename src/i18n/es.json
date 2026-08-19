@@ -223,7 +223,10 @@
       "amountRange": "Rango de monto",
       "minAmount": "Monto mínimo",
       "maxAmount": "Monto máximo",
-      "apply": "Mostrar {{count}} transacciones"
+      "apply": "Mostrar {{count}} transacciones",
+      "allCategories": "Todas las categorías",
+      "allTypes": "Todos",
+      "applyButton": "Aplicar"
     },
     "empty": {
       "noTransactions": {
@@ -766,7 +769,8 @@
         "title": "Está tardando mucho",
         "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
       }
-    }
+    },
+    "file_hint": "PDF · máx 10 MB"
   },
   "navigation": {
     "home": "Inicio",

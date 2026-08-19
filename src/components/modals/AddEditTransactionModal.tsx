@@ -953,7 +953,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
             )}
 
             {/* Fields */}
-            <Text style={[styles.sectionLabel, { color: textSecondary }]}>DETALLES</Text>
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('transactions.details_section')}</Text>
 
             {/* Description */}
             <View style={styles.fieldBlock}>
