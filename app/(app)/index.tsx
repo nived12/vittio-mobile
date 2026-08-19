@@ -77,6 +77,7 @@ const RecentTransactionsList = React.memo(function RecentTransactionsList({
   dividerCol,
 }: RecentTransactionsListProps) {
   const { t } = useTranslation();
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   return (
     <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
       {isLoading ? (
@@ -93,6 +94,9 @@ const RecentTransactionsList = React.memo(function RecentTransactionsList({
           iconColor="#c7d2fe"
           title={t('dashboard.transactionsEmpty.title')}
           subtitle={t('dashboard.transactionsEmpty.subtitle')}
+          ctaLabel={t('statement_upload.upload_button')}
+          ctaVariant="ghost"
+          onCta={() => openStatementUpload()}
           topPadding={8}
         />
       ) : (

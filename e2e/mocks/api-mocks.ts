@@ -41,6 +41,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
   const assistantChatCustom = readFixture<unknown>("assistant-chat-custom.json");
   const assistantConversationDetail = readFixture<unknown>("assistant-conversation-detail.json");
   const templates = readFixture<unknown>("templates.json");
+  const statementFiles = readFixture<unknown>("statement-files.json");
   const transferCandidates = readFixture<unknown>("transfer-candidates.json");
 
   await page.route("**/*", (route) => {
@@ -64,6 +65,8 @@ export async function setupApiMocks(page: Page): Promise<void> {
       pathname.includes("/recurring") ||
       pathname.endsWith("/transactions") ||
       /\/transactions\/\d+$/.test(pathname) ||
+      pathname.endsWith("/statement_files") ||
+      /\/statement_files\/\d+(\/retry)?$/.test(pathname) ||
       pathname.endsWith("/categories") ||
       pathname.endsWith("/user_settings") ||
       pathname.includes("/subscription") ||
@@ -197,6 +200,17 @@ export async function setupApiMocks(page: Page): Promise<void> {
     if (pathname.endsWith("/transactions")) {
       if (method === "GET") return fulfillJson(route, transactions.list);
       return fulfillJson(route, { data: {} }, 201);
+    }
+    if (/\/statement_files\/\d+\/retry$/.test(pathname)) {
+      return fulfillJson(route, { data: { id: 103, status: "pending" } });
+    }
+    if (pathname.endsWith("/statement_files")) {
+      if (method === "GET") return fulfillJson(route, statementFiles);
+      return fulfillJson(route, { data: { id: 999, status: "pending" } }, 201);
+    }
+    if (/\/statement_files\/\d+$/.test(pathname)) {
+      if (method === "DELETE") return route.fulfill({ status: 204, headers: corsHeaders });
+      return fulfillJson(route, { data: { id: 101, status: "completed" } });
     }
     if (pathname.endsWith("/categories")) {
       return fulfillJson(route, {

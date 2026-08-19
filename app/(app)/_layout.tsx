@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Platform, TouchableOpacity, View } from 'react-native';
+import { Animated, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -12,6 +12,7 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { tokenStorage } from '../../src/utils/tokenStorage';
 import { useTheme } from '../../src/theme/ThemeContext';
 
 // Default React Navigation bottom tab bar content heights per platform.
@@ -59,6 +60,7 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const [showFabSheet, setShowFabSheet] = useState(false);
   const showUploadStatement = useUIStore((s) => s.showStatementUpload);
+  const statementUploadAccount = useUIStore((s) => s.statementUploadAccount);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
@@ -92,6 +94,24 @@ export default function AppLayout() {
   const handleFabLongPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setShowFabSheet(true);
+    setShowFabHint(false);
+  }, []);
+
+  // Long-press is an accelerator, not a discoverable affordance. Surface it once
+  // on the first tap; every action behind it also has its own entry point, so
+  // this is a shortcut hint rather than the only way in.
+  const [showFabHint, setShowFabHint] = useState(false);
+  const fabHintPending = useRef(false);
+  useEffect(() => {
+    tokenStorage.getFabHintSeen().then((seen) => { fabHintPending.current = !seen; });
+  }, []);
+
+  const revealFabHintOnce = useCallback(() => {
+    if (!fabHintPending.current) return;
+    fabHintPending.current = false;
+    setShowFabHint(true);
+    tokenStorage.saveFabHintSeen();
+    setTimeout(() => setShowFabHint(false), 4000);
   }, []);
 
   const fabActions: FabAction[] = useMemo(() => [
@@ -180,6 +200,7 @@ export default function AppLayout() {
               return;
             }
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            revealFabHintOnce();
             requireConfirmed(() => router.push('/(app)/transactions/new'));
           }}
           onLongPress={handleFabLongPress}
@@ -194,7 +215,7 @@ export default function AppLayout() {
         </TouchableOpacity>
       </View>
     ),
-  }), [showFabSheet, requireConfirmed, handleFabLongPress, iconRotate, t]);
+  }), [showFabSheet, requireConfirmed, handleFabLongPress, revealFabHintOnce, iconRotate, t]);
 
   return (
     <>
@@ -215,13 +236,37 @@ export default function AppLayout() {
         <Tabs.Screen name="premium" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="assistant" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="recurring" options={HIDDEN_TAB_OPTIONS} />
+        <Tabs.Screen name="statement-files" options={HIDDEN_TAB_OPTIONS} />
       </Tabs>
 
       {showUploadStatement && (
         <StatementUploadModal
           visible={showUploadStatement}
           onClose={closeStatementUpload}
+          {...(statementUploadAccount ? { preselectedAccount: statementUploadAccount } : {})}
         />
+      )}
+      {showFabHint && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            bottom:
+              (Platform.OS === 'ios'
+                ? TAB_BAR_CONTENT_HEIGHT_IOS + insets.bottom
+                : TAB_BAR_CONTENT_HEIGHT_ANDROID) + 52,
+            alignSelf: 'center',
+            backgroundColor: '#0f172a',
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 999,
+          }}
+          accessibilityLiveRegion="polite"
+        >
+          <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '500' }}>
+            {t('navigation.fab.longPressHint')}
+          </Text>
+        </View>
       )}
       {showFabSheet && (
         <FabSpeedDial

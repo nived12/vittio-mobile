@@ -1,5 +1,7 @@
 import { apiClient } from './client';
 
+export const UPLOAD_TIMEOUT_MS = 180_000;
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type StatementFileStatus =
@@ -54,6 +56,13 @@ export async function uploadStatementFile(
     formData,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
+      // The 15s instance default is a wrong fit here: the largest statement in
+      // production is 4.3 MB, which is minutes on weak mobile data.
+      timeout: UPLOAD_TIMEOUT_MS,
+      // Never let the 401 interceptor replay this — replaying re-sends the
+      // whole file and resets the progress bar to 0%. handleUpload refreshes
+      // the token before calling us so a mid-upload 401 shouldn't arise.
+      _noReplay: true,
       onUploadProgress: (evt) => {
         if (onProgress && evt.total) {
           onProgress(Math.round((evt.loaded / evt.total) * 100));
@@ -62,6 +71,36 @@ export async function uploadStatementFile(
     },
   );
   return response.data.data;
+}
+
+export interface StatementFileListResponse {
+  data: { statement_files: StatementFile[] };
+  meta: {
+    pagination: {
+      current_page: number;
+      total_pages: number;
+      total_items: number;
+      page_size: number;
+      next_page: number | null;
+      prev_page: number | null;
+    };
+  };
+}
+
+/** GET /api/v1/statement_files */
+export async function listStatementFiles(
+  page = 1,
+): Promise<StatementFileListResponse> {
+  const response = await apiClient.get<StatementFileListResponse>(
+    '/statement_files',
+    { params: { page, page_size: 20 } },
+  );
+  return response.data;
+}
+
+/** DELETE /api/v1/statement_files/:id — also deletes the transactions it created */
+export async function deleteStatementFile(id: number): Promise<void> {
+  await apiClient.delete(`/statement_files/${id}`);
 }
 
 /** GET /api/v1/statement_files/:id */

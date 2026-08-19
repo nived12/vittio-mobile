@@ -312,6 +312,7 @@ export default function TransactionsScreen() {
   const insets = useSafeAreaInsets();
   const locale = useUIStore((s) => s.locale);
   const showToast = useUIStore((s) => s.showToast);
+  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
 
   // Statement file filter — set when arriving from the upload "Ver transacciones" CTA
   const { statement_file_id } = useLocalSearchParams<{ statement_file_id?: string }>();
@@ -648,12 +649,16 @@ export default function TransactionsScreen() {
               ? t('transactions.empty.noResults.subtitle')
               : t('transactions.empty.noTransactions.subtitle')
           }
-          ctaLabel={hasActiveFilter ? t('transactions.search.clearFilters') : undefined}
-          ctaVariant="ghost"
+          ctaLabel={
+            hasActiveFilter
+              ? t('transactions.search.clearFilters')
+              : t('statement_upload.upload_button')
+          }
+          ctaVariant={hasActiveFilter ? 'ghost' : 'primary'}
           onCta={
             hasActiveFilter
               ? () => { setSearch(''); setDebouncedSearch(''); setActiveFilters({}); clearStatementFilter(); }
-              : undefined
+              : () => openStatementUpload()
           }
           fullScreen
         />

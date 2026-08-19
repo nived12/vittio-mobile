@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -34,7 +33,9 @@ import {
   type StatementFile,
 } from '../../api/statementFiles';
 import { useBankAccounts } from '../../hooks/useBankAccounts';
+import { statementFileKeys } from '../../hooks/useStatementFiles';
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 import type { BankAccount } from '../../api/bankAccounts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -61,13 +62,42 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+// The API returns validation errors as { field: [msg, ...] }; show the first.
+function formatValidationDetails(details: unknown): string | null {
+  if (!details || typeof details !== 'object') return null;
+  const first = Object.values(details as Record<string, unknown>)[0];
+  if (Array.isArray(first) && typeof first[0] === 'string') return first[0];
+  return typeof first === 'string' ? first : null;
+}
+
 function lastDayOfPrevMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 0);
 }
 
 const TERMINAL_STATUSES: StatementFile['status'][] = ['completed', 'parsed', 'error'];
-const MAX_POLLS = 40; // 120s
+
+// Production p50 processing is 45s and p90 is 116s, so the old flat 120s ceiling
+// failed ~9% of uploads that were about to succeed. Poll tightly at first, then
+// back off, and give up only after 5 minutes.
+const POLL_FAST_MS = 2_000;
+const POLL_SLOW_MS = 5_000;
+const POLL_FAST_WINDOW_MS = 30_000;
+const POLL_DEADLINE_MS = 300_000;
+
+// After this long the "usually under a minute" copy stops being true.
+const SLOW_PROCESSING_MS = 60_000;
+
+const STAGE_KEYS = [
+  'statement_upload.stages.reading',
+  'statement_upload.stages.merchants',
+  'statement_upload.stages.categorising',
+  'statement_upload.stages.duplicates',
+  'statement_upload.stages.balance',
+] as const;
+const STAGE_ROTATE_MS = 5_000;
+
+type UploadErrorKind = 'network' | 'session' | 'validation' | 'processing' | 'timeout';
 
 // Celebration confetti flavors — a random one fires on each import that adds
 // at least one new transaction, so repeat imports stay fresh instead of stale.
@@ -166,7 +196,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   const [uploadPct, setUploadPct] = useState(0);
   const [result, setResult] = useState<StatementFile | null>(null);
   const [confettiVariant, setConfettiVariant] = useState<ConfettiVariant>(CONFETTI_VARIANTS[0]);
-  const pollCountRef = useRef(0);
+  const [errorKind, setErrorKind] = useState<UploadErrorKind>('processing');
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [processingIsSlow, setProcessingIsSlow] = useState(false);
+  const pollStartedAtRef = useRef(0);
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visibleRef = useRef(visible);
 
@@ -187,11 +221,30 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       setFile(null);
       setUploadPct(0);
       setResult(null);
-      pollCountRef.current = 0;
+      setErrorDetail(null);
+      setStageIndex(0);
+      setProcessingIsSlow(false);
+      pollStartedAtRef.current = 0;
     } else {
       if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     }
   }, [visible]);
+
+  // Rotate the stage copy only while the job is actually running; a queued file
+  // has not started, so claiming "Leyendo el PDF" would be a lie.
+  useEffect(() => {
+    if (step !== 'processing' || result?.status !== 'processing') return;
+    const timer = setInterval(
+      () => setStageIndex((i) => (i + 1) % STAGE_KEYS.length),
+      STAGE_ROTATE_MS,
+    );
+    return () => clearInterval(timer);
+  }, [step, result?.status]);
+
+  // Any in-flight poll must not outlive the component.
+  useEffect(() => () => {
+    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
+  }, []);
 
   // ── File picking ──
   async function pickFile() {
@@ -205,7 +258,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       if (!asset) return;
       const sizeBytes = asset.size ?? 0;
       if (sizeBytes > 10 * 1024 * 1024) {
-        showToast('El archivo supera los 10 MB', 'error');
+        showToast(t('statement_upload.file_too_large'), 'error');
         return;
       }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -221,6 +274,21 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
     Keyboard.dismiss();
     setStep('uploading');
     setUploadPct(0);
+    // Stale detail from a previous validation failure would otherwise be shown
+    // as the message for whatever fails next.
+    setErrorDetail(null);
+
+    try {
+      // Refresh up front rather than risk a 401 partway through. The upload is
+      // marked _noReplay (it must never be re-sent), so an expiring token would
+      // otherwise waste the whole transfer. Uploads are rare; the extra request
+      // is cheaper than re-sending megabytes.
+      await useAuthStore.getState().refreshTokens();
+    } catch {
+      setErrorKind('session');
+      setStep('error');
+      return;
+    }
 
     try {
       const sf = await uploadStatementFile(
@@ -233,33 +301,56 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setResult(sf);
       setStep('processing');
-      pollCountRef.current = 0;
+      setStageIndex(0);
+      setProcessingIsSlow(false);
+      pollStartedAtRef.current = Date.now();
       schedulePoll(sf.id);
     } catch (err: unknown) {
-      const anyErr = err as { response?: { data?: { error?: { code?: string } } } };
-      const code = anyErr?.response?.data?.error?.code;
+      const axiosErr = err as {
+        code?: string;
+        response?: { status?: number; data?: { error?: { code?: string; details?: unknown } } };
+      };
+      const code = axiosErr?.response?.data?.error?.code;
+
       if (code === 'SUBSCRIPTION_REQUIRED') {
+        onClose();
         router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
-      } else {
-        showToast(t('errors.generic'), 'error');
+        return;
       }
-      setStep('account_selection');
+
+      // The picked file and account stay in state, so the error step's retry
+      // re-sends this exact upload instead of dumping the user back to the picker.
+      if (axiosErr?.response?.status === 401) {
+        setErrorKind('session');
+      } else if (axiosErr?.response?.status === 422) {
+        setErrorKind('validation');
+        setErrorDetail(formatValidationDetails(axiosErr.response?.data?.error?.details));
+      } else if (!axiosErr?.response) {
+        setErrorKind('network');
+      } else {
+        setErrorKind('processing');
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setStep('error');
     }
   }
 
   // ── Polling ──
   function schedulePoll(id: number) {
-    pollTimerRef.current = setTimeout(() => poll(id), 3000);
+    const elapsed = Date.now() - pollStartedAtRef.current;
+    const delay = elapsed < POLL_FAST_WINDOW_MS ? POLL_FAST_MS : POLL_SLOW_MS;
+    pollTimerRef.current = setTimeout(() => poll(id), delay);
   }
 
   async function poll(id: number) {
     if (!visibleRef.current) return; // modal closed while this poll was scheduled
 
-    pollCountRef.current += 1;
-    if (pollCountRef.current > MAX_POLLS) {
-      // Timeout
+    const elapsed = Date.now() - pollStartedAtRef.current;
+    if (elapsed > SLOW_PROCESSING_MS) setProcessingIsSlow(true);
+
+    if (elapsed > POLL_DEADLINE_MS) {
+      setErrorKind('timeout');
       setStep('error');
-      setResult((prev) => prev ? { ...prev, status: 'error', error_message: 'timeout' } : prev);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
@@ -269,8 +360,11 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       if (!visibleRef.current) return; // closed while the request was in flight
       setResult(sf);
       if (TERMINAL_STATUSES.includes(sf.status)) {
+        // The statements list may be mounted behind this modal.
+        queryClient.invalidateQueries({ queryKey: statementFileKeys.all });
         if (sf.status === 'error') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          setErrorKind('processing');
           setStep('error');
         } else {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -294,11 +388,18 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
   // ── Retry ──
   async function handleRetry() {
-    if (!result) return;
+    // No result means the upload never reached the server, so there is nothing
+    // to reprocess — send the file again.
+    if (!result) {
+      handleUpload();
+      return;
+    }
     try {
       await retryStatementFile(result.id);
       setStep('processing');
-      pollCountRef.current = 0;
+      setStageIndex(0);
+      setProcessingIsSlow(false);
+      pollStartedAtRef.current = Date.now();
       schedulePoll(result.id);
     } catch {
       showToast(t('errors.generic'), 'error');
@@ -307,7 +408,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
 
   // ── Dismiss logic ──
   function handleDismissAttempt() {
-    if (step === 'uploading' || step === 'processing') return; // non-dismissable
+    if (step === 'uploading') return; // closing mid-transfer would lose the upload
     if (step === 'account_selection' && file) {
       Alert.alert(
         t('statement_upload.cancel_confirm'),
@@ -335,7 +436,15 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
     locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy',
     locale === 'es' ? { locale: dateFnsEs } : {},
   );
-  const isDismissable = step !== 'uploading' && step !== 'processing';
+  // Only the upload itself traps the user: closing mid-transfer really would
+  // throw the bytes away. Once the file is on the server the job finishes with
+  // or without this modal, and the result waits in Estados de cuenta.
+  // The bar must not read 100% while the server is still pushing the file to
+  // cloud storage inside the same request — that stall looked like a freeze.
+  const displayPct = Math.min(uploadPct, 99);
+  const isSaving = uploadPct >= 99;
+
+  const isDismissable = step !== 'uploading';
 
   // ── Render ──
   return (
@@ -489,13 +598,21 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
           {step === 'uploading' && (
             <View style={styles.centeredStep}>
               <FileText size={48} color="#4f46e5" style={{ marginBottom: 16 }} />
-              <Text style={styles.stepTitle}>{t('statement_upload.uploading_title')}</Text>
-              {file && <Text style={styles.stepSubtitle} numberOfLines={1}>{file.name}</Text>}
+              <Text style={styles.stepTitle}>
+                {isSaving ? t('statement_upload.saving_title') : t('statement_upload.uploading_title')}
+              </Text>
+              {file && (
+                <Text style={styles.stepSubtitle} numberOfLines={1}>
+                  {file.name} · {formatBytes(file.size)}
+                </Text>
+              )}
               <View style={{ width: '100%', marginTop: 24 }}>
-                <UploadProgressBar pct={uploadPct} />
-                <Text style={styles.pctLabel}>{uploadPct}%</Text>
+                <UploadProgressBar pct={displayPct} />
+                <Text style={styles.pctLabel}>{displayPct}%</Text>
               </View>
-              <Text style={styles.hint}>{t('statement_upload.uploading_hint')}</Text>
+              <Text style={styles.hint}>
+                {isSaving ? t('statement_upload.saving_hint') : t('statement_upload.uploading_hint')}
+              </Text>
             </View>
           )}
 
@@ -504,11 +621,22 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
             <View style={styles.centeredStep} accessibilityLiveRegion="polite">
               <PulseIcon />
               <Text style={styles.stepTitle}>{t('statement_upload.processing_title')}</Text>
-              <Text style={styles.stepSubtitle}>{t('statement_upload.processing_subtitle')}</Text>
+              <Text style={styles.stepSubtitle}>
+                {result?.status === 'pending'
+                  ? t('statement_upload.stages.queued')
+                  : t(STAGE_KEYS[stageIndex])}
+              </Text>
               <View style={{ width: '100%', marginTop: 24 }}>
                 <ShimmerBar />
               </View>
-              <Text style={styles.hint}>{t('statement_upload.processing_wait')}</Text>
+              <Text style={styles.hint}>
+                {processingIsSlow
+                  ? t('statement_upload.processing_slow')
+                  : t('statement_upload.processing_wait')}
+              </Text>
+              <TouchableOpacity style={styles.ghostBtn} onPress={onClose}>
+                <Text style={styles.ghostBtnLabel}>{t('statement_upload.processing_close')}</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -548,19 +676,16 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
             <View style={styles.centeredStep}>
               <AlertTriangle size={64} color="#f59e0b" style={{ marginBottom: 16 }} />
               <Text style={styles.stepTitle} accessibilityRole="header">
-                {result?.error_message === 'timeout'
-                  ? t('statement_upload.timeout_message')
-                  : t('statement_upload.failure_title')}
+                {t(`statement_upload.errors.${errorKind}.title`)}
               </Text>
-              {result?.error_message !== 'timeout' && (
-                <Text style={styles.stepSubtitle}>{t('statement_upload.failure_body')}</Text>
-              )}
-              {result?.error_message !== 'timeout' && (
+              <Text style={styles.stepSubtitle}>
+                {errorDetail ?? t(`statement_upload.errors.${errorKind}.body`)}
+              </Text>
+              {errorKind !== 'session' && (
                 <TouchableOpacity
                   style={[styles.primaryBtn, styles.primaryBtnStretch, { marginTop: 32 }]}
                   onPress={handleRetry}
                 >
-                  <ActivityIndicator size="small" color="#fff" style={{ display: 'none' }} />
                   <Text style={styles.primaryBtnLabel}>{t('statement_upload.retry_button')}</Text>
                 </TouchableOpacity>
               )}

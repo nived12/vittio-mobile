@@ -660,6 +660,30 @@
     "offlineSubtitle": "Mostrando datos guardados",
     "confirm": "Confirmar"
   },
+  "statement_files": {
+    "title": "Estados de cuenta",
+    "emptyTitle": "Aún no has subido estados de cuenta",
+    "emptySubtitle": "Sube el PDF de tu banco y clasificamos tus movimientos automáticamente.",
+    "errorTitle": "No se pudieron cargar tus estados de cuenta",
+    "transactionCount": "{{count}} transacción",
+    "transactionCount_plural": "{{count}} transacciones",
+    "deletedToast": "Estado de cuenta eliminado",
+    "retryStartedToast": "Lo estamos procesando de nuevo",
+    "retryTitle": "No se pudo procesar",
+    "passwordTitle": "Este PDF tiene contraseña",
+    "passwordBody": "Escribe la contraseña que usa tu banco para abrir el archivo.",
+    "deleteConfirmTitle": "¿Eliminar este estado de cuenta?",
+    "deleteConfirmMessageNone": "Este archivo no importó transacciones, así que no se borrará ningún movimiento.",
+    "deleteConfirmMessage": "También se eliminará la transacción que se importó desde este archivo.",
+    "deleteConfirmMessage_plural": "También se eliminarán las {{count}} transacciones que se importaron desde este archivo.",
+    "status": {
+      "pending": "En fila",
+      "processing": "Procesando",
+      "parsed": "Listo",
+      "completed": "Listo",
+      "error": "Error"
+    }
+  },
   "statement_upload": {
     "modal_title": "Subir estado de cuenta",
     "pick_file": "Seleccionar archivo PDF",
@@ -672,7 +696,7 @@
     "uploading_hint": "No cierres la aplicación",
     "processing_title": "Analizando tu estado...",
     "processing_subtitle": "Estamos leyendo y clasificando tus transacciones con IA.",
-    "processing_wait": "Esto puede tardar hasta un minuto.",
+    "processing_wait": "Normalmente menos de un minuto.",
     "success_title": "¡Estado importado!",
     "success_body": "Se encontraron {{count}} transacciones nuevas.",
     "partial_body": "{{new}} nuevas · {{dupes}} pendientes de revisión",
@@ -682,7 +706,42 @@
     "retry_button": "Intentar de nuevo",
     "close_button": "Cerrar",
     "timeout_message": "Tomó más de lo esperado. Revisa en un momento.",
-    "cancel_confirm": "¿Cancelar la subida?"
+    "cancel_confirm": "¿Cancelar la subida?",
+    "file_too_large": "El archivo supera los 10 MB",
+    "saving_title": "Guardando tu archivo...",
+    "saving_hint": "Ya casi, no cierres la app",
+    "processing_slow": "Está tardando más de lo normal, pero seguimos trabajando.",
+    "processing_close": "Cerrar y seguir en la app",
+    "stages": {
+      "queued": "Tu estado está en la fila...",
+      "reading": "Leyendo el PDF...",
+      "merchants": "Identificando comercios...",
+      "categorising": "Clasificando por categoría...",
+      "duplicates": "Buscando duplicados...",
+      "balance": "Calculando tu saldo..."
+    },
+    "errors": {
+      "network": {
+        "title": "Se perdió la conexión",
+        "body": "No pudimos enviar el archivo. Revisa tu conexión e inténtalo de nuevo."
+      },
+      "session": {
+        "title": "Tu sesión expiró",
+        "body": "Inicia sesión otra vez para subir tu estado de cuenta."
+      },
+      "validation": {
+        "title": "Revisa el archivo",
+        "body": "Hay algo en este archivo que no pudimos aceptar."
+      },
+      "processing": {
+        "title": "No se pudo procesar",
+        "body": "No pudimos leer este archivo. Asegúrate de que es un estado de cuenta en PDF."
+      },
+      "timeout": {
+        "title": "Está tardando mucho",
+        "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
+      }
+    }
   },
   "navigation": {
     "home": "Inicio",
@@ -698,6 +757,7 @@
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
     "assistant": "Vittbot",
     "fab": {
+        "longPressHint": "Mantén presionado para más opciones",
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "newTransactionSubtitle": "Voz, foto o ingreso manual",

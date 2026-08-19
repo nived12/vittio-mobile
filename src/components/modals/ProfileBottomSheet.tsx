@@ -19,7 +19,7 @@ import { Springs } from '../../theme/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { Bell, BotMessageSquare, Camera, Crown, Download, LogOut, Repeat2, Settings as SettingsIcon, Tag, Upload, User } from 'lucide-react-native';
+import { Bell, BotMessageSquare, Camera, Crown, Download, FileText, LogOut, Repeat2, Settings as SettingsIcon, Tag, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../stores/authStore';
@@ -61,7 +61,6 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
   const { showToast } = useUIStore();
-  const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const requireConfirmed = useRequireConfirmed();
   const { detectedCount } = useRecurringSummary();
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -94,10 +93,10 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
   const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ');
   const avatarUrl = resolveAvatarUrl(user?.avatar_url);
 
-  function handleUpload() {
+  function handleStatementFiles() {
     requireConfirmed(() => {
       onClose();
-      setTimeout(() => openStatementUpload(), 300);
+      setTimeout(() => router.push('/(app)/statement-files' as Parameters<typeof router.push>[0]), 300);
     });
   }
 
@@ -234,15 +233,15 @@ export function ProfileBottomSheet({ visible, onClose }: ProfileBottomSheetProps
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
 
-        {/* Upload statement */}
+        {/* Statement files */}
         <TouchableOpacity
           style={styles.actionRow}
-          onPress={handleUpload}
+          onPress={handleStatementFiles}
           accessibilityRole="button"
-          accessibilityLabel={t('profile.statementUpload')}
+          accessibilityLabel={t('statement_files.title')}
         >
-          <Upload size={20} color={textSecondary} />
-          <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('profile.statementUpload')}</Text>
+          <FileText size={20} color={textSecondary} />
+          <Text style={[styles.actionLabel, { color: textPrimary }]}>{t('statement_files.title')}</Text>
         </TouchableOpacity>
 
         <View style={[styles.divider, { backgroundColor: dividerCol }]} />
