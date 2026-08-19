@@ -26,6 +26,10 @@ test("a row opens the statement's own detail, not the transaction list", async (
     page.getByText(/transacciones importadas|transactions imported/i)
   ).toBeVisible();
 
+  // The financial summary web shows is mirrored here.
+  await expect(page.getByText(/resumen financiero|financial summary/i)).toBeVisible();
+  await expect(page.getByText(/l[ií]mite de cr[eé]dito|credit limit/i)).toBeVisible();
+
   // Transactions stay reachable, but as a deliberate action.
   await page
     .getByRole("button", { name: /ver \d+ transacci|view \d+ transaction/i })

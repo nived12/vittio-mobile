@@ -12,10 +12,33 @@
         "file_size": 3985432,
         "cutoff_date": "2026-07-04",
         "password_required": false,
-        "bank_account": { "id": 1, "display_name": "Santander", "account_number": "4321" },
+        "bank_account": {
+          "id": 1,
+          "display_name": "Santander",
+          "account_number": "4321"
+        },
         "transactions_count": 42,
         "pending_transactions_count": 0,
-        "period_start": "2026-06-05"
+        "period_start": "2026-06-05",
+        "financial_summary": {
+          "statement_type": "credit",
+          "statement_period_start": "2026-06-21",
+          "statement_period_end": "2026-07-20",
+          "days_in_period": 30,
+          "initial_balance": "35744.98",
+          "final_balance": "27578.14",
+          "net_movement": "-8166.84",
+          "total_deposits": 35744.98,
+          "total_withdrawals": 27578.14,
+          "interest_earned": 0.0,
+          "total_commissions": "0.0",
+          "total_fees": "0.0",
+          "total_payments": 35744.98,
+          "total_charges": 27578.14,
+          "credit_limit": 60000.0,
+          "available_credit": 32421.86,
+          "minimum_payment": 1200.0
+        }
       },
       {
         "id": 102,
@@ -28,7 +51,11 @@
         "file_size": 512000,
         "cutoff_date": "2026-06-30",
         "password_required": false,
-        "bank_account": { "id": 2, "display_name": "BBVA", "account_number": "8765" },
+        "bank_account": {
+          "id": 2,
+          "display_name": "BBVA",
+          "account_number": "8765"
+        },
         "transactions_count": 0,
         "pending_transactions_count": 0,
         "period_start": null
@@ -45,7 +72,11 @@
         "cutoff_date": "2026-05-31",
         "error_message": "No pudimos leer el archivo",
         "password_required": false,
-        "bank_account": { "id": 3, "display_name": "Banorte", "account_number": "1111" },
+        "bank_account": {
+          "id": 3,
+          "display_name": "Banorte",
+          "account_number": "1111"
+        },
         "transactions_count": 0,
         "pending_transactions_count": 0,
         "period_start": null

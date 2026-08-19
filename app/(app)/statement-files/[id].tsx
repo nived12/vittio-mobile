@@ -25,6 +25,7 @@ import { StatementStatusPill } from '../../../src/components/ui/StatementStatusP
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { colors, spacing } from '../../../src/theme';
+import { formatCurrency } from '../../../src/utils/format';
 
 function formatBytes(bytes: number | null | undefined): string | null {
   if (!bytes) return null;
@@ -108,6 +109,20 @@ export default function StatementFileDetailScreen() {
   }
 
   const isDone = sf?.status === 'completed' || sf?.status === 'parsed';
+  const summary = sf?.financial_summary;
+
+  function Money({ label, value, tone }: { label: string; value: unknown; tone?: 'pos' | 'neg' }) {
+    if (value === null || value === undefined) return null;
+    const n = typeof value === 'string' ? parseFloat(value) : (value as number);
+    if (Number.isNaN(n)) return null;
+    const color = tone === 'pos' ? '#10b981' : tone === 'neg' ? '#e11d48' : textPrimary;
+    return (
+      <View style={[styles.row, { borderBottomColor: dividerCol }]}>
+        <Text style={[styles.rowLabel, { color: textSecondary }]}>{label}</Text>
+        <Text style={[styles.rowValue, { color }]}>{formatCurrency(n, locale)}</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={['top']}>
@@ -177,6 +192,46 @@ export default function StatementFileDetailScreen() {
               value={sf.pending_transactions_count > 0 ? String(sf.pending_transactions_count) : null}
             />
           </View>
+
+          {summary && (
+            <View style={[styles.card, { backgroundColor: surface }]}>
+              <Text style={[styles.cardTitle, { color: textPrimary }]}>
+                {t('statement_files.summaryTitle')}
+              </Text>
+              {summary.statement_period_start && summary.statement_period_end && (
+                <Text style={[styles.cardSubtitle, { color: textSecondary }]}>
+                  {fmtDate(summary.statement_period_start)} – {fmtDate(summary.statement_period_end)}
+                </Text>
+              )}
+              <Money label={t('statement_files.initialBalance')} value={summary.initial_balance} />
+              <Money label={t('statement_files.finalBalance')} value={summary.final_balance} />
+              <Money
+                label={t('statement_files.netMovement')}
+                value={summary.net_movement}
+                tone={Number(summary.net_movement) < 0 ? 'neg' : 'pos'}
+              />
+              {summary.statement_type === 'credit' ? (
+                <>
+                  <Money label={t('statement_files.totalPayments')} value={summary.total_payments} tone="pos" />
+                  <Money label={t('statement_files.totalCharges')} value={summary.total_charges} tone="neg" />
+                  <Money label={t('statement_files.creditLimit')} value={summary.credit_limit} />
+                  <Money label={t('statement_files.availableCredit')} value={summary.available_credit} />
+                  <Money label={t('statement_files.minimumPayment')} value={summary.minimum_payment} />
+                </>
+              ) : (
+                <>
+                  <Money label={t('statement_files.totalDeposits')} value={summary.total_deposits} tone="pos" />
+                  <Money label={t('statement_files.totalWithdrawals')} value={summary.total_withdrawals} tone="neg" />
+                </>
+              )}
+              <Money label={t('statement_files.totalCommissions')} value={summary.total_commissions} />
+              <Money label={t('statement_files.totalFees')} value={summary.total_fees} />
+              <Row
+                label={t('statement_files.daysInPeriod')}
+                value={summary.days_in_period ? String(summary.days_in_period) : null}
+              />
+            </View>
+          )}
 
           {sf.status === 'error' && (
             <View style={[styles.card, { backgroundColor: surface }]}>
@@ -291,6 +346,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
   },
+  cardTitle: { fontSize: 15, fontWeight: '600', paddingTop: spacing.md },
+  cardSubtitle: { fontSize: 13, marginTop: 2, paddingBottom: 4 },
   fileHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: spacing.md },
   fileIcon: {
     width: 44,

@@ -11,6 +11,27 @@ export type StatementFileStatus =
   | 'completed'
   | 'error';
 
+export interface FinancialSummary {
+  statement_type: 'savings' | 'credit' | 'payroll';
+  statement_period_start: string | null;
+  statement_period_end: string | null;
+  days_in_period: number | null;
+  initial_balance: string | number | null;
+  final_balance: string | number | null;
+  net_movement: string | number | null;
+  total_deposits: number;
+  total_withdrawals: number;
+  interest_earned: number;
+  total_commissions: string | number | null;
+  total_fees: string | number | null;
+  // Credit statements only.
+  total_payments?: number;
+  total_charges?: number;
+  credit_limit?: number | null;
+  available_credit?: number | null;
+  minimum_payment?: number | null;
+}
+
 export interface StatementFile {
   id: number;
   status: StatementFileStatus;
@@ -30,6 +51,8 @@ export interface StatementFile {
   };
   created_at: string;
   updated_at: string;
+  /** Present on the detail endpoint only, and only once the statement has one. */
+  financial_summary?: FinancialSummary;
 }
 
 // ── API calls ─────────────────────────────────────────────────────────────
