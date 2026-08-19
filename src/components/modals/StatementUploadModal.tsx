@@ -7,6 +7,7 @@ import {
   FlatList,
   Keyboard,
   Modal,
+  TextInput,
   Platform,
   StyleSheet,
   Text,
@@ -193,6 +194,8 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
   const [cutoffDate, setCutoffDate] = useState<Date>(lastDayOfPrevMonth());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [filePassword, setFilePassword] = useState('');
+  const [showPasswordField, setShowPasswordField] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
   const [result, setResult] = useState<StatementFile | null>(null);
   const [confettiVariant, setConfettiVariant] = useState<ConfettiVariant>(CONFETTI_VARIANTS[0]);
@@ -222,6 +225,8 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       setUploadPct(0);
       setResult(null);
       setErrorDetail(null);
+      setFilePassword('');
+      setShowPasswordField(false);
       setStageIndex(0);
       setProcessingIsSlow(false);
       pollStartedAtRef.current = 0;
@@ -297,6 +302,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
         selectedAccount.id,
         format(cutoffDate, 'yyyy-MM-dd'),
         (pct) => setUploadPct(pct),
+        filePassword.trim() || undefined,
       );
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setResult(sf);
@@ -322,6 +328,10 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       // re-sends this exact upload instead of dumping the user back to the picker.
       if (axiosErr?.response?.status === 401) {
         setErrorKind('session');
+        // The upload is _noReplay, so the interceptor's refresh/_clearAuth path is
+        // skipped for it. Clear auth here or the user sits in a stale signed-in
+        // state until some unrelated request happens to 401.
+        useAuthStore.getState()._clearAuth();
       } else if (axiosErr?.response?.status === 422) {
         setErrorKind('validation');
         setErrorDetail(formatValidationDetails(axiosErr.response?.data?.error?.details));
@@ -395,7 +405,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
       return;
     }
     try {
-      await retryStatementFile(result.id);
+      await retryStatementFile(result.id, filePassword.trim() || undefined);
       setStep('processing');
       setStageIndex(0);
       setProcessingIsSlow(false);
@@ -576,6 +586,35 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                     </Text>
                   </View>
                 </>
+              )}
+
+              {/* Optional PDF password — some banks ship protected statements */}
+              {showPasswordField ? (
+                <>
+                  <Text style={[styles.sectionLabel, { color: textSecondary }]}>
+                    {t('statement_upload.file_password')}
+                  </Text>
+                  <TextInput
+                    style={[styles.fieldRow, styles.passwordInput, { backgroundColor: inputBg, borderColor: borderCol, color: textPrimary }]}
+                    value={filePassword}
+                    onChangeText={setFilePassword}
+                    placeholder={t('statement_upload.file_password_placeholder')}
+                    placeholderTextColor={textSecondary}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => setShowPasswordField(true)}
+                  style={styles.passwordToggle}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.passwordToggleText}>
+                    {t('statement_upload.file_password_toggle')}
+                  </Text>
+                </TouchableOpacity>
               )}
 
               {/* Info note */}
@@ -873,6 +912,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   // Info box
+  passwordInput: { fontSize: 15 },
+  passwordToggle: { paddingVertical: 10 },
+  passwordToggleText: { fontSize: 14, color: '#4f46e5', fontWeight: '600' },
   infoBox: {
     backgroundColor: '#fffbeb',
     borderRadius: 10,

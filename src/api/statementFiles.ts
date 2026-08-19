@@ -41,6 +41,7 @@ export async function uploadStatementFile(
   bankAccountId: number,
   cutoffDate: string,
   onProgress?: (pct: number) => void,
+  filePassword?: string,
 ): Promise<StatementFile> {
   const formData = new FormData();
   formData.append('statement_file[file]', {
@@ -50,6 +51,7 @@ export async function uploadStatementFile(
   } as unknown as Blob);
   formData.append('statement_file[bank_account_id]', String(bankAccountId));
   formData.append('statement_file[cutoff_date]', cutoffDate);
+  if (filePassword) formData.append('statement_file[file_password]', filePassword);
 
   const response = await apiClient.post<{ data: StatementFile }>(
     '/statement_files',

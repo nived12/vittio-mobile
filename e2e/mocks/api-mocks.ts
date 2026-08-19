@@ -210,7 +210,13 @@ export async function setupApiMocks(page: Page): Promise<void> {
     }
     if (/\/statement_files\/\d+$/.test(pathname)) {
       if (method === "DELETE") return route.fulfill({ status: 204, headers: corsHeaders });
-      return fulfillJson(route, { data: { id: 101, status: "completed" } });
+      // The detail screen reads the full record, so echo the matching fixture row.
+      const wantedId = Number(pathname.split("/").pop());
+      const record =
+        (statementFiles as { data: { statement_files: Array<{ id: number }> } }).data
+          .statement_files.find((row) => row.id === wantedId) ??
+        (statementFiles as { data: { statement_files: unknown[] } }).data.statement_files[0];
+      return fulfillJson(route, { data: record });
     }
     if (pathname.endsWith("/categories")) {
       return fulfillJson(route, {

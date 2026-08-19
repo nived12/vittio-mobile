@@ -85,7 +85,7 @@ export default function AppLayout() {
   });
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const tabBarBg = theme.tabBarBg;
   const tabBarBorder = theme.tabBarBorder;
   const tabBarActive = theme.tabBarActive;
@@ -95,19 +95,34 @@ export default function AppLayout() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setShowFabSheet(true);
     setShowFabHint(false);
+    // Finding the shortcut unaided is the outcome the hint exists to produce.
+    fabHintPending.current = false;
+    tokenStorage.saveFabHintSeen();
   }, []);
 
   // Long-press is an accelerator, not a discoverable affordance. Surface it once
   // on the first tap; every action behind it also has its own entry point, so
   // this is a shortcut hint rather than the only way in.
   const [showFabHint, setShowFabHint] = useState(false);
-  const fabHintPending = useRef(false);
+  // null = the stored flag has not been read yet. Starting at `false` dropped the
+  // hint entirely when the first tap beat the async read, which is exactly what
+  // happens on a cold launch.
+  const fabHintPending = useRef<boolean | null>(null);
   useEffect(() => {
-    tokenStorage.getFabHintSeen().then((seen) => { fabHintPending.current = !seen; });
+    tokenStorage.getFabHintSeen().then((seen) => {
+      if (fabHintPending.current === null) fabHintPending.current = !seen;
+    });
   }, []);
 
-  const revealFabHintOnce = useCallback(() => {
-    if (!fabHintPending.current) return;
+  const revealFabHintOnce = useCallback(async () => {
+    if (fabHintPending.current === false) return;
+    if (fabHintPending.current === null) {
+      const seen = await tokenStorage.getFabHintSeen();
+      if (seen) {
+        fabHintPending.current = false;
+        return;
+      }
+    }
     fabHintPending.current = false;
     setShowFabHint(true);
     tokenStorage.saveFabHintSeen();
@@ -256,7 +271,7 @@ export default function AppLayout() {
                 ? TAB_BAR_CONTENT_HEIGHT_IOS + insets.bottom
                 : TAB_BAR_CONTENT_HEIGHT_ANDROID) + 52,
             alignSelf: 'center',
-            backgroundColor: '#0f172a',
+            backgroundColor: isDark ? '#1e293b' : '#0f172a',
             paddingHorizontal: 14,
             paddingVertical: 8,
             borderRadius: 999,

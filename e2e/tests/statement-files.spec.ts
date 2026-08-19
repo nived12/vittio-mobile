@@ -17,8 +17,20 @@ test("lists statements with a status per row", async ({ page }) => {
   await expect(page.getByText(/^(Error|Failed)$/).first()).toBeVisible();
 });
 
-test("a completed row links through to its imported transactions", async ({ page }) => {
+test("a row opens the statement's own detail, not the transaction list", async ({ page }) => {
   await page.getByText("Santander").first().click();
+
+  // The row identifies the file, so it must land on the file.
+  await page.waitForURL(/statement-files\/101/, { timeout: 10_000 });
+  await expect(
+    page.getByText(/transacciones importadas|transactions imported/i)
+  ).toBeVisible();
+
+  // Transactions stay reachable, but as a deliberate action.
+  await page
+    .getByRole("button", { name: /ver \d+ transacci|view \d+ transaction/i })
+    .first()
+    .click();
   await page.waitForURL(/statement_file_id=101/, { timeout: 10_000 });
 });
 

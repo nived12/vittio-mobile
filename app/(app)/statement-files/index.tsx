@@ -1,13 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Modal,
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -22,37 +20,13 @@ import { format } from 'date-fns';
 import { es as dateFnsEs } from 'date-fns/locale';
 import {
   useDeleteStatementFile,
-  useRetryStatementFile,
   useStatementFiles,
-} from '../../src/hooks/useStatementFiles';
-import { useUIStore } from '../../src/stores/uiStore';
-import { useTheme } from '../../src/theme/ThemeContext';
-import { colors, spacing } from '../../src/theme';
-import type { StatementFile } from '../../src/api/statementFiles';
-
-// ── Status pill ────────────────────────────────────────────────────────────
-
-const STATUS_TINT: Record<StatementFile['status'], string> = {
-  pending: '#f59e0b',
-  processing: '#4f46e5',
-  parsed: '#10b981',
-  completed: '#10b981',
-  error: '#e11d48',
-};
-
-function StatusPill({ status }: { status: StatementFile['status'] }) {
-  const { t } = useTranslation();
-  const tint = STATUS_TINT[status];
-  const busy = status === 'pending' || status === 'processing';
-  return (
-    <View style={[styles.pill, { backgroundColor: `${tint}1a` }]}>
-      {busy && <ActivityIndicator size="small" color={tint} style={styles.pillSpinner} />}
-      <Text style={[styles.pillText, { color: tint }]}>
-        {t(`statement_files.status.${status}`)}
-      </Text>
-    </View>
-  );
-}
+} from '../../../src/hooks/useStatementFiles';
+import { useUIStore } from '../../../src/stores/uiStore';
+import { useTheme } from '../../../src/theme/ThemeContext';
+import { colors, spacing } from '../../../src/theme';
+import type { StatementFile } from '../../../src/api/statementFiles';
+import { StatementStatusPill } from '../../../src/components/ui/StatementStatusPill';
 
 // ── Row ────────────────────────────────────────────────────────────────────
 
@@ -139,7 +113,7 @@ function StatementFileRow({ sf, onPress, onDelete }: RowProps) {
               .join(' · ')}
           </Text>
         </View>
-        <StatusPill status={sf.status} />
+        <StatementStatusPill status={sf.status} />
       </TouchableOpacity>
     </Swipeable>
   );
@@ -167,10 +141,6 @@ export default function StatementFilesScreen() {
     isFetchingNextPage,
   } = useStatementFiles();
   const deleteMutation = useDeleteStatementFile();
-  const retryMutation = useRetryStatementFile();
-
-  const [passwordFor, setPasswordFor] = useState<StatementFile | null>(null);
-  const [password, setPassword] = useState('');
 
   const statementFiles = useMemo(
     () => data?.pages.flatMap((p) => p.data.statement_files) ?? [],
@@ -186,38 +156,8 @@ export default function StatementFilesScreen() {
     }
   }
 
-  async function runRetry(sf: StatementFile, pwd?: string) {
-    try {
-      await retryMutation.mutateAsync({ id: sf.id, password: pwd });
-      showToast(t('statement_files.retryStartedToast'), 'success');
-    } catch {
-      showToast(t('common.error'), 'error');
-    }
-  }
-
   function handleRowPress(sf: StatementFile) {
-    if (sf.status === 'error') {
-      if (sf.password_required) {
-        setPassword('');
-        setPasswordFor(sf);
-        return;
-      }
-      Alert.alert(
-        t('statement_files.retryTitle'),
-        sf.error_message ?? t('statement_upload.errors.processing.body'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('statement_upload.retry_button'), onPress: () => runRetry(sf) },
-        ],
-      );
-      return;
-    }
-    if (sf.status === 'completed' || sf.status === 'parsed') {
-      router.push(
-        `/(app)/transactions?statement_file_id=${sf.id}` as `/(app)/transactions`,
-      );
-    }
-    // pending/processing rows are not actionable — the pill already says why.
+    router.push(`/(app)/statement-files/${sf.id}` as `/(app)/statement-files`);
   }
 
   return (
@@ -294,54 +234,6 @@ export default function StatementFilesScreen() {
         />
       )}
 
-      {/* PDF password prompt — Alert.prompt is iOS-only, so this covers both. */}
-      <Modal visible={passwordFor !== null} transparent animationType="fade">
-        <View style={styles.promptOverlay}>
-          <View style={[styles.promptCard, { backgroundColor: isDark ? theme.surface : '#ffffff' }]}>
-            <Text style={[styles.promptTitle, { color: textPrimary }]}>
-              {t('statement_files.passwordTitle')}
-            </Text>
-            <Text style={[styles.promptBody, { color: textSecondary }]}>
-              {t('statement_files.passwordBody')}
-            </Text>
-            <TextInput
-              style={[styles.promptInput, { color: textPrimary, borderColor: isDark ? theme.border : '#e2e8f0' }]}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoFocus
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholderTextColor={textSecondary}
-            />
-            <View style={styles.promptActions}>
-              <TouchableOpacity style={styles.promptBtn} onPress={() => setPasswordFor(null)}>
-                <Text style={[styles.promptBtnText, { color: textSecondary }]}>
-                  {t('common.cancel')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.promptBtn}
-                disabled={password.length === 0}
-                onPress={() => {
-                  const target = passwordFor;
-                  setPasswordFor(null);
-                  if (target) runRetry(target, password);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.promptBtnText,
-                    { color: password.length === 0 ? textSecondary : colors.brand.primary },
-                  ]}
-                >
-                  {t('statement_upload.retry_button')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

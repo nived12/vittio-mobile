@@ -1,10 +1,12 @@
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import {
   deleteStatementFile,
+  getStatementFile,
   listStatementFiles,
   retryStatementFile,
 } from '../api/statementFiles';
@@ -12,7 +14,21 @@ import {
 export const statementFileKeys = {
   all: ['statementFiles'] as const,
   lists: () => [...statementFileKeys.all, 'list'] as const,
+  detail: (id: number) => [...statementFileKeys.all, 'detail', id] as const,
 };
+
+/** One statement file. Polls itself while the job is still running. */
+export function useStatementFile(id: number) {
+  return useQuery({
+    queryKey: statementFileKeys.detail(id),
+    queryFn: () => getStatementFile(id),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'pending' || status === 'processing' ? 3_000 : false;
+    },
+    networkMode: 'offlineFirst',
+  });
+}
 
 /** Infinite-scroll query for the statement files list. */
 export function useStatementFiles() {
