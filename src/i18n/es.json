@@ -185,7 +185,6 @@
   },
   "transactions": {
     "title": "Transacciones",
-    "empty": "Sin transacciones",
     "emptySubtitle": "Agrega tu primera transacción",
     "addTransaction": "Agregar transacción",
     "search": {
@@ -407,7 +406,6 @@
   },
   "accounts": {
     "title": "Cuentas",
-    "empty": "Sin cuentas",
     "emptySubtitle": "Agrega tu primera cuenta bancaria",
     "addAccount": "Agregar cuenta",
     "archived": {
@@ -1092,7 +1090,8 @@
     "SERVER_ERROR": "Error del servidor. Intenta de nuevo.",
     "NETWORK_ERROR": "Sin conexión. Verifica tu conexión a internet.",
     "UNKNOWN_ERROR": "Ocurrió un error inesperado",
-    "generic": "Algo salió mal. Por favor intenta de nuevo."
+    "generic": "Algo salió mal. Por favor intenta de nuevo.",
+    "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo."
   },
   "aiInput": {
     "voice": {
@@ -1167,9 +1166,6 @@
     "accept": "Aceptar y Continuar",
     "acceptError": "Algo salió mal. Por favor inténtalo de nuevo.",
     "version": "Versión del documento: {{version}}"
-  },
-  "errors": {
-    "sessionExpired": "Tu sesión ha expirado. Por favor inicia sesión de nuevo."
   },
   "premium": {
     "headerTitle": "Vittio Premium",

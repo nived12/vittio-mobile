@@ -185,7 +185,6 @@
   },
   "transactions": {
     "title": "Transactions",
-    "empty": "No transactions yet",
     "emptySubtitle": "Add your first transaction",
     "addTransaction": "Add transaction",
     "search": {
@@ -407,7 +406,6 @@
   },
   "accounts": {
     "title": "Accounts",
-    "empty": "No accounts yet",
     "emptySubtitle": "Add your first bank account",
     "addAccount": "Add account",
     "archived": {
@@ -1092,7 +1090,8 @@
     "SERVER_ERROR": "A server error occurred. Please try again.",
     "NETWORK_ERROR": "Unable to connect. Check your internet connection.",
     "UNKNOWN_ERROR": "An unexpected error occurred",
-    "generic": "Something went wrong. Please try again."
+    "generic": "Something went wrong. Please try again.",
+    "sessionExpired": "Your session has expired. Please log in again."
   },
   "aiInput": {
     "voice": {
@@ -1167,9 +1166,6 @@
     "accept": "Accept & Continue",
     "acceptError": "Something went wrong. Please try again.",
     "version": "Document version: {{version}}"
-  },
-  "errors": {
-    "sessionExpired": "Your session has expired. Please log in again."
   },
   "premium": {
     "headerTitle": "Vittio Premium",
