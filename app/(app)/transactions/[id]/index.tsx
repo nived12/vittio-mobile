@@ -3,8 +3,6 @@ import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  FlatList,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -22,13 +20,12 @@ import { format, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../../src/hooks/useTransactions';
-import { useCategories } from '../../../../src/hooks/useCategories';
 import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { getCategoryColor } from '../../../../src/utils/categoryColors';
-import type { Category } from '../../../../src/api/categories';
+import { CategoryPickerSheet, type CategorySelection } from '../../../../src/components/modals/CategoryPickerSheet';
 
 // ── Icon resolver ──────────────────────────────────────────────────────────
 
@@ -55,60 +52,6 @@ function getTypeBadge(type: string, isDark: boolean, t: (k: string) => string): 
   return map[type] ?? (isDark ? { bg: 'rgba(255,255,255,0.06)', text: '#94a3b8', label: type } : { bg: '#f1f5f9', text: '#334155', label: type });
 }
 
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number | null;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function TransactionDetailScreen() {
@@ -132,8 +75,6 @@ export default function TransactionDetailScreen() {
   const { data: tx, isLoading, isError } = useTransaction(txId);
   const deleteMutation = useDeleteTransaction();
   const updateMutation = useUpdateTransaction(txId);
-  const { data: categoriesData } = useCategories();
-  const categories = categoriesData ?? [];
 
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
@@ -210,11 +151,11 @@ export default function TransactionDetailScreen() {
     );
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!tx) return;
     // Optimistic update not needed — react-query setQueryData after success is sufficient
     try {
-      await updateMutation.mutateAsync({ category_id: category.id });
+      await updateMutation.mutateAsync({ category_id: category?.id ?? null });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
       showToast(t('transactions.category_updated'), 'success');
     } catch {
@@ -445,14 +386,14 @@ export default function TransactionDetailScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Category picker modal */}
-      <CategoryPickerModal
-        visible={showCategoryPicker}
-        onClose={() => setShowCategoryPicker(false)}
-        onSelect={handleCategorySelect}
-        categories={categories}
-        selectedId={tx.category?.id ?? null}
-      />
+      {showCategoryPicker && (
+        <CategoryPickerSheet
+          visible
+          onClose={() => setShowCategoryPicker(false)}
+          onSelect={handleCategorySelect}
+          selectedId={tx.category?.id ?? null}
+        />
+      )}
 
     </View>
   );

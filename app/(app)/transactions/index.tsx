@@ -34,6 +34,7 @@ import { EmptyState } from '../../../src/components/ui/EmptyState';
 import type { TransactionFilters } from '../../../src/api/transactions';
 import type { Transaction, TransactionType } from '../../../src/api/transactions';
 import type { Category } from '../../../src/api/categories';
+import { CategoryPickerSheet, type CategorySelection } from '../../../src/components/modals/CategoryPickerSheet';
 
 // ── Date grouping ──────────────────────────────────────────────────────────
 
@@ -117,57 +118,6 @@ function countActiveFilters(f: ActiveFilters): number {
   if (f.categoryId) n++;
   if (f.txType) n++;
   return n;
-}
-
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => { onSelect(item); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
 }
 
 // ── Filter Sheet ──────────────────────────────────────────────────────────
@@ -303,12 +253,12 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
         </View>
       </View>
 
-      <CategoryPickerModal
+      <CategoryPickerSheet
         visible={showCategoryPicker}
         onClose={() => setShowCategoryPicker(false)}
-        onSelect={(cat) => setCategoryId(cat.id)}
-        categories={categories}
-        selectedId={categoryId}
+        onSelect={(cat) => setCategoryId(cat?.id)}
+        selectedId={categoryId ?? null}
+        allowUncategorized={false}
       />
     </Modal>
   );
@@ -401,6 +351,11 @@ export default function TransactionsScreen() {
 
   const sections = useMemo(() => groupByDate(transactions), [transactions]);
 
+  const categorizingTx = useMemo(
+    () => transactions.find((tx) => tx.id === categorizingId),
+    [transactions, categorizingId],
+  );
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleSearchChange(text: string) {
@@ -451,13 +406,13 @@ export default function TransactionsScreen() {
     setShowCategoryPicker(true);
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!categorizingId) return;
     const txId = categorizingId;
     setCategorizingId(null);
     try {
       const { updateTransaction } = await import('../../../src/api/transactions');
-      await updateTransaction(txId, { category_id: category.id });
+      await updateTransaction(txId, { category_id: category?.id ?? null });
       refetch();
       showToast(t('transactions.category_updated'), 'success');
     } catch {
@@ -723,11 +678,11 @@ export default function TransactionsScreen() {
 
       {/* Category picker (for swipe-to-categorize) — mount only when open */}
       {showCategoryPicker && (
-        <CategoryPickerModal
-          visible={showCategoryPicker}
+        <CategoryPickerSheet
+          visible
           onClose={() => { setShowCategoryPicker(false); setCategorizingId(null); }}
           onSelect={handleCategorySelect}
-          categories={categories}
+          selectedId={categorizingTx?.category?.id ?? null}
         />
       )}
 

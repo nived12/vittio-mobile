@@ -3,8 +3,6 @@ import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  FlatList,
-  Modal,
   Platform,
   RefreshControl,
   SectionList,
@@ -29,7 +27,6 @@ import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditB
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
 import { resolveBankAccountName } from '../../../src/utils/displayNames';
-import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
@@ -38,58 +35,9 @@ import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import type { Transaction } from '../../../src/api/transactions';
-import type { Category } from '../../../src/api/categories';
+import { CategoryPickerSheet, type CategorySelection } from '../../../src/components/modals/CategoryPickerSheet';
 
 // ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number | null;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.category_label')}</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => { onSelect(item); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
 
 // ── Date grouping ──────────────────────────────────────────────────────────
 
@@ -142,8 +90,6 @@ export default function AccountDetailScreen() {
   const deleteAccountMutation = useDeleteBankAccount();
   const archiveAccountMutation = useArchiveBankAccount();
   const unarchiveAccountMutation = useUnarchiveBankAccount();
-  const { data: categoriesData } = useCategories();
-  const categories = categoriesData ?? [];
 
   const {
     data: infiniteData,
@@ -162,6 +108,11 @@ export default function AccountDetailScreen() {
     [infiniteData],
   );
   const sections = useMemo(() => groupByDate(transactions), [transactions]);
+
+  const categorizingTx = useMemo(
+    () => transactions.find((tx) => tx.id === categorizingTxId),
+    [transactions, categorizingTxId],
+  );
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
@@ -192,13 +143,13 @@ export default function AccountDetailScreen() {
     setShowCategoryPicker(true);
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!categorizingTxId) return;
     const txId = categorizingTxId;
     setCategorizingTxId(null);
     try {
       const { updateTransaction } = await import('../../../src/api/transactions');
-      await updateTransaction(txId, { category_id: category.id });
+      await updateTransaction(txId, { category_id: category?.id ?? null });
       refetchTx();
       showToast(t('transactions.category_updated'), 'success');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
@@ -559,13 +510,15 @@ export default function AccountDetailScreen() {
         contentContainerStyle={{ paddingBottom: 32 + insets.bottom }}
       />
 
-      {/* Category picker (for swipe-to-categorize) */}
-      <CategoryPickerModal
-        visible={showCategoryPicker}
-        onClose={() => { setShowCategoryPicker(false); setCategorizingTxId(null); }}
-        onSelect={handleCategorySelect}
-        categories={categories}
-      />
+      {/* Category picker (for swipe-to-categorize) — mount only when open */}
+      {showCategoryPicker && (
+        <CategoryPickerSheet
+          visible
+          onClose={() => { setShowCategoryPicker(false); setCategorizingTxId(null); }}
+          onSelect={handleCategorySelect}
+          selectedId={categorizingTx?.category?.id ?? null}
+        />
+      )}
 
       {/* Edit account modal */}
       <AddEditBankAccountModal
