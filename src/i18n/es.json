@@ -663,7 +663,9 @@
     "and": "y",
     "offline": "Sin conexión",
     "offlineSubtitle": "Mostrando datos guardados",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "enabled": "Activada",
+    "disabled": "Desactivada"
   },
   "statement_files": {
     "title": "Estados de cuenta",

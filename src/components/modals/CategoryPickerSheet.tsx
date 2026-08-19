@@ -90,6 +90,7 @@ export function CategoryPickerList({
           placeholderTextColor={textSecondary}
           style={[s.searchInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
           autoCorrect={false}
+          autoCapitalize="none"
           autoFocus={autoFocusSearch}
           clearButtonMode="while-editing"
           returnKeyType="search"

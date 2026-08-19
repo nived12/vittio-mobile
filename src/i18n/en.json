@@ -663,7 +663,9 @@
     "and": "and",
     "offline": "You're offline",
     "offlineSubtitle": "Showing cached data",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "enabled": "On",
+    "disabled": "Off"
   },
   "statement_files": {
     "title": "Statements",
