@@ -212,7 +212,7 @@ eas build --platform android  # Requires EAS account
 
 **Next Phase**: Phase 7 (Savings, Debts, Goals)
 
-See `docs/status/PHASE_STATUS.md` in the root Vittio project for current task checklist and known bugs.
+See `docs/status/BACKLOG.md` in the root Vittio project for current task checklist and known bugs.
 
 ## Metrics
 
@@ -281,7 +281,7 @@ rm -rf .expo
 
 All decisions, questions, and bugs are logged in:
 - `docs/decisions/DECISIONS_LOG.md` — Agent decisions and blockers
-- `docs/status/PHASE_STATUS.md` — Current phase checklist and open issues
+- `docs/status/BACKLOG.md` — Current phase checklist and open issues
 
 See the root CLAUDE.md for the full agent team structure.
 
