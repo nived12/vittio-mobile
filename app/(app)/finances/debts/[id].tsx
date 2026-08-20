@@ -23,6 +23,7 @@ import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
+import { TrackingSummaryCard } from '../../../../src/components/ui/TrackingSummaryCard';
 
 function formatCurrency(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }).format(amount);
@@ -192,6 +193,14 @@ export default function DebtDetailScreen() {
               </View>
             </View>
           )}
+
+          <TrackingSummaryCard
+            variant="debt"
+            categories={debt.categories}
+            bankAccounts={debt.bank_accounts}
+            autoSync={debt.auto_sync_transactions}
+            calc={debt.calculation_settings}
+          />
 
           {debt.notes && (
             <View style={s.section}>

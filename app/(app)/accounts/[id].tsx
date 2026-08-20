@@ -3,8 +3,6 @@ import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  FlatList,
-  Modal,
   Platform,
   RefreshControl,
   SectionList,
@@ -29,7 +27,6 @@ import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditB
 import { getBankLogoComponent } from '../../../src/utils/bankLogos';
 import { useTransactions, useDeleteTransaction } from '../../../src/hooks/useTransactions';
 import { resolveBankAccountName } from '../../../src/utils/displayNames';
-import { useCategories } from '../../../src/hooks/useCategories';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
@@ -38,57 +35,7 @@ import { TransactionRow, TransactionRowSkeleton } from '../../../src/components/
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import type { Transaction } from '../../../src/api/transactions';
-import type { Category } from '../../../src/api/categories';
-
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number | null;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => { onSelect(item); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
+import { CategoryPickerSheet, type CategorySelection } from '../../../src/components/modals/CategoryPickerSheet';
 
 // ── Date grouping ──────────────────────────────────────────────────────────
 
@@ -141,8 +88,6 @@ export default function AccountDetailScreen() {
   const deleteAccountMutation = useDeleteBankAccount();
   const archiveAccountMutation = useArchiveBankAccount();
   const unarchiveAccountMutation = useUnarchiveBankAccount();
-  const { data: categoriesData } = useCategories();
-  const categories = categoriesData ?? [];
 
   const {
     data: infiniteData,
@@ -161,6 +106,11 @@ export default function AccountDetailScreen() {
     [infiniteData],
   );
   const sections = useMemo(() => groupByDate(transactions), [transactions]);
+
+  const categorizingTx = useMemo(
+    () => transactions.find((tx) => tx.id === categorizingTxId),
+    [transactions, categorizingTxId],
+  );
 
   const handleRefresh = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
@@ -191,18 +141,18 @@ export default function AccountDetailScreen() {
     setShowCategoryPicker(true);
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!categorizingTxId) return;
     const txId = categorizingTxId;
     setCategorizingTxId(null);
     try {
       const { updateTransaction } = await import('../../../src/api/transactions');
-      await updateTransaction(txId, { category_id: category.id });
+      await updateTransaction(txId, { category_id: category?.id ?? null });
       refetchTx();
-      showToast('Categoría actualizada', 'success');
+      showToast(t('transactions.category_updated'), 'success');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
     } catch {
-      showToast('Error al actualizar categoría', 'error');
+      showToast(t('transactions.category_update_error'), 'error');
     }
   }
 
@@ -397,7 +347,7 @@ export default function AccountDetailScreen() {
             style={styles.moreBtn}
             onPress={handleMoreOptions}
             accessibilityRole="button"
-            accessibilityLabel="Más opciones"
+            accessibilityLabel={t('transactionDetail.moreOptions')}
           >
             <DotsThreeOutline size={22} color={textSecondary} weight="regular" />
           </TouchableOpacity>
@@ -558,13 +508,15 @@ export default function AccountDetailScreen() {
         contentContainerStyle={{ paddingBottom: 32 + insets.bottom }}
       />
 
-      {/* Category picker (for swipe-to-categorize) */}
-      <CategoryPickerModal
-        visible={showCategoryPicker}
-        onClose={() => { setShowCategoryPicker(false); setCategorizingTxId(null); }}
-        onSelect={handleCategorySelect}
-        categories={categories}
-      />
+      {/* Category picker (for swipe-to-categorize) — mount only when open */}
+      {showCategoryPicker && (
+        <CategoryPickerSheet
+          visible
+          onClose={() => { setShowCategoryPicker(false); setCategorizingTxId(null); }}
+          onSelect={handleCategorySelect}
+          selectedId={categorizingTx?.category?.id ?? null}
+        />
+      )}
 
       {/* Edit account modal */}
       <AddEditBankAccountModal
@@ -637,42 +589,4 @@ const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#f1f5f9' },
   footer: { height: 40, alignItems: 'center', justifyContent: 'center' },
   allCaughtUp: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#94a3b8' },
-  // ── Category picker ───────────────────────────────────────────────────────
-  modalContainer: { flex: 1, justifyContent: 'flex-end' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
-  categorySheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-    maxHeight: 480,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#e2e8f0',
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    lineHeight: 22,
-    color: '#0f172a',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  categoryRowActive: { backgroundColor: '#e0e7ff' },
-  categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
-  categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
-  checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
 });

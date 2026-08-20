@@ -114,6 +114,11 @@ function RootLayout() {
   // splash screen, and which elements lose the race varies per launch, so it
   // never reproduced the same way twice.
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  // The stored locale must be applied before the screen tree mounts. i18n starts
+  // on the *device* language, so a tree rendered first captures those strings —
+  // and anything memoized on the `t` identity (the tab bar titles) stays frozen
+  // in the wrong language for the whole session.
+  const [localeReady, setLocaleReady] = useState(false);
   const pushRegistered = useRef(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
@@ -138,7 +143,7 @@ function RootLayout() {
       const [optedOut] = await Promise.all([
         AsyncStorage.getItem(OPT_OUT_KEY),
         hydrate(),
-        hydrateLocale(),
+        hydrateLocale().finally(() => setLocaleReady(true)),
         hydrateBiometricLock(),
         hydrateColorScheme(),
         hydrateCelebrationState(),
@@ -226,7 +231,7 @@ function RootLayout() {
   // The splash screen is still up at this point, so returning null shows nothing
   // new — it only keeps the screen tree from mounting and measuring text before
   // Inter exists. Every hook above runs regardless, so prepare() still completes.
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || !localeReady) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

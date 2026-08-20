@@ -34,6 +34,7 @@ import { EmptyState } from '../../../src/components/ui/EmptyState';
 import type { TransactionFilters } from '../../../src/api/transactions';
 import type { Transaction, TransactionType } from '../../../src/api/transactions';
 import type { Category } from '../../../src/api/categories';
+import { CategoryPickerSheet, type CategorySelection } from '../../../src/components/modals/CategoryPickerSheet';
 
 // ── Date grouping ──────────────────────────────────────────────────────────
 
@@ -119,67 +120,19 @@ function countActiveFilters(f: ActiveFilters): number {
   return n;
 }
 
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => { onSelect(item); onClose(); }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 // ── Filter Sheet ──────────────────────────────────────────────────────────
 
 interface FilterSheetProps {
   visible: boolean;
   current: ActiveFilters;
-  categories: Category[];
   onApply: (filters: ActiveFilters) => void;
   onClose: () => void;
 }
 
-function FilterSheet({ visible, current, categories, onApply, onClose }: FilterSheetProps) {
+function FilterSheet({ visible, current, onApply, onClose }: FilterSheetProps) {
+  const { t } = useTranslation();
+  // Same react-query cache the picker sheet reads, so this is one fetch, not two.
+  const { data: categories = [] } = useCategories();
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
@@ -193,7 +146,7 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
   const [txType, setTxType] = useState<ActiveFilters['txType']>(current.txType);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
-  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const selectedCategory = categories.find((c: Category) => c.id === categoryId);
 
   function handleApply() {
     onApply({ period, categoryId, txType });
@@ -218,17 +171,21 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
         <View style={[styles.filterSheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
           <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
           <View style={styles.filterHeader}>
-            <Text style={[styles.sheetTitle, { color: textPrimary }]}>Filtros</Text>
+            <Text style={[styles.sheetTitle, { color: textPrimary }]}>{t('transactions.filters.title')}</Text>
             <TouchableOpacity onPress={handleReset} style={styles.resetBtn}>
-              <Text style={styles.resetLabel}>Limpiar</Text>
+              <Text style={styles.resetLabel}>{t('transactions.filters.reset')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Period */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>PERÍODO</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.dateRange')}</Text>
           <View style={styles.pillRow}>
             {(['current', 'last', 'three_months'] as const).map((p) => {
-              const labels = { current: 'Este mes', last: 'Mes pasado', three_months: 'Últimos 3 meses' };
+              const labels = {
+                current: t('transactions.filters.thisMonth'),
+                last: t('transactions.filters.lastMonth'),
+                three_months: t('transactions.filters.last3Months'),
+              };
               return (
                 <TouchableOpacity
                   key={p}
@@ -244,13 +201,13 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
           </View>
 
           {/* Category */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>CATEGORÍA</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.category')}</Text>
           <TouchableOpacity
             style={[styles.categorySelector, { backgroundColor: surfaceEl, borderColor: borderCol }]}
             onPress={() => setShowCategoryPicker(true)}
           >
             <Text style={[styles.categorySelectorText, !!categoryId && { color: textPrimary }]}>
-              {selectedCategory ? selectedCategory.name : 'Todas las categorías'}
+              {selectedCategory ? selectedCategory.name : t('transactions.filters.allCategories')}
             </Text>
             {categoryId && (
               <TouchableOpacity
@@ -263,10 +220,13 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
           </TouchableOpacity>
 
           {/* Type */}
-          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>TIPO</Text>
+          <Text style={[styles.filterSectionLabel, { color: textSecondary }]}>{t('transactions.filters.type')}</Text>
           <View style={styles.pillRow}>
             {(['income', 'expense'] as const).map((type) => {
-              const labels = { income: 'Ingresos', expense: 'Gastos' };
+              const labels = {
+                income: t('transactions.filters.income'),
+                expense: t('transactions.filters.expenses'),
+              };
               return (
                 <TouchableOpacity
                   key={type}
@@ -283,23 +243,23 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
               style={[styles.pill, { backgroundColor: surface, borderColor: borderCol }, !txType && styles.pillActive]}
               onPress={() => setTxType(undefined)}
             >
-              <Text style={[styles.pillText, { color: textPrimary }, !txType && styles.pillTextActive]}>Todos</Text>
+              <Text style={[styles.pillText, { color: textPrimary }, !txType && styles.pillTextActive]}>{t('transactions.filters.allTypes')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Apply */}
           <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-            <Text style={styles.applyBtnText}>Aplicar</Text>
+            <Text style={styles.applyBtnText}>{t('transactions.filters.applyButton')}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <CategoryPickerModal
+      <CategoryPickerSheet
         visible={showCategoryPicker}
         onClose={() => setShowCategoryPicker(false)}
-        onSelect={(cat) => setCategoryId(cat.id)}
-        categories={categories}
-        selectedId={categoryId}
+        onSelect={(cat) => setCategoryId(cat?.id)}
+        selectedId={categoryId ?? null}
+        allowUncategorized={false}
       />
     </Modal>
   );
@@ -333,7 +293,6 @@ export default function TransactionsScreen() {
 
   const ready = useDeferredReady();
 
-  const { data: categoriesData } = useCategories();
   const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
   const { data: transferCandidatePage, refetch: refetchTransferCandidates } = useTransferCandidates();
   const transferCandidateCount = transferCandidatePage?.total ?? 0;
@@ -346,8 +305,6 @@ export default function TransactionsScreen() {
       refetchTransferCandidates();
     }, [refetchTransferCandidates]),
   );
-
-  const categories = categoriesData ?? [];
 
   const filterBadgeCount = countActiveFilters(activeFilters);
   const hasActiveFilter = Boolean(debouncedSearch) || filterBadgeCount > 0 || Boolean(statementFileId);
@@ -391,6 +348,11 @@ export default function TransactionsScreen() {
   );
 
   const sections = useMemo(() => groupByDate(transactions), [transactions]);
+
+  const categorizingTx = useMemo(
+    () => transactions.find((tx) => tx.id === categorizingId),
+    [transactions, categorizingId],
+  );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -442,17 +404,17 @@ export default function TransactionsScreen() {
     setShowCategoryPicker(true);
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!categorizingId) return;
     const txId = categorizingId;
     setCategorizingId(null);
     try {
       const { updateTransaction } = await import('../../../src/api/transactions');
-      await updateTransaction(txId, { category_id: category.id });
+      await updateTransaction(txId, { category_id: category?.id ?? null });
       refetch();
-      showToast('Categoría actualizada', 'success');
+      showToast(t('transactions.category_updated'), 'success');
     } catch {
-      showToast('Error al actualizar categoría', 'error');
+      showToast(t('transactions.category_update_error'), 'error');
     }
   }
 
@@ -703,7 +665,6 @@ export default function TransactionsScreen() {
         <FilterSheet
           visible={showFilterSheet}
           current={activeFilters}
-          categories={categories}
           onApply={(f) => {
             setActiveFilters(f);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
@@ -714,11 +675,11 @@ export default function TransactionsScreen() {
 
       {/* Category picker (for swipe-to-categorize) — mount only when open */}
       {showCategoryPicker && (
-        <CategoryPickerModal
-          visible={showCategoryPicker}
+        <CategoryPickerSheet
+          visible
           onClose={() => { setShowCategoryPicker(false); setCategorizingId(null); }}
           onSelect={handleCategorySelect}
-          categories={categories}
+          selectedId={categorizingTx?.category?.id ?? null}
         />
       )}
 
@@ -879,6 +840,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.55,
+    textTransform: 'uppercase',
     color: '#64748b',
     marginBottom: 8,
     marginTop: 4,
@@ -919,17 +881,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   applyBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 20, color: '#ffffff' },
-  // Category picker rows
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  categoryRowActive: { backgroundColor: '#e0e7ff' },
-  categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
-  categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
-  checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
 });

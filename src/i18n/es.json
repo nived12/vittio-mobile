@@ -223,7 +223,10 @@
       "amountRange": "Rango de monto",
       "minAmount": "Monto mínimo",
       "maxAmount": "Monto máximo",
-      "apply": "Mostrar {{count}} transacciones"
+      "apply": "Mostrar {{count}} transacciones",
+      "allCategories": "Todas las categorías",
+      "allTypes": "Todos",
+      "applyButton": "Aplicar"
     },
     "empty": {
       "noTransactions": {
@@ -289,7 +292,12 @@
       "adjustments_label": "Ajustes",
       "count": "1 artículo",
       "count_plural": "{{count}} artículos"
-    }
+    },
+    "concept_placeholder": "Más detalles...",
+    "merchant_placeholder": "Walmart, Cinépolis...",
+    "reference_placeholder": "Folio, número de orden...",
+    "category_updated": "Categoría actualizada",
+    "category_update_error": "No se pudo actualizar la categoría"
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
@@ -655,7 +663,9 @@
     "and": "y",
     "offline": "Sin conexión",
     "offlineSubtitle": "Mostrando datos guardados",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "enabled": "Activada",
+    "disabled": "Desactivada"
   },
   "statement_files": {
     "title": "Estados de cuenta",
@@ -761,7 +771,8 @@
         "title": "Está tardando mucho",
         "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
       }
-    }
+    },
+    "file_hint": "PDF · máx 10 MB"
   },
   "navigation": {
     "home": "Inicio",
@@ -777,7 +788,7 @@
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
     "assistant": "Vittbot",
     "fab": {
-        "longPressHint": "Mantén presionado para más opciones",
+      "longPressHint": "Mantén presionado para más opciones",
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "newTransactionSubtitle": "Voz, foto o ingreso manual",

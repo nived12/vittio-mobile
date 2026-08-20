@@ -3,8 +3,6 @@ import {
   ActionSheetIOS,
   ActivityIndicator,
   Alert,
-  FlatList,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -19,15 +17,15 @@ import { ChevronRight, FileText } from 'lucide-react-native';
 import { CaretLeft, DotsThreeOutline } from 'phosphor-react-native';
 import * as LucideIcons from 'lucide-react-native';
 import { format, parseISO } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { useTransaction, useDeleteTransaction, useUpdateTransaction } from '../../../../src/hooks/useTransactions';
-import { useCategories } from '../../../../src/hooks/useCategories';
 import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { getCategoryColor } from '../../../../src/utils/categoryColors';
-import type { Category } from '../../../../src/api/categories';
+import { CategoryPickerSheet, type CategorySelection } from '../../../../src/components/modals/CategoryPickerSheet';
 
 // ── Icon resolver ──────────────────────────────────────────────────────────
 
@@ -54,59 +52,6 @@ function getTypeBadge(type: string, isDark: boolean, t: (k: string) => string): 
   return map[type] ?? (isDark ? { bg: 'rgba(255,255,255,0.06)', text: '#94a3b8', label: type } : { bg: '#f1f5f9', text: '#334155', label: type });
 }
 
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
-interface CategoryPickerProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (category: Category) => void;
-  categories: Category[];
-  selectedId?: number | null;
-}
-
-function CategoryPickerModal({ visible, onClose, onSelect, categories, selectedId }: CategoryPickerProps) {
-  const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
-  const surface = isDark ? theme.surface : '#ffffff';
-  const textPrimary = isDark ? theme.textPrimary : '#0f172a';
-  const borderCol = isDark ? theme.border : '#e2e8f0';
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.modalContainer, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-        <View style={[styles.categorySheet, { paddingBottom: insets.bottom + 16, backgroundColor: surface }]}>
-          <View style={[styles.sheetHandle, { backgroundColor: borderCol }]} />
-          <Text style={[styles.sheetTitle, { color: textPrimary }]}>Categoría</Text>
-          <FlatList
-            data={categories}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[styles.categoryRow, item.id === selectedId && styles.categoryRowActive]}
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <Text style={[styles.categoryRowText, { color: textPrimary }, item.id === selectedId && styles.categoryRowTextActive]}>
-                  {item.name}
-                </Text>
-                {item.id === selectedId && <View style={styles.checkDot} />}
-              </TouchableOpacity>
-            )}
-            style={{ maxHeight: 360 }}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 // ── Screen ─────────────────────────────────────────────────────────────────
 
 export default function TransactionDetailScreen() {
@@ -130,8 +75,6 @@ export default function TransactionDetailScreen() {
   const { data: tx, isLoading, isError } = useTransaction(txId);
   const deleteMutation = useDeleteTransaction();
   const updateMutation = useUpdateTransaction(txId);
-  const { data: categoriesData } = useCategories();
-  const categories = categoriesData ?? [];
 
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
 
@@ -208,15 +151,15 @@ export default function TransactionDetailScreen() {
     );
   }
 
-  async function handleCategorySelect(category: Category) {
+  async function handleCategorySelect(category: CategorySelection) {
     if (!tx) return;
     // Optimistic update not needed — react-query setQueryData after success is sufficient
     try {
-      await updateMutation.mutateAsync({ category_id: category.id });
+      await updateMutation.mutateAsync({ category_id: category?.id ?? null });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
-      showToast('Categoría actualizada', 'success');
+      showToast(t('transactions.category_updated'), 'success');
     } catch {
-      showToast('Error al actualizar categoría', 'error');
+      showToast(t('transactions.category_update_error'), 'error');
     }
   }
 
@@ -292,7 +235,11 @@ export default function TransactionDetailScreen() {
         '#94a3b8';
 
   const typeBadge = getTypeBadge(tx.transaction_type, isDark, t);
-  const formattedDate = format(parseISO(tx.date), 'MMMM d, yyyy');
+  const formattedDate = format(
+    parseISO(tx.date),
+    locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy',
+    { locale: locale === 'es' ? es : enUS },
+  );
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
@@ -311,7 +258,7 @@ export default function TransactionDetailScreen() {
           style={styles.moreBtn}
           onPress={handleMoreOptions}
           accessibilityRole="button"
-          accessibilityLabel="Más opciones"
+          accessibilityLabel={t('transactionDetail.moreOptions')}
         >
           <DotsThreeOutline size={22} color="#475569" weight="regular" />
         </TouchableOpacity>
@@ -439,14 +386,14 @@ export default function TransactionDetailScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Category picker modal */}
-      <CategoryPickerModal
-        visible={showCategoryPicker}
-        onClose={() => setShowCategoryPicker(false)}
-        onSelect={handleCategorySelect}
-        categories={categories}
-        selectedId={tx.category?.id ?? null}
-      />
+      {showCategoryPicker && (
+        <CategoryPickerSheet
+          visible
+          onClose={() => setShowCategoryPicker(false)}
+          onSelect={handleCategorySelect}
+          selectedId={tx.category?.id ?? null}
+        />
+      )}
 
     </View>
   );
@@ -531,42 +478,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   deleteBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 20, color: '#ffffff' },
-  // ── Category picker ─────────────────────────────────────────────────────
-  modalContainer: { flex: 1, justifyContent: 'flex-end' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
-  categorySheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-    maxHeight: 480,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#e2e8f0',
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    lineHeight: 22,
-    color: '#0f172a',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  categoryRowActive: { backgroundColor: '#e0e7ff' },
-  categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
-  categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
-  checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
 });

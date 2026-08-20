@@ -223,7 +223,10 @@
       "amountRange": "Amount Range",
       "minAmount": "Min amount",
       "maxAmount": "Max amount",
-      "apply": "Show {{count}} transactions"
+      "apply": "Show {{count}} transactions",
+      "allCategories": "All categories",
+      "allTypes": "All",
+      "applyButton": "Apply"
     },
     "empty": {
       "noTransactions": {
@@ -289,7 +292,12 @@
       "adjustments_label": "Adjustments",
       "count": "1 item",
       "count_plural": "{{count}} items"
-    }
+    },
+    "concept_placeholder": "More details...",
+    "merchant_placeholder": "Walmart, Cinemark...",
+    "reference_placeholder": "Folio, order number...",
+    "category_updated": "Category updated",
+    "category_update_error": "Couldn't update the category"
   },
   "bank_accounts": {
     "add_title": "New Account",
@@ -655,7 +663,9 @@
     "and": "and",
     "offline": "You're offline",
     "offlineSubtitle": "Showing cached data",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "enabled": "On",
+    "disabled": "Off"
   },
   "statement_files": {
     "title": "Statements",
@@ -761,7 +771,8 @@
         "title": "This is taking a while",
         "body": "We're still processing it. Check Statements in a few minutes."
       }
-    }
+    },
+    "file_hint": "PDF · max 10 MB"
   },
   "navigation": {
     "home": "Home",
@@ -777,7 +788,7 @@
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
     "assistant": "Vittbot",
     "fab": {
-        "longPressHint": "Press and hold for more options",
+      "longPressHint": "Press and hold for more options",
       "cancel": "Cancel",
       "newTransaction": "New transaction",
       "newTransactionSubtitle": "Voice, photo, or manual entry",

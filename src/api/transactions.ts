@@ -107,7 +107,9 @@ export type CreateTransactionBody = {
   transaction_items_attributes?: TransactionItemAttribute[];
 };
 
-export type UpdateTransactionBody = Partial<CreateTransactionBody> & {
+// category_id is intersected out and re-declared: clearing a category sends
+// null, which `Partial<CreateTransactionBody> & { … }` would narrow away.
+export type UpdateTransactionBody = Omit<Partial<CreateTransactionBody>, 'category_id'> & {
   category_id?: number | null;
 };
 

@@ -648,7 +648,11 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
 
   // ── Date display ──
   const dateLocale = locale === 'es' ? es : enUS;
-  const dateDisplay = format(date, "d 'de' MMMM 'de' yyyy", { locale: dateLocale });
+  const dateDisplay = format(
+    date,
+    locale === 'es' ? "d 'de' MMMM 'de' yyyy" : 'MMMM d, yyyy',
+    { locale: dateLocale },
+  );
 
   // ── Category display ──
   const categoryDisplay = useMemo(() => {
@@ -949,7 +953,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
             )}
 
             {/* Fields */}
-            <Text style={[styles.sectionLabel, { color: textSecondary }]}>DETALLES</Text>
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('transactions.details_section')}</Text>
 
             {/* Description */}
             <View style={styles.fieldBlock}>
@@ -1073,7 +1077,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                 value={concept}
                 onChangeText={setConcept}
-                placeholder="Más detalles..."
+                placeholder={t('transactions.concept_placeholder')}
                 placeholderTextColor="#94a3b8"
                 returnKeyType="next"
               />
@@ -1089,7 +1093,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                   const trimmed = merchant.trim();
                   if (trimmed) setCommittedMerchant(trimmed);
                 }}
-                placeholder="Walmart, Cinépolis..."
+                placeholder={t('transactions.merchant_placeholder')}
                 placeholderTextColor="#94a3b8"
                 returnKeyType="next"
               />
@@ -1101,7 +1105,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 style={[styles.fieldInput, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
                 value={reference}
                 onChangeText={setReference}
-                placeholder="Folio, número de orden..."
+                placeholder={t('transactions.reference_placeholder')}
                 placeholderTextColor="#94a3b8"
                 returnKeyType="done"
                 onSubmitEditing={handleSave}

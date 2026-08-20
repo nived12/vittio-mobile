@@ -23,6 +23,7 @@ import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
 import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
+import { TrackingSummaryCard } from '../../../../src/components/ui/TrackingSummaryCard';
 
 function formatCurrency(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }).format(amount);
@@ -206,6 +207,14 @@ export default function SavingDetailScreen() {
               </View>
             </View>
           )}
+
+          <TrackingSummaryCard
+            variant="saving"
+            categories={saving.categories}
+            bankAccounts={saving.bank_accounts}
+            autoSync={saving.auto_sync_transactions}
+            calc={saving.calculation_settings}
+          />
 
           {/* Notes */}
           {saving.notes && (
