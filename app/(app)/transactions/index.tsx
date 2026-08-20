@@ -125,13 +125,14 @@ function countActiveFilters(f: ActiveFilters): number {
 interface FilterSheetProps {
   visible: boolean;
   current: ActiveFilters;
-  categories: Category[];
   onApply: (filters: ActiveFilters) => void;
   onClose: () => void;
 }
 
-function FilterSheet({ visible, current, categories, onApply, onClose }: FilterSheetProps) {
+function FilterSheet({ visible, current, onApply, onClose }: FilterSheetProps) {
   const { t } = useTranslation();
+  // Same react-query cache the picker sheet reads, so this is one fetch, not two.
+  const { data: categories = [] } = useCategories();
   const insets = useSafeAreaInsets();
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
@@ -145,7 +146,7 @@ function FilterSheet({ visible, current, categories, onApply, onClose }: FilterS
   const [txType, setTxType] = useState<ActiveFilters['txType']>(current.txType);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
-  const selectedCategory = categories.find((c) => c.id === categoryId);
+  const selectedCategory = categories.find((c: Category) => c.id === categoryId);
 
   function handleApply() {
     onApply({ period, categoryId, txType });
@@ -292,7 +293,6 @@ export default function TransactionsScreen() {
 
   const ready = useDeferredReady();
 
-  const { data: categoriesData } = useCategories();
   const { activeCount: recurringActiveCount, detectedCount: recurringDetectedCount } = useRecurringSummary({ enabled: ready });
   const { data: transferCandidatePage, refetch: refetchTransferCandidates } = useTransferCandidates();
   const transferCandidateCount = transferCandidatePage?.total ?? 0;
@@ -305,8 +305,6 @@ export default function TransactionsScreen() {
       refetchTransferCandidates();
     }, [refetchTransferCandidates]),
   );
-
-  const categories = categoriesData ?? [];
 
   const filterBadgeCount = countActiveFilters(activeFilters);
   const hasActiveFilter = Boolean(debouncedSearch) || filterBadgeCount > 0 || Boolean(statementFileId);
@@ -667,7 +665,6 @@ export default function TransactionsScreen() {
         <FilterSheet
           visible={showFilterSheet}
           current={activeFilters}
-          categories={categories}
           onApply={(f) => {
             setActiveFilters(f);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
@@ -884,17 +881,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   applyBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 20, color: '#ffffff' },
-  // Category picker rows
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  categoryRowActive: { backgroundColor: '#e0e7ff' },
-  categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
-  categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
-  checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
 });

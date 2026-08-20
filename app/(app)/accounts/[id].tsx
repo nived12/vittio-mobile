@@ -37,8 +37,6 @@ import { SkeletonBox } from '../../../src/components/ui/SkeletonLoader';
 import type { Transaction } from '../../../src/api/transactions';
 import { CategoryPickerSheet, type CategorySelection } from '../../../src/components/modals/CategoryPickerSheet';
 
-// ── Category Picker Modal ─────────────────────────────────────────────────
-
 // ── Date grouping ──────────────────────────────────────────────────────────
 
 interface Section { title: string; data: Transaction[]; dailyTotal: number }
@@ -591,42 +589,4 @@ const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#f1f5f9' },
   footer: { height: 40, alignItems: 'center', justifyContent: 'center' },
   allCaughtUp: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#94a3b8' },
-  // ── Category picker ───────────────────────────────────────────────────────
-  modalContainer: { flex: 1, justifyContent: 'flex-end' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.4)' },
-  categorySheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-    maxHeight: 480,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#e2e8f0',
-    alignSelf: 'center',
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    lineHeight: 22,
-    color: '#0f172a',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  categoryRowActive: { backgroundColor: '#e0e7ff' },
-  categoryRowText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 20, color: '#0f172a' },
-  categoryRowTextActive: { color: '#4f46e5', fontFamily: 'Inter_500Medium' },
-  checkDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4f46e5' },
 });
