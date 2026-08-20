@@ -1,7 +1,7 @@
 # Vittio Mobile
 
 React Native + Expo app for Vittio, a personal finance app for Mexico. Talks to the Rails API
-in [`bank_statements_app`](../bank_statements_app), a sibling repo — see that repo for the API
+in [`bank_statements_app`](https://github.com/nived12/bank_statements_app), a sibling repo — see that repo for the API
 itself.
 
 ## Stack
