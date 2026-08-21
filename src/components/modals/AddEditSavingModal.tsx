@@ -52,12 +52,14 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
 
   const [name, setName]                   = useState('');
   const [targetAmount, setTargetAmount]   = useState('');
-  const [currentAmount, setCurrentAmount] = useState('');
+  const [openingBalance, setOpeningBalance] = useState('');
+  const [openingBalanceDate, setOpeningBalanceDate] = useState<Date>(new Date());
   const [color, setColor]                 = useState(COLORS[0]);
   const [status, setStatus]               = useState<'active' | 'paused'>('active');
   const [notes, setNotes]                 = useState('');
   const [targetDate, setTargetDate]       = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showOpeningBalanceDatePicker, setShowOpeningBalanceDatePicker] = useState(false);
   const [errors, setErrors]               = useState<Record<string, string>>({});
   const [isSaving, setIsSaving]           = useState(false);
 
@@ -78,7 +80,8 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
       if (saving) {
         setName(saving.name);
         setTargetAmount(String(saving.target_amount));
-        setCurrentAmount(String(saving.current_amount));
+        setOpeningBalance(String(saving.opening_balance));
+        setOpeningBalanceDate(new Date(saving.opening_balance_date));
         setColor(saving.color ?? COLORS[0]);
         setStatus(saving.status === 'paused' ? 'paused' : 'active');
         setNotes(saving.notes ?? '');
@@ -90,7 +93,8 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
       } else {
         setName(template?.name ?? '');
         setTargetAmount(template?.suggested_target_amount ? String(template.suggested_target_amount) : '');
-        setCurrentAmount('0');
+        setOpeningBalance('0');
+        setOpeningBalanceDate(new Date());
         setColor(template?.color ?? COLORS[0]);
         setStatus('active'); setNotes(''); setTargetDate(null);
         setCategoryIds([]); setBankAccountIds([]); setAutoSync(false);
@@ -125,7 +129,8 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
     const body = {
       name: name.trim(),
       target_amount: parseFloat(targetAmount.replace(/,/g, '')),
-      current_amount: parseFloat((currentAmount || '0').replace(/,/g, '')),
+      opening_balance: parseFloat((openingBalance || '0').replace(/,/g, '')),
+      opening_balance_date: toISODate(openingBalanceDate),
       color,
       status,
       notes: notes.trim() || null,
@@ -201,12 +206,40 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
             <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.currentAmountLabel')}</Text>
             <TextInput
               style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-              value={currentAmount}
-              onChangeText={setCurrentAmount}
+              value={openingBalance}
+              onChangeText={setOpeningBalance}
               placeholder="0.00"
               placeholderTextColor="#94a3b8"
               keyboardType="decimal-pad"
             />
+          </View>
+
+          {/* Opening balance date */}
+          <View style={s.field}>
+            <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.openingBalanceDateLabel')}</Text>
+            <TouchableOpacity
+              style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]}
+              onPress={() => setShowOpeningBalanceDatePicker(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={[s.inputText, { color: textPrimary }]}>
+                {formatDisplayDate(openingBalanceDate, locale)}
+              </Text>
+              <Calendar size={16} color="#94a3b8" />
+            </TouchableOpacity>
+            <Text style={[s.helpText, { color: textSecondary }]}>{t('savings.addModal.openingBalanceDateHint')}</Text>
+            {showOpeningBalanceDatePicker && (
+              <DateTimePicker
+                value={openingBalanceDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                maximumDate={new Date()}
+                onChange={(_e, d) => {
+                  setShowOpeningBalanceDatePicker(Platform.OS === 'ios');
+                  if (d) setOpeningBalanceDate(d);
+                }}
+              />
+            )}
           </View>
 
           {/* Target date */}
@@ -352,6 +385,7 @@ const s = StyleSheet.create({
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#e11d48', marginTop: 4 },
+  helpText: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 4 },
   swatches: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   swatch: { width: 32, height: 32, borderRadius: 16 },
   swatchSelected: { borderWidth: 3 },

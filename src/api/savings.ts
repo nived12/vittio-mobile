@@ -8,6 +8,14 @@ export interface Saving {
   name: string;
   target_amount: number;
   current_amount: number;
+  opening_balance: number;
+  opening_balance_date: string;
+  /**
+   * The date current_amount is actually true as of — opening_balance_date, or the newest
+   * counted transaction. Detail responses only: it costs a query per row, so the list
+   * endpoint omits it.
+   */
+  balance_as_of?: string;
   target_date: string | null;
   status: 'active' | 'completed' | 'paused' | 'archived';
   color: string;
@@ -28,7 +36,8 @@ export interface Saving {
 export type CreateSavingBody = {
   name: string;
   target_amount: number;
-  current_amount?: number;
+  opening_balance?: number;
+  opening_balance_date?: string;
   target_date?: string | null;
   color?: string;
   status?: string;

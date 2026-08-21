@@ -811,6 +811,7 @@
   },
   "savings": {
     "title": "Savings",
+    "balanceAsOf": "as of {{date}}",
     "calcOptions": {
       "positive": "Add to savings",
       "negative": "Subtract",
@@ -873,6 +874,8 @@
       "targetAmountLabel": "TARGET AMOUNT",
       "currentAmountLabel": "ALREADY SAVED",
       "currentAmountHint": "Enter 0 if starting fresh",
+      "openingBalanceDateLabel": "DATE OF THIS AMOUNT",
+      "openingBalanceDateHint": "Transactions after this date update your total automatically",
       "targetDateLabel": "TARGET DATE (optional)",
       "targetDatePlaceholder": "Set a deadline...",
       "colorLabel": "COLOR",
@@ -896,6 +899,7 @@
   },
   "debts": {
     "title": "Debts",
+    "balanceAsOf": "as of {{date}}",
     "calcOptions": {
       "positive": "Reduce debt",
       "negative": "Increase debt",
@@ -960,6 +964,8 @@
       "originalAmountHint": "Total amount when you took on this debt",
       "currentBalanceLabel": "CURRENT BALANCE",
       "currentBalanceHint": "What you currently owe",
+      "openingBalanceDateLabel": "DATE OF THIS BALANCE",
+      "openingBalanceDateHint": "Payments after this date update your balance automatically",
       "interestRateLabel": "INTEREST RATE (optional)",
       "minimumPaymentLabel": "MINIMUM PAYMENT (optional)",
       "dueDayLabel": "DUE DAY OF MONTH (optional)",

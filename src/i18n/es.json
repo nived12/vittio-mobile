@@ -811,6 +811,7 @@
   },
   "savings": {
     "title": "Ahorros",
+    "balanceAsOf": "al {{date}}",
     "calcOptions": {
       "positive": "Sumar al ahorro",
       "negative": "Restar",
@@ -873,6 +874,8 @@
       "targetAmountLabel": "MONTO META",
       "currentAmountLabel": "YA AHORRADO",
       "currentAmountHint": "Ingresa 0 si estás empezando desde cero",
+      "openingBalanceDateLabel": "FECHA DEL MONTO ACTUAL",
+      "openingBalanceDateHint": "Las transacciones después de esta fecha actualizan tu total automáticamente",
       "targetDateLabel": "FECHA LÍMITE (opcional)",
       "targetDatePlaceholder": "Establecer una fecha...",
       "colorLabel": "COLOR",
@@ -896,6 +899,7 @@
   },
   "debts": {
     "title": "Deudas",
+    "balanceAsOf": "al {{date}}",
     "calcOptions": {
       "positive": "Reducir deuda",
       "negative": "Aumentar deuda",
@@ -960,6 +964,8 @@
       "originalAmountHint": "Monto total cuando adquiriste esta deuda",
       "currentBalanceLabel": "BALANCE ACTUAL",
       "currentBalanceHint": "Lo que actualmente debes",
+      "openingBalanceDateLabel": "FECHA DEL SALDO ACTUAL",
+      "openingBalanceDateHint": "Los pagos después de esta fecha actualizan tu saldo automáticamente",
       "interestRateLabel": "TASA DE INTERÉS (opcional)",
       "minimumPaymentLabel": "PAGO MÍNIMO (opcional)",
       "dueDayLabel": "DÍA DE PAGO DEL MES (opcional)",

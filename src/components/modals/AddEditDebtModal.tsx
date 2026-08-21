@@ -52,7 +52,8 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
 
   const [name, setName]                       = useState('');
   const [originalAmount, setOriginalAmount]   = useState('');
-  const [currentBalance, setCurrentBalance]   = useState('');
+  const [openingBalance, setOpeningBalance]   = useState('');
+  const [openingBalanceDate, setOpeningBalanceDate] = useState<Date>(new Date());
   const [interestRate, setInterestRate]       = useState('');
   const [minimumPayment, setMinimumPayment]   = useState('');
   const [dueDay, setDueDay]                   = useState('');
@@ -61,6 +62,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
   const [notes, setNotes]                     = useState('');
   const [targetPayoffDate, setTargetPayoffDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker]   = useState(false);
+  const [showOpeningBalanceDatePicker, setShowOpeningBalanceDatePicker] = useState(false);
   const [errors, setErrors]                   = useState<Record<string, string>>({});
   const [isSaving, setIsSaving]               = useState(false);
 
@@ -81,7 +83,8 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
       if (debt) {
         setName(debt.name);
         setOriginalAmount(String(debt.original_amount));
-        setCurrentBalance(String(debt.current_balance));
+        setOpeningBalance(String(debt.opening_balance));
+        setOpeningBalanceDate(new Date(debt.opening_balance_date));
         setInterestRate(debt.interest_rate != null ? String(debt.interest_rate) : '');
         setMinimumPayment(debt.minimum_payment != null ? String(debt.minimum_payment) : '');
         setDueDay(debt.due_day_of_month != null ? String(debt.due_day_of_month) : '');
@@ -94,7 +97,8 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
         setAutoSync(Boolean(debt.auto_sync_transactions));
         setCalc(mergeCalc('debt', debt.calculation_settings));
       } else {
-        setName(template?.name ?? ''); setOriginalAmount(''); setCurrentBalance('');
+        setName(template?.name ?? ''); setOriginalAmount(''); setOpeningBalance('');
+        setOpeningBalanceDate(new Date());
         setInterestRate(template?.suggested_interest_rate != null ? String(template.suggested_interest_rate) : '');
         setMinimumPayment(''); setDueDay('');
         setColor(template?.color ?? COLORS[3]); setStatus('active'); setNotes(''); setTargetPayoffDate(null);
@@ -117,7 +121,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
     if (!name.trim()) errs.name = t('debts.addModal.errors.nameRequired');
     const oa = parseFloat(originalAmount.replace(/,/g, ''));
     if (!originalAmount || isNaN(oa) || oa <= 0) errs.originalAmount = t('debts.addModal.errors.originalAmountPositive');
-    const cb = parseFloat((currentBalance || '0').replace(/,/g, ''));
+    const cb = parseFloat((openingBalance || '0').replace(/,/g, ''));
     if (isNaN(cb)) errs.currentBalance = t('debts.addModal.errors.currentBalanceRequired');
     if (!isNaN(oa) && !isNaN(cb) && cb > oa) errs.currentBalance = t('debts.addModal.errors.currentBalanceExceedsOriginal');
     const dd = parseInt(dueDay, 10);
@@ -135,7 +139,8 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
     const body = {
       name: name.trim(),
       original_amount: parseFloat(originalAmount.replace(/,/g, '')),
-      current_balance: parseFloat((currentBalance || '0').replace(/,/g, '')),
+      opening_balance: parseFloat((openingBalance || '0').replace(/,/g, '')),
+      opening_balance_date: toISODate(openingBalanceDate),
       interest_rate: interestRate ? parseFloat(interestRate.replace(/,/g, '')) : null,
       minimum_payment: minimumPayment ? parseFloat(minimumPayment.replace(/,/g, '')) : null,
       due_day_of_month: dueDay ? parseInt(dueDay, 10) : null,
@@ -195,9 +200,26 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
 
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.currentBalanceLabel')}</Text>
-            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.currentBalance && s.inputError]} value={currentBalance}
-              onChangeText={setCurrentBalance} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.currentBalance && s.inputError]} value={openingBalance}
+              onChangeText={setOpeningBalance} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
             {errors.currentBalance && <Text style={s.errorText}>{errors.currentBalance}</Text>}
+          </View>
+
+          <View style={s.field}>
+            <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.openingBalanceDateLabel')}</Text>
+            <TouchableOpacity style={[s.input, s.dateRow, { backgroundColor: inputBg, borderColor: borderCol }]} onPress={() => setShowOpeningBalanceDatePicker(true)} activeOpacity={0.7}>
+              <Text style={[s.inputText, { color: textPrimary }]}>
+                {formatDisplayDate(openingBalanceDate, locale)}
+              </Text>
+              <Calendar size={16} color="#94a3b8" />
+            </TouchableOpacity>
+            <Text style={[s.helpText, { color: textSecondary }]}>{t('debts.addModal.openingBalanceDateHint')}</Text>
+            {showOpeningBalanceDatePicker && (
+              <DateTimePicker value={openingBalanceDate} mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                maximumDate={new Date()}
+                onChange={(_e, d) => { setShowOpeningBalanceDatePicker(Platform.OS === 'ios'); if (d) setOpeningBalanceDate(d); }} />
+            )}
           </View>
 
           <View style={s.field}>
@@ -320,6 +342,7 @@ const s = StyleSheet.create({
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   dateRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   errorText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#e11d48', marginTop: 4 },
+  helpText: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 4 },
   swatches: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   swatch: { width: 32, height: 32, borderRadius: 16 },
   swatchSelected: { borderWidth: 3 },

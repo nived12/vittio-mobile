@@ -8,6 +8,14 @@ export interface Debt {
   name: string;
   original_amount: number;
   current_balance: number;
+  opening_balance: number;
+  opening_balance_date: string;
+  /**
+   * The date current_balance is actually true as of — opening_balance_date, or the newest
+   * counted transaction. Detail responses only: it costs a query per row, so the list
+   * endpoint omits it.
+   */
+  balance_as_of?: string;
   interest_rate: number | null;
   minimum_payment: number | null;
   status: 'active' | 'paid_off' | 'paused' | 'archived';
@@ -32,7 +40,8 @@ export interface Debt {
 export type CreateDebtBody = {
   name: string;
   original_amount: number;
-  current_balance: number;
+  opening_balance: number;
+  opening_balance_date?: string;
   interest_rate?: number | null;
   minimum_payment?: number | null;
   due_day_of_month?: number | null;

@@ -24,19 +24,22 @@ import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
 import { TrackingSummaryCard } from '../../../../src/components/ui/TrackingSummaryCard';
+import { formatDisplayDate } from '../../../../src/utils/format';
 
 function formatCurrency(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }).format(amount);
 }
 
-function StatCard({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+function StatCard({ label, value, valueColor, caption }: { label: string; value: string; valueColor?: string; caption?: string }) {
   const { theme: t2 } = useTheme();
   const cardSurface = t2.surface;
   const cardBorder  = t2.border;
+  const captionCol  = t2.textSecondary;
   return (
     <View style={[s.statCard, { backgroundColor: cardSurface, borderColor: cardBorder }]}>
       <Text style={s.statLabel} numberOfLines={1}>{label}</Text>
       <Text style={[s.statValue, valueColor ? { color: valueColor } : {}]} numberOfLines={1}>{value}</Text>
+      {caption ? <Text style={[s.statCaption, { color: captionCol }]} numberOfLines={1}>{caption}</Text> : null}
     </View>
   );
 }
@@ -162,7 +165,12 @@ export default function DebtDetailScreen() {
 
           {/* Stats */}
           <View style={s.statsGrid}>
-            <StatCard label={t('debts.fields.currentBalance')} value={formatCurrency(debt.current_balance, displayLocale)} valueColor="#e11d48" />
+            <StatCard
+              label={t('debts.fields.currentBalance')}
+              value={formatCurrency(debt.current_balance, displayLocale)}
+              valueColor="#e11d48"
+              caption={debt.balance_as_of ? t('debts.balanceAsOf', { date: formatDisplayDate(debt.balance_as_of, locale) }) : undefined}
+            />
             <StatCard label={t('debts.fields.originalAmount')} value={formatCurrency(debt.original_amount, displayLocale)} />
             <StatCard label={t('debts.fields.amountPaid')} value={formatCurrency(debt.amount_paid, displayLocale)} valueColor="#10b981" />
             <StatCard label={t('debts.fields.interestRate')} value={debt.interest_rate != null ? `${debt.interest_rate}%` : '—'} />
@@ -249,6 +257,7 @@ const s = StyleSheet.create({
   statCard: { flex: 1, minWidth: '45%', backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', padding: 14 },
   statLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748b', marginBottom: 4 },
   statValue: { fontFamily: 'Inter_600SemiBold', fontSize: 17, color: '#0f172a', fontVariant: ['tabular-nums'] },
+  statCaption: { fontFamily: 'Inter_400Regular', fontSize: 10, marginTop: 2 },
   card: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', padding: 16 },
   cardTitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748b', marginBottom: 4 },
   cardValue: { fontFamily: 'Inter_700Bold', fontSize: 22, color: '#0f172a', fontVariant: ['tabular-nums'] },
