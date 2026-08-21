@@ -25,7 +25,7 @@ import type { SavingTemplate } from '../../api/templates';
 import type { CalculationSettings } from '../../api/financeShared';
 import { calcToBody, findCategoryIdByName, mergeCalc } from '../../api/financeShared';
 import { AdvancedFinanceSettings } from './AdvancedFinanceSettings';
-import { formatDisplayDate, toISODate } from '../../utils/format';
+import { formatDisplayDate, isAfterToday, parseISODate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
@@ -81,7 +81,7 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
         setName(saving.name);
         setTargetAmount(String(saving.target_amount));
         setOpeningBalance(String(saving.opening_balance));
-        setOpeningBalanceDate(new Date(saving.opening_balance_date));
+        setOpeningBalanceDate(parseISODate(saving.opening_balance_date));
         setColor(saving.color ?? COLORS[0]);
         setStatus(saving.status === 'paused' ? 'paused' : 'active');
         setNotes(saving.notes ?? '');
@@ -116,6 +116,9 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
     if (!name.trim()) errs.name = t('savings.addModal.errors.nameRequired');
     const ta = parseFloat(targetAmount.replace(/,/g, ''));
     if (!targetAmount || isNaN(ta) || ta <= 0) errs.targetAmount = t('savings.addModal.errors.targetAmountPositive');
+    // The API rejects a future anchor; don't rely on the native picker's maximumDate,
+    // which is not enforced consistently across platforms.
+    if (isAfterToday(openingBalanceDate)) errs.openingBalanceDate = t('savings.addModal.errors.openingBalanceDateFuture');
     if (autoSync && categoryIds.length === 0) errs.autoSync = t('advancedSettings.errors.categoriesRequired');
     else if (autoSync && bankAccountIds.length === 0) errs.autoSync = t('advancedSettings.errors.bankAccountsRequired');
     setErrors(errs);
@@ -228,6 +231,7 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
               <Calendar size={16} color="#94a3b8" />
             </TouchableOpacity>
             <Text style={[s.helpText, { color: textSecondary }]}>{t('savings.addModal.openingBalanceDateHint')}</Text>
+            {errors.openingBalanceDate && <Text style={s.errorText}>{errors.openingBalanceDate}</Text>}
             {showOpeningBalanceDatePicker && (
               <DateTimePicker
                 value={openingBalanceDate}

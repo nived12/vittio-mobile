@@ -873,7 +873,7 @@
       "namePlaceholder": "e.g. Vacation Fund",
       "targetAmountLabel": "TARGET AMOUNT",
       "currentAmountLabel": "ALREADY SAVED",
-      "currentAmountHint": "Enter 0 if starting fresh",
+      "currentAmountHint": "How much you have saved as of the date below — 0 if starting fresh",
       "openingBalanceDateLabel": "DATE OF THIS AMOUNT",
       "openingBalanceDateHint": "Transactions after this date update your total automatically",
       "targetDateLabel": "TARGET DATE (optional)",
@@ -893,7 +893,8 @@
         "targetAmountRequired": "Target amount is required",
         "targetAmountPositive": "Target amount must be greater than 0",
         "currentAmountExceedsTarget": "Current amount cannot exceed target",
-        "targetDatePast": "Target date must be in the future"
+        "targetDatePast": "Target date must be in the future",
+        "openingBalanceDateFuture": "That date can't be in the future"
       }
     }
   },
@@ -963,7 +964,7 @@
       "originalAmountLabel": "ORIGINAL AMOUNT",
       "originalAmountHint": "Total amount when you took on this debt",
       "currentBalanceLabel": "CURRENT BALANCE",
-      "currentBalanceHint": "What you currently owe",
+      "currentBalanceHint": "What you owe as of the date below",
       "openingBalanceDateLabel": "DATE OF THIS BALANCE",
       "openingBalanceDateHint": "Payments after this date update your balance automatically",
       "interestRateLabel": "INTEREST RATE (optional)",
@@ -987,10 +988,11 @@
         "nameRequired": "Name is required",
         "originalAmountRequired": "Original amount is required",
         "originalAmountPositive": "Original amount must be greater than 0",
-        "currentBalanceRequired": "Current balance is required",
-        "currentBalanceExceedsOriginal": "Current balance cannot exceed original amount",
         "targetDatePast": "Target payoff date must be in the future",
-        "dueDayRange": "Due day must be between 1 and 31"
+        "dueDayRange": "Due day must be between 1 and 31",
+        "openingBalanceRequired": "Current balance is required",
+        "openingBalanceExceedsOriginal": "Current balance cannot exceed original amount",
+        "openingBalanceDateFuture": "That date can't be in the future"
       }
     }
   },

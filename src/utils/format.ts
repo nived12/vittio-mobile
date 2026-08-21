@@ -64,6 +64,22 @@ export function formatDisplayDate(d: Date | string, locale: string): string {
   return fmt.format(date);
 }
 
+/**
+ * Parses a `YYYY-MM-DD` API date as LOCAL midnight.
+ *
+ * `new Date('2026-08-20')` is parsed as UTC midnight, which in es-MX (UTC-6) is
+ * 19 Aug 18:00 local — a date picker seeded that way shows the previous day, and
+ * saving it back through toISODate() walks the date one day earlier on every edit.
+ */
+export function parseISODate(value: string): Date {
+  return new Date(`${value}T00:00:00`);
+}
+
+/** True when `d` falls on a later calendar day than today, in local time. */
+export function isAfterToday(d: Date): boolean {
+  return toISODate(d) > toISODate(new Date());
+}
+
 export function toISODate(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');

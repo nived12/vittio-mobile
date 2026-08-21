@@ -25,7 +25,7 @@ import type { DebtTemplate } from '../../api/templates';
 import type { CalculationSettings } from '../../api/financeShared';
 import { calcToBody, findCategoryIdByName, mergeCalc } from '../../api/financeShared';
 import { AdvancedFinanceSettings } from './AdvancedFinanceSettings';
-import { formatDisplayDate, toISODate } from '../../utils/format';
+import { formatDisplayDate, isAfterToday, parseISODate, toISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
@@ -84,7 +84,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
         setName(debt.name);
         setOriginalAmount(String(debt.original_amount));
         setOpeningBalance(String(debt.opening_balance));
-        setOpeningBalanceDate(new Date(debt.opening_balance_date));
+        setOpeningBalanceDate(parseISODate(debt.opening_balance_date));
         setInterestRate(debt.interest_rate != null ? String(debt.interest_rate) : '');
         setMinimumPayment(debt.minimum_payment != null ? String(debt.minimum_payment) : '');
         setDueDay(debt.due_day_of_month != null ? String(debt.due_day_of_month) : '');
@@ -122,8 +122,11 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
     const oa = parseFloat(originalAmount.replace(/,/g, ''));
     if (!originalAmount || isNaN(oa) || oa <= 0) errs.originalAmount = t('debts.addModal.errors.originalAmountPositive');
     const cb = parseFloat((openingBalance || '0').replace(/,/g, ''));
-    if (isNaN(cb)) errs.currentBalance = t('debts.addModal.errors.currentBalanceRequired');
-    if (!isNaN(oa) && !isNaN(cb) && cb > oa) errs.currentBalance = t('debts.addModal.errors.currentBalanceExceedsOriginal');
+    if (isNaN(cb)) errs.openingBalance = t('debts.addModal.errors.openingBalanceRequired');
+    if (!isNaN(oa) && !isNaN(cb) && cb > oa) errs.openingBalance = t('debts.addModal.errors.openingBalanceExceedsOriginal');
+    // The API rejects a future anchor; don't rely on the native picker's maximumDate,
+    // which is not enforced consistently across platforms.
+    if (isAfterToday(openingBalanceDate)) errs.openingBalanceDate = t('debts.addModal.errors.openingBalanceDateFuture');
     const dd = parseInt(dueDay, 10);
     if (dueDay && (isNaN(dd) || dd < 1 || dd > 31)) errs.dueDay = t('debts.addModal.errors.dueDayRange');
     if (autoSync && categoryIds.length === 0) errs.autoSync = t('advancedSettings.errors.categoriesRequired');
@@ -200,9 +203,9 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
 
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.currentBalanceLabel')}</Text>
-            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.currentBalance && s.inputError]} value={openingBalance}
+            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.openingBalance && s.inputError]} value={openingBalance}
               onChangeText={setOpeningBalance} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
-            {errors.currentBalance && <Text style={s.errorText}>{errors.currentBalance}</Text>}
+            {errors.openingBalance && <Text style={s.errorText}>{errors.openingBalance}</Text>}
           </View>
 
           <View style={s.field}>
@@ -214,6 +217,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
               <Calendar size={16} color="#94a3b8" />
             </TouchableOpacity>
             <Text style={[s.helpText, { color: textSecondary }]}>{t('debts.addModal.openingBalanceDateHint')}</Text>
+            {errors.openingBalanceDate && <Text style={s.errorText}>{errors.openingBalanceDate}</Text>}
             {showOpeningBalanceDatePicker && (
               <DateTimePicker value={openingBalanceDate} mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
