@@ -145,6 +145,48 @@ test("debts: reports links against the debt copy", async ({ page }) => {
   ).toBeVisible();
 });
 
+// Unlinking only ever happens on an update — re-anchoring forward releases the
+// transactions the retyped figure now covers. It is the case where the balance moves
+// DOWN without the user asking, so the wording is worth pinning.
+test("savings: reports what re-anchoring unlinked", async ({ page }) => {
+  const summary = { linked: 0, unlinked: 2, skipped: false };
+  // auto-sync with no categories or accounts is an invalid combination the edit form
+  // refuses to submit (AddEditSavingModal validates it), so the record under edit
+  // has it off — what is being asserted here is the response, not the request.
+  const editable = { ...savingFixture, auto_sync_transactions: false };
+  await page.route("**/*", async (route) => {
+    const method = route.request().method();
+    const { pathname } = new URL(route.request().url());
+    const json = (body: unknown, status = 200) =>
+      route.fulfill({
+        status,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify(body)
+      });
+
+    if (method === "GET" && pathname.endsWith("/api/v1/savings")) {
+      return json({ data: { savings: [editable] } });
+    }
+    if (method === "GET" && pathname.endsWith("/api/v1/savings/1")) {
+      return json({ data: { ...editable, balance_as_of: "2026-05-19" } });
+    }
+    if (method === "PATCH" && pathname.endsWith("/api/v1/savings/1")) {
+      return json({ data: { ...editable, backfill_summary: summary } });
+    }
+    return route.fallback();
+  });
+
+  await page.goto("/finances");
+  await page.getByText("Emergency Fund").first().click();
+  await page.getByText(/^(Edit|Editar)$/i).click();
+  await page.getByText(/^(Save Changes|Guardar Cambios)$/i).click();
+
+  await expect(
+    page.getByText(/We unlinked 2 transactions|Desvinculamos 2 transacciones/i)
+  ).toBeVisible();
+});
+
 test("no toast when the write linked nothing", async ({ page }) => {
   await stubCreate(page, "savings", { linked: 0, unlinked: 0, skipped: false });
 
