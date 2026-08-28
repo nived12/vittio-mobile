@@ -812,6 +812,11 @@
   "savings": {
     "title": "Ahorros",
     "balanceAsOf": "al {{date}}",
+    "backfilledToast": "Encontramos {{count}} transacción que ya coincidía y la vinculamos.",
+    "backfilledToast_plural": "Encontramos {{count}} transacciones que ya coincidían y las vinculamos.",
+    "unlinkedToast": "Desvinculamos {{count}} transacción que ahora forma parte de tu monto actualizado, para no contarla dos veces.",
+    "unlinkedToast_plural": "Desvinculamos {{count}} transacciones que ahora forman parte de tu monto actualizado, para no contarlas dos veces.",
+    "backfillSkippedToast": "Tienes demasiadas transacciones que coinciden para vincularlas automáticamente. Reduce las categorías o cuentas y guarda de nuevo.",
     "calcOptions": {
       "positive": "Sumar al ahorro",
       "negative": "Restar",
@@ -901,6 +906,11 @@
   "debts": {
     "title": "Deudas",
     "balanceAsOf": "al {{date}}",
+    "backfilledToast": "Encontramos {{count}} transacción que ya coincidía y la vinculamos.",
+    "backfilledToast_plural": "Encontramos {{count}} transacciones que ya coincidían y las vinculamos.",
+    "unlinkedToast": "Desvinculamos {{count}} transacción que ahora forma parte de tu saldo actualizado, para no contarla dos veces.",
+    "unlinkedToast_plural": "Desvinculamos {{count}} transacciones que ahora forman parte de tu saldo actualizado, para no contarlas dos veces.",
+    "backfillSkippedToast": "Tienes demasiadas transacciones que coinciden para vincularlas automáticamente. Reduce las categorías o cuentas y guarda de nuevo.",
     "calcOptions": {
       "positive": "Reducir deuda",
       "negative": "Aumentar deuda",

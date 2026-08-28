@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { showBackfillToast } from '../utils/backfillToast';
 import {
   createSaving,
   deleteSaving,
@@ -43,8 +44,9 @@ export function useCreateSaving() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateSavingBody) => createSaving(body),
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: savingKeys.list() });
+      showBackfillToast('savings', created.backfill_summary);
     },
   });
 }
@@ -54,8 +56,12 @@ export function useUpdateSaving(id: number) {
   return useMutation({
     mutationFn: (body: UpdateSavingBody) => updateSaving(id, body),
     onSuccess: (updated) => {
-      queryClient.setQueryData(savingKeys.detail(id), updated);
+      // backfill_summary describes this one write; it must not ride along into the
+      // persisted cache, where it would outlive the toast it belongs to.
+      const { backfill_summary: backfill, ...record } = updated;
+      queryClient.setQueryData(savingKeys.detail(id), record);
       queryClient.invalidateQueries({ queryKey: savingKeys.list() });
+      showBackfillToast('savings', backfill);
     },
   });
 }

@@ -812,6 +812,11 @@
   "savings": {
     "title": "Savings",
     "balanceAsOf": "as of {{date}}",
+    "backfilledToast": "We found {{count}} matching transaction already sitting there and linked it in.",
+    "backfilledToast_plural": "We found {{count}} matching transactions already sitting there and linked them in.",
+    "unlinkedToast": "We unlinked {{count}} transaction now covered by your updated amount, so it isn't counted twice.",
+    "unlinkedToast_plural": "We unlinked {{count}} transactions now covered by your updated amount, so they aren't counted twice.",
+    "backfillSkippedToast": "You have too many matching transactions for us to link automatically. Narrow the categories or accounts and save again.",
     "calcOptions": {
       "positive": "Add to savings",
       "negative": "Subtract",
@@ -901,6 +906,11 @@
   "debts": {
     "title": "Debts",
     "balanceAsOf": "as of {{date}}",
+    "backfilledToast": "We found {{count}} matching transaction already sitting there and linked it in.",
+    "backfilledToast_plural": "We found {{count}} matching transactions already sitting there and linked them in.",
+    "unlinkedToast": "We unlinked {{count}} transaction now covered by your updated balance, so it isn't counted twice.",
+    "unlinkedToast_plural": "We unlinked {{count}} transactions now covered by your updated balance, so they aren't counted twice.",
+    "backfillSkippedToast": "You have too many matching transactions for us to link automatically. Narrow the categories or accounts and save again.",
     "calcOptions": {
       "positive": "Reduce debt",
       "negative": "Increase debt",
