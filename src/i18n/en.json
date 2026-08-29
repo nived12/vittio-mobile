@@ -1058,6 +1058,8 @@
       "nameLabel": "NAME",
       "namePlaceholder": "e.g. Pay Off All Debts",
       "goalTypeLabel": "GOAL TYPE",
+      "typeSavings": "Savings goal",
+      "typeDebt": "Debt payoff",
       "startDateLabel": "START DATE",
       "deadlineLabel": "DEADLINE",
       "deadlinePlaceholder": "Set a deadline",

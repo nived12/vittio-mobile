@@ -1058,6 +1058,8 @@
       "nameLabel": "NOMBRE",
       "namePlaceholder": "ej. Pagar todas las deudas",
       "goalTypeLabel": "TIPO DE META",
+      "typeSavings": "Meta de ahorro",
+      "typeDebt": "Pago de deuda",
       "startDateLabel": "FECHA DE INICIO",
       "deadlineLabel": "FECHA LÍMITE",
       "deadlinePlaceholder": "Establecer una fecha límite",
