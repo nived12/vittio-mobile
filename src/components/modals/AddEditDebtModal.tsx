@@ -20,6 +20,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
+import { MoneyInput } from '../../components/ui/MoneyInput';
 import type { Debt } from '../../api/debts';
 import type { DebtTemplate } from '../../api/templates';
 import type { CalculationSettings } from '../../api/financeShared';
@@ -196,15 +197,13 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
 
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.originalAmountLabel')}</Text>
-            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.originalAmount && s.inputError]} value={originalAmount}
-              onChangeText={setOriginalAmount} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
+            <MoneyInput value={originalAmount} onChangeText={setOriginalAmount} hasError={Boolean(errors.originalAmount)} />
             {errors.originalAmount && <Text style={s.errorText}>{errors.originalAmount}</Text>}
           </View>
 
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('debts.addModal.currentBalanceLabel')}</Text>
-            <TextInput style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.openingBalance && s.inputError]} value={openingBalance}
-              onChangeText={setOpeningBalance} placeholder="0.00" placeholderTextColor="#94a3b8" keyboardType="decimal-pad" />
+            <MoneyInput value={openingBalance} onChangeText={setOpeningBalance} hasError={Boolean(errors.openingBalance)} />
             {errors.openingBalance && <Text style={s.errorText}>{errors.openingBalance}</Text>}
           </View>
 

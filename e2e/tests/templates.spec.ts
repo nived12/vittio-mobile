@@ -22,7 +22,8 @@ test("savings empty state offers a template; picking one opens a pre-filled add 
 
   await expect(page.getByText(/New Saving|Nuevo Ahorro/i)).toBeVisible();
   await expect(page.locator('input[value="Emergency Fund"]')).toBeVisible();
-  await expect(page.locator('input[value="10000"]')).toBeVisible();
+  // MoneyInput groups thousands for display; the submitted value stays unformatted.
+  await expect(page.locator('input[value="10,000"]')).toBeVisible();
 
   // Advanced settings carry the template's category + calculation settings.
   await page.getByText(/Advanced Settings|Configuración Avanzada/i).click();
