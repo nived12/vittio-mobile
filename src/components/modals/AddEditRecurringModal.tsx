@@ -19,7 +19,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import { useCreateRecurring, useUpdateRecurring } from '../../hooks/useRecurring';
 import type { RecurringFrequency, RecurringSeries, RecurringTxType } from '../../api/recurring';
-import { formatDisplayDate, toISODate } from '../../utils/format';
+import { formatDisplayDate, parseISODate, toISODate } from '../../utils/format';
 
 const FREQUENCIES: RecurringFrequency[] = ['weekly', 'biweekly', 'monthly', 'quarterly', 'annual'];
 const TX_TYPES: RecurringTxType[] = ['fixed_expense', 'variable_expense', 'income'];
@@ -66,7 +66,7 @@ export function AddEditRecurringModal({ visible, onClose, series }: Props) {
         const freq: RecurringFrequency = series.frequency === 'custom' ? 'monthly' : series.frequency;
         setFrequency(freq);
         setTxType(series.transaction_type);
-        setNextDue(new Date(series.next_due_date));
+        setNextDue(parseISODate(series.next_due_date));
       } else {
         const fresh = new Date();
         fresh.setDate(fresh.getDate() + 7);

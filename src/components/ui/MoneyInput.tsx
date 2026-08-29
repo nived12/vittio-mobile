@@ -16,7 +16,9 @@ function sanitize(input: string): string {
   const cleaned = input.replace(/[^0-9.]/g, '');
   const [whole, ...rest] = cleaned.split('.');
   if (rest.length === 0) return whole;
-  return `${whole}.${rest.join('').slice(0, 2)}`;
+  // `whole || '0'`: a bare "." reaches the API as parseFloat(".") === NaN, which
+  // JSON serializes to null against a NOT NULL opening_balance.
+  return `${whole || '0'}.${rest.join('').slice(0, 2)}`;
 }
 
 /** Group the whole part only — grouping the decimals would fight the user mid-type. */
