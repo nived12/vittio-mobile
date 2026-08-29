@@ -85,7 +85,7 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
         setColor(saving.color ?? COLORS[0]);
         setStatus(saving.status === 'paused' ? 'paused' : 'active');
         setNotes(saving.notes ?? '');
-        setTargetDate(saving.target_date ? new Date(saving.target_date) : null);
+        setTargetDate(saving.target_date ? parseISODate(saving.target_date) : null);
         setCategoryIds(saving.categories?.map((c) => c.id) ?? []);
         setBankAccountIds(saving.bank_accounts?.map((a) => a.id) ?? []);
         setAutoSync(Boolean(saving.auto_sync_transactions));

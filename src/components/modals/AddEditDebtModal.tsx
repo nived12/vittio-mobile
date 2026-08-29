@@ -91,7 +91,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
         setColor(debt.color ?? COLORS[3]);
         setStatus(debt.status === 'paused' ? 'paused' : 'active');
         setNotes(debt.notes ?? '');
-        setTargetPayoffDate(debt.target_payoff_date ? new Date(debt.target_payoff_date) : null);
+        setTargetPayoffDate(debt.target_payoff_date ? parseISODate(debt.target_payoff_date) : null);
         setCategoryIds(debt.categories?.map((c) => c.id) ?? []);
         setBankAccountIds(debt.bank_accounts?.map((a) => a.id) ?? []);
         setAutoSync(Boolean(debt.auto_sync_transactions));

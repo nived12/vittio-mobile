@@ -19,7 +19,7 @@ import { useCreateGoal, useUpdateGoal } from '../../hooks/useGoals';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
 import type { Goal } from '../../api/goals';
-import { formatDisplayDate, toISODate } from '../../utils/format';
+import { formatDisplayDate, toISODate, parseISODate } from '../../utils/format';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
 
@@ -62,8 +62,8 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
       if (goal) {
         setName(goal.name);
         setGoalType(goal.goal_type);
-        setStartDate(new Date(goal.start_date));
-        setDeadline(new Date(goal.deadline));
+        setStartDate(parseISODate(goal.start_date));
+        setDeadline(parseISODate(goal.deadline));
         setDebtStrategy(goal.debt_strategy ?? 'snowball');
         setColor(goal.color ?? COLORS[0]);
         setNotes(goal.notes ?? '');
