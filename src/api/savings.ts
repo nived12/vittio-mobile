@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { BackfillSummary } from '../utils/backfillToast';
 import type { CalculationSettings, CalculationSettingsBody } from './financeShared';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -8,6 +9,14 @@ export interface Saving {
   name: string;
   target_amount: number;
   current_amount: number;
+  opening_balance: number;
+  opening_balance_date: string;
+  /**
+   * The date current_amount is actually true as of — opening_balance_date, or the newest
+   * counted transaction. Detail responses only: it costs a query per row, so the list
+   * endpoint omits it.
+   */
+  balance_as_of?: string;
   target_date: string | null;
   status: 'active' | 'completed' | 'paused' | 'archived';
   color: string;
@@ -20,6 +29,11 @@ export interface Saving {
   calculation_settings: CalculationSettings;
   progress_percentage: number;
   amount_remaining: number;
+  /**
+   * Present only on the response to a create/update that linked or unlinked
+   * transactions behind the scenes — see showBackfillToast.
+   */
+  backfill_summary?: BackfillSummary;
   goals: { id: number; name: string; color: string }[];
   categories: { id: number; name: string; icon: string | null }[];
   bank_accounts: { id: number; display_name: string; currency: string }[];
@@ -28,7 +42,8 @@ export interface Saving {
 export type CreateSavingBody = {
   name: string;
   target_amount: number;
-  current_amount?: number;
+  opening_balance?: number;
+  opening_balance_date?: string;
   target_date?: string | null;
   color?: string;
   status?: string;

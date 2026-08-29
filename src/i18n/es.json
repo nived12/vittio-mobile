@@ -811,6 +811,12 @@
   },
   "savings": {
     "title": "Ahorros",
+    "balanceAsOf": "al {{date}}",
+    "backfilledToast": "Encontramos {{count}} transacción que ya coincidía y la vinculamos.",
+    "backfilledToast_plural": "Encontramos {{count}} transacciones que ya coincidían y las vinculamos.",
+    "unlinkedToast": "Desvinculamos {{count}} transacción que ahora forma parte de tu monto actualizado, para no contarla dos veces.",
+    "unlinkedToast_plural": "Desvinculamos {{count}} transacciones que ahora forman parte de tu monto actualizado, para no contarlas dos veces.",
+    "backfillSkippedToast": "Tienes demasiadas transacciones que coinciden para vincularlas automáticamente. Reduce las categorías o cuentas y guarda de nuevo.",
     "calcOptions": {
       "positive": "Sumar al ahorro",
       "negative": "Restar",
@@ -872,7 +878,9 @@
       "namePlaceholder": "ej. Fondo de vacaciones",
       "targetAmountLabel": "MONTO META",
       "currentAmountLabel": "YA AHORRADO",
-      "currentAmountHint": "Ingresa 0 si estás empezando desde cero",
+      "currentAmountHint": "Cuánto llevas ahorrado a la fecha de abajo — 0 si empiezas desde cero",
+      "openingBalanceDateLabel": "FECHA DEL MONTO ACTUAL",
+      "openingBalanceDateHint": "Las transacciones después de esta fecha actualizan tu total automáticamente",
       "targetDateLabel": "FECHA LÍMITE (opcional)",
       "targetDatePlaceholder": "Establecer una fecha...",
       "colorLabel": "COLOR",
@@ -890,12 +898,19 @@
         "targetAmountRequired": "El monto meta es requerido",
         "targetAmountPositive": "El monto meta debe ser mayor a 0",
         "currentAmountExceedsTarget": "El monto actual no puede superar la meta",
-        "targetDatePast": "La fecha límite debe ser futura"
+        "targetDatePast": "La fecha límite debe ser futura",
+        "openingBalanceDateFuture": "Esa fecha no puede ser futura"
       }
     }
   },
   "debts": {
     "title": "Deudas",
+    "balanceAsOf": "al {{date}}",
+    "backfilledToast": "Encontramos {{count}} transacción que ya coincidía y la vinculamos.",
+    "backfilledToast_plural": "Encontramos {{count}} transacciones que ya coincidían y las vinculamos.",
+    "unlinkedToast": "Desvinculamos {{count}} transacción que ahora forma parte de tu saldo actualizado, para no contarla dos veces.",
+    "unlinkedToast_plural": "Desvinculamos {{count}} transacciones que ahora forman parte de tu saldo actualizado, para no contarlas dos veces.",
+    "backfillSkippedToast": "Tienes demasiadas transacciones que coinciden para vincularlas automáticamente. Reduce las categorías o cuentas y guarda de nuevo.",
     "calcOptions": {
       "positive": "Reducir deuda",
       "negative": "Aumentar deuda",
@@ -959,7 +974,9 @@
       "originalAmountLabel": "MONTO ORIGINAL",
       "originalAmountHint": "Monto total cuando adquiriste esta deuda",
       "currentBalanceLabel": "BALANCE ACTUAL",
-      "currentBalanceHint": "Lo que actualmente debes",
+      "currentBalanceHint": "Lo que debes a la fecha de abajo",
+      "openingBalanceDateLabel": "FECHA DEL SALDO ACTUAL",
+      "openingBalanceDateHint": "Los pagos después de esta fecha actualizan tu saldo automáticamente",
       "interestRateLabel": "TASA DE INTERÉS (opcional)",
       "minimumPaymentLabel": "PAGO MÍNIMO (opcional)",
       "dueDayLabel": "DÍA DE PAGO DEL MES (opcional)",
@@ -981,10 +998,11 @@
         "nameRequired": "El nombre es requerido",
         "originalAmountRequired": "El monto original es requerido",
         "originalAmountPositive": "El monto original debe ser mayor a 0",
-        "currentBalanceRequired": "El balance actual es requerido",
-        "currentBalanceExceedsOriginal": "El balance no puede superar el monto original",
         "targetDatePast": "La fecha límite de pago debe ser futura",
-        "dueDayRange": "El día debe estar entre 1 y 31"
+        "dueDayRange": "El día debe estar entre 1 y 31",
+        "openingBalanceRequired": "El balance actual es requerido",
+        "openingBalanceExceedsOriginal": "El balance no puede superar el monto original",
+        "openingBalanceDateFuture": "Esa fecha no puede ser futura"
       }
     }
   },

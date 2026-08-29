@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import type { BackfillSummary } from '../utils/backfillToast';
 import type { CalcRule, CalculationSettings, CalculationSettingsBody } from './financeShared';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -8,6 +9,14 @@ export interface Debt {
   name: string;
   original_amount: number;
   current_balance: number;
+  opening_balance: number;
+  opening_balance_date: string;
+  /**
+   * The date current_balance is actually true as of — opening_balance_date, or the newest
+   * counted transaction. Detail responses only: it costs a query per row, so the list
+   * endpoint omits it.
+   */
+  balance_as_of?: string;
   interest_rate: number | null;
   minimum_payment: number | null;
   status: 'active' | 'paid_off' | 'paused' | 'archived';
@@ -24,6 +33,11 @@ export interface Debt {
   progress_percentage: number;
   amount_remaining: number;
   amount_paid: number;
+  /**
+   * Present only on the response to a create/update that linked or unlinked
+   * transactions behind the scenes — see showBackfillToast.
+   */
+  backfill_summary?: BackfillSummary;
   goals: { id: number; name: string; color: string; strategy?: string }[];
   categories: { id: number; name: string; icon: string | null }[];
   bank_accounts: { id: number; display_name: string; currency: string }[];
@@ -32,7 +46,8 @@ export interface Debt {
 export type CreateDebtBody = {
   name: string;
   original_amount: number;
-  current_balance: number;
+  opening_balance: number;
+  opening_balance_date?: string;
   interest_rate?: number | null;
   minimum_payment?: number | null;
   due_day_of_month?: number | null;

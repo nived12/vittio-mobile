@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { showBackfillToast } from '../utils/backfillToast';
 import {
   createDebt,
   deleteDebt,
@@ -43,8 +44,9 @@ export function useCreateDebt() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateDebtBody) => createDebt(body),
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: debtKeys.list() });
+      showBackfillToast('debts', created.backfill_summary);
     },
   });
 }
@@ -54,8 +56,12 @@ export function useUpdateDebt(id: number) {
   return useMutation({
     mutationFn: (body: UpdateDebtBody) => updateDebt(id, body),
     onSuccess: (updated) => {
-      queryClient.setQueryData(debtKeys.detail(id), updated);
+      // backfill_summary describes this one write; it must not ride along into the
+      // persisted cache, where it would outlive the toast it belongs to.
+      const { backfill_summary: backfill, ...record } = updated;
+      queryClient.setQueryData(debtKeys.detail(id), record);
       queryClient.invalidateQueries({ queryKey: debtKeys.list() });
+      showBackfillToast('debts', backfill);
     },
   });
 }
