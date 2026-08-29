@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -58,7 +58,17 @@ export function AdvancedFinanceSettings({
   const inputBg = isDark ? theme.surfaceElevated : '#f1f5f9';
   const borderCol = isDark ? theme.border : '#e2e8f0';
 
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(autoSync);
+
+  // Open whenever auto-sync is on. This panel holds the rules that decide what
+  // auto-sync actually does, and leaving them collapsed is how a record ends up
+  // syncing nothing. The effect is required, not just the initial value: the edit
+  // modal loads the record in its own effect, so autoSync is still false on the
+  // first render and seeding from it alone never fires.
+  useEffect(() => {
+    if (autoSync) setExpanded(true);
+  }, [autoSync]);
+
   const calcNs = variant === 'debt' ? 'debts' : 'savings';
 
   const categoryItems: ChoiceItem[] = useMemo(() => {

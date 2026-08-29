@@ -20,6 +20,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { useBankAccounts } from '../../hooks/useBankAccounts';
 import { useUIStore } from '../../stores/uiStore';
 import { useTheme } from '../../theme/ThemeContext';
+import { MoneyInput } from '../../components/ui/MoneyInput';
 import type { Saving } from '../../api/savings';
 import type { SavingTemplate } from '../../api/templates';
 import type { CalculationSettings } from '../../api/financeShared';
@@ -85,7 +86,7 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
         setColor(saving.color ?? COLORS[0]);
         setStatus(saving.status === 'paused' ? 'paused' : 'active');
         setNotes(saving.notes ?? '');
-        setTargetDate(saving.target_date ? new Date(saving.target_date) : null);
+        setTargetDate(saving.target_date ? parseISODate(saving.target_date) : null);
         setCategoryIds(saving.categories?.map((c) => c.id) ?? []);
         setBankAccountIds(saving.bank_accounts?.map((a) => a.id) ?? []);
         setAutoSync(Boolean(saving.auto_sync_transactions));
@@ -193,28 +194,14 @@ export function AddEditSavingModal({ visible, onClose, saving, template }: Props
           {/* Target amount */}
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.targetAmountLabel')}</Text>
-            <TextInput
-              style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }, errors.targetAmount && s.inputError]}
-              value={targetAmount}
-              onChangeText={setTargetAmount}
-              placeholder="0.00"
-              placeholderTextColor="#94a3b8"
-              keyboardType="decimal-pad"
-            />
+            <MoneyInput value={targetAmount} onChangeText={setTargetAmount} hasError={Boolean(errors.targetAmount)} />
             {errors.targetAmount && <Text style={s.errorText}>{errors.targetAmount}</Text>}
           </View>
 
           {/* Current amount */}
           <View style={s.field}>
             <Text style={[s.label, { color: textSecondary }]}>{t('savings.addModal.currentAmountLabel')}</Text>
-            <TextInput
-              style={[s.input, { backgroundColor: inputBg, color: textPrimary, borderColor: borderCol }]}
-              value={openingBalance}
-              onChangeText={setOpeningBalance}
-              placeholder="0.00"
-              placeholderTextColor="#94a3b8"
-              keyboardType="decimal-pad"
-            />
+            <MoneyInput value={openingBalance} onChangeText={setOpeningBalance} />
           </View>
 
           {/* Opening balance date */}

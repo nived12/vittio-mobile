@@ -20,6 +20,7 @@ import { useGoal, useDeleteGoal } from '../../../../src/hooks/useGoals';
 import { AddEditGoalModal } from '../../../../src/components/modals/AddEditGoalModal';
 import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { SkeletonBox } from '../../../../src/components/ui/SkeletonLoader';
+import { parseISODate } from '../../../../src/utils/format';
 import { useUIStore } from '../../../../src/stores/uiStore';
 import { useTheme } from '../../../../src/theme/ThemeContext';
 import { useRequireConfirmed } from '../../../../src/hooks/useRequireConfirmed';
@@ -125,8 +126,8 @@ export default function GoalDetailScreen() {
   }
 
   const pct = Math.min(goal.progress_percentage, 100);
-  const startDate = new Date(goal.start_date);
-  const deadline = new Date(goal.deadline);
+  const startDate = parseISODate(goal.start_date);
+  const deadline = parseISODate(goal.deadline);
   const today = new Date();
   const daysElapsed = Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
 
