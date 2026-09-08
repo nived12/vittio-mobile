@@ -1210,7 +1210,9 @@
     "readLinkA11y": "Leer {{doc}}",
     "accept": "Aceptar y Continuar",
     "acceptError": "Algo salió mal. Por favor inténtalo de nuevo.",
-    "version": "Versión del documento: {{version}}"
+    "version": "Versión del documento: {{version}}",
+    "openFailedTitle": "No se pudo abrir el documento",
+    "openFailedMessage": "Por favor abre {{url}} en tu navegador."
   },
   "premium": {
     "headerTitle": "Vittio Premium",
