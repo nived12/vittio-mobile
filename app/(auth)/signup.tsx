@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -29,6 +28,7 @@ import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, getApiErrorDetails } from '../../src/api/client';
 import { colors, components, spacing, textStyles } from '../../src/theme';
 import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
+import { LEGAL_URLS, openLegalDoc } from '../../src/utils/legal';
 import {
   PasswordStrengthBar,
   calculateStrength,
@@ -484,12 +484,11 @@ export default function SignupScreen() {
             <Text
               style={styles.termsLink}
               onPress={() => {
-                const url = process.env['EXPO_PUBLIC_TERMS_URL'] ?? 'https://vitt.io/legal/terms';
-                void Linking.openURL(url);
+                void openLegalDoc(LEGAL_URLS.terms);
               }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.termsLink')}
-              accessibilityHint="Opens Terms of Service in browser"
+              accessibilityHint="Opens Terms of Service"
             >
               {t('auth.signup.termsLink')}
             </Text>
@@ -497,12 +496,11 @@ export default function SignupScreen() {
             <Text
               style={styles.termsLink}
               onPress={() => {
-                const url = process.env['EXPO_PUBLIC_PRIVACY_URL'] ?? 'https://vitt.io/legal/privacy';
-                void Linking.openURL(url);
+                void openLegalDoc(LEGAL_URLS.privacy);
               }}
               accessibilityRole="link"
               accessibilityLabel={t('auth.signup.privacyLink')}
-              accessibilityHint="Opens Privacy Policy in browser"
+              accessibilityHint="Opens Privacy Policy"
             >
               {t('auth.signup.privacyLink')}
             </Text>

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as WebBrowser from 'expo-web-browser';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck } from 'lucide-react-native';
 
@@ -18,16 +17,7 @@ import { legalApi } from '../../src/api/legal';
 import { getApiErrorCode } from '../../src/api/client';
 import { spacing, textStyles } from '../../src/theme';
 import { useTheme } from '../../src/theme/ThemeContext';
-// Derive legal doc base from the API URL so dev and prod resolve automatically.
-// Dev:  http://192.168.86.38:3000/api/v1  → http://192.168.86.38:3000/legal/*
-// Prod: https://vitt.io/api/v1            → https://vitt.io/legal/*
-const _apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
-const _legalBase = _apiUrl.replace(/\/api\/v1\/?$/, '');
-const LEGAL_URLS = {
-  terms:     `${_legalBase}/legal/terms`,
-  privacy:   `${_legalBase}/legal/privacy`,
-  financial: `${_legalBase}/legal/financial_data`,
-};
+import { LEGAL_URLS, openLegalDoc } from '../../src/utils/legal';
 
 interface ConsentItem {
   key: 'terms' | 'privacy' | 'financial';
@@ -61,12 +51,6 @@ export default function ConsentScreen() {
   function toggleItem(key: string) {
     Haptics.selectionAsync();
     setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
-
-  async function openDoc(url: string) {
-    await WebBrowser.openBrowserAsync(url, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
-    });
   }
 
   async function handleAccept() {
@@ -164,7 +148,7 @@ export default function ConsentScreen() {
                 {t(item.titleKey)}
               </Text>
               <Pressable
-                onPress={() => openDoc(item.url)}
+                onPress={() => { void openLegalDoc(item.url); }}
                 hitSlop={8}
                 accessibilityLabel={t('consent.readLinkA11y', { doc: t(item.titleKey) })}
               >
