@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
+import { AddEditBankAccountModal } from '../../src/components/modals/AddEditBankAccountModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { FabSpeedDial, FabAction } from '../../src/components/ui/FabSpeedDial';
 import { Toast } from '../../src/components/ui/Toast';
@@ -66,6 +67,9 @@ export default function AppLayout() {
   const statementUploadAccount = useUIStore((s) => s.statementUploadAccount);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
+  const showAddBankAccount = useUIStore((s) => s.showAddBankAccount);
+  const addBankAccountCallback = useUIStore((s) => s.addBankAccountCallback);
+  const closeAddBankAccount = useUIStore((s) => s.closeAddBankAccount);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
   const toasts = useUIStore((s) => s.toasts);
   const dismissToast = useUIStore((s) => s.dismissToast);
@@ -262,6 +266,13 @@ export default function AppLayout() {
           visible={showUploadStatement}
           onClose={closeStatementUpload}
           {...(statementUploadAccount ? { preselectedAccount: statementUploadAccount } : {})}
+        />
+      )}
+      {showAddBankAccount && (
+        <AddEditBankAccountModal
+          visible={showAddBankAccount}
+          onClose={closeAddBankAccount}
+          {...(addBankAccountCallback ? { onCreated: addBankAccountCallback } : {})}
         />
       )}
       {showFabHint && (

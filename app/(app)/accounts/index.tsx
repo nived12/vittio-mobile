@@ -13,7 +13,6 @@ import * as Haptics from 'expo-haptics';
 import { Plus, PlusCircle, ChevronRight, CreditCard, Banknote, TrendingUp } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useArchivedBankAccounts, useBankAccounts } from '../../../src/hooks/useBankAccounts';
-import { AddEditBankAccountModal } from '../../../src/components/modals/AddEditBankAccountModal';
 import { resolveBankAccountName } from '../../../src/utils/displayNames';
 import { useUIStore } from '../../../src/stores/uiStore';
 import { useRequireConfirmed } from '../../../src/hooks/useRequireConfirmed';
@@ -111,7 +110,7 @@ export default function AccountsScreen() {
   const locale = useUIStore((s) => s.locale);
   const resolvedLocale = locale === 'es' ? 'es-MX' : 'en-MX';
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   const requireConfirmed = useRequireConfirmed();
 
   const { data: accounts, isLoading, isError, refetch } = useBankAccounts();
@@ -146,10 +145,8 @@ export default function AccountsScreen() {
   }, [accounts, resolvedLocale]);
 
   const handleAddPress = useCallback(() => {
-    requireConfirmed(() => setShowAddModal(true));
-  }, [requireConfirmed]);
-
-  const handleCloseAdd = useCallback(() => setShowAddModal(false), []);
+    requireConfirmed(() => openAddBankAccount());
+  }, [requireConfirmed, openAddBankAccount]);
 
   if (isError && !accounts) {
     return (
@@ -298,12 +295,6 @@ export default function AccountsScreen() {
         )}
       </ScrollView>
 
-      {showAddModal && (
-        <AddEditBankAccountModal
-          visible={showAddModal}
-          onClose={handleCloseAdd}
-        />
-      )}
     </View>
   );
 }

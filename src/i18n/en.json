@@ -166,7 +166,8 @@
     "offline": "Offline — showing cached data",
     "errors": {
       "DASHBOARD_LOAD_FAILED": "Failed to load dashboard data"
-    }
+    },
+    "no_accounts_hint": "Add an account to record transactions and upload statements."
   },
   "balanceCard": {
     "totalBalance": "Total Balance",
@@ -297,7 +298,8 @@
     "merchant_placeholder": "Walmart, Cinemark...",
     "reference_placeholder": "Folio, order number...",
     "category_updated": "Category updated",
-    "category_update_error": "Couldn't update the category"
+    "category_update_error": "Couldn't update the category",
+    "no_accounts_hint": "You need a bank account before you can record transactions."
   },
   "bank_accounts": {
     "add_title": "New Account",
@@ -772,7 +774,8 @@
         "body": "We're still processing it. Check Statements in a few minutes."
       }
     },
-    "file_hint": "PDF · max 10 MB"
+    "file_hint": "PDF · max 10 MB",
+    "no_accounts_hint": "You need a bank account before you can upload a statement."
   },
   "navigation": {
     "home": "Home",

@@ -166,7 +166,8 @@
     "offline": "Sin conexión — mostrando datos guardados",
     "errors": {
       "DASHBOARD_LOAD_FAILED": "Error al cargar el panel"
-    }
+    },
+    "no_accounts_hint": "Agrega una cuenta para registrar transacciones y subir estados de cuenta."
   },
   "balanceCard": {
     "totalBalance": "Saldo total",
@@ -297,7 +298,8 @@
     "merchant_placeholder": "Walmart, Cinépolis...",
     "reference_placeholder": "Folio, número de orden...",
     "category_updated": "Categoría actualizada",
-    "category_update_error": "No se pudo actualizar la categoría"
+    "category_update_error": "No se pudo actualizar la categoría",
+    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones."
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
@@ -772,7 +774,8 @@
         "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
       }
     },
-    "file_hint": "PDF · máx 10 MB"
+    "file_hint": "PDF · máx 10 MB",
+    "no_accounts_hint": "Necesitas una cuenta bancaria para poder subir un estado de cuenta."
   },
   "navigation": {
     "home": "Inicio",

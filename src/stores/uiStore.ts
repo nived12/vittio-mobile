@@ -60,6 +60,16 @@ interface UIState {
   openStatementUpload: (account?: BankAccount) => void;
   closeStatementUpload: () => void;
 
+  // Add-bank-account modal. Global rather than screen-local because every
+  // surface that needs an account (statement upload, new transaction, the
+  // dashboard empty state) was a dead end — none of them could reach the form,
+  // which lives here and not on a route. onCreated hands the new account back
+  // so the caller resumes instead of losing its place.
+  showAddBankAccount: boolean;
+  addBankAccountCallback: ((account: BankAccount) => void) | null;
+  openAddBankAccount: (onCreated?: (account: BankAccount) => void) => void;
+  closeAddBankAccount: () => void;
+
   // Biometric lock setting
   biometricLock: boolean;
   setBiometricLock: (enabled: boolean) => Promise<void>;
@@ -182,6 +192,14 @@ export const useUIStore = create<UIState>((set, get) => ({
     set({ showStatementUpload: true, statementUploadAccount: account ?? null }),
   closeStatementUpload: () =>
     set({ showStatementUpload: false, statementUploadAccount: null }),
+
+  // ── Add bank account modal ─────────────────────────────────────────────────
+  showAddBankAccount: false,
+  addBankAccountCallback: null,
+  openAddBankAccount: (onCreated) =>
+    set({ showAddBankAccount: true, addBankAccountCallback: onCreated ?? null }),
+  closeAddBankAccount: () =>
+    set({ showAddBankAccount: false, addBankAccountCallback: null }),
 
   // ── Notification preferences ────────────────────────────────────────────────
   notificationPrefs: {
