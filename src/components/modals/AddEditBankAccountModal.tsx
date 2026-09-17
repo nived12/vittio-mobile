@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X, ChevronRight, Lock, Search, CreditCard, Banknote, ChevronLeft, Calendar, TrendingUp } from 'lucide-react-native';
@@ -192,12 +193,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     ? (isCash || accountNumber.trim().length > 0) // account_number required for non-cash
     : (selectedBank !== null || isCash) &&
       (isCash || accountNumber.trim().length > 0); // account_number required for non-cash
-
-  // ── Date picker handler ──
-  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
-    if (Platform.OS === 'android') setShowDatePicker(false);
-    if (date) setOpeningBalanceDate(date);
-  };
 
   // ── Save ──
   const handleSave = async () => {
@@ -570,7 +565,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                             mode="date"
                             display={Platform.OS === 'ios' ? 'inline' : 'default'}
                             maximumDate={new Date()}
-                            onChange={handleDateChange}
+                            onChange={onDatePicked(setShowDatePicker, setOpeningBalanceDate)}
                             locale={displayLocale}
                           />
                           {Platform.OS === 'ios' && (

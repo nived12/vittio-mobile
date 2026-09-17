@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X, Calendar } from 'lucide-react-native';
@@ -221,7 +222,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
               <DateTimePicker value={openingBalanceDate} mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 maximumDate={new Date()}
-                onChange={(_e, d) => { setShowOpeningBalanceDatePicker(Platform.OS === 'ios'); if (d) setOpeningBalanceDate(d); }} />
+                onChange={onDatePicked(setShowOpeningBalanceDatePicker, setOpeningBalanceDate)} />
             )}
           </View>
 
@@ -266,7 +267,7 @@ export function AddEditDebtModal({ visible, onClose, debt, template }: Props) {
               <DateTimePicker value={targetPayoffDate ?? new Date()} mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 minimumDate={new Date()}
-                onChange={(_e, d) => { setShowDatePicker(Platform.OS === 'ios'); if (d) setTargetPayoffDate(d); }} />
+                onChange={onDatePicked(setShowDatePicker, setTargetPayoffDate)} />
             )}
           </View>
 

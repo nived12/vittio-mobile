@@ -26,6 +26,7 @@ import Animated, {
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -989,9 +990,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
                 maximumDate={new Date()}
-                onChange={(_event, selected) => {
-                  if (selected) setDate(selected);
-                }}
+                onChange={onDatePicked(setShowDatePicker, setDate)}
               />
             )}
             {showDatePicker && Platform.OS === 'ios' && (

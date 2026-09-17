@@ -18,6 +18,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { format } from 'date-fns';
 import { es as dateFnsEs } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
@@ -527,9 +528,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   maximumDate={new Date()}
                   locale={displayLocale}
-                  onChange={(_evt, d) => {
-                    if (d) setCutoffDate(d);
-                  }}
+                  onChange={onDatePicked(setShowDatePicker, setCutoffDate)}
                 />
               )}
               {showDatePicker && Platform.OS === 'ios' && (
