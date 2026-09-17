@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios';
 import { tokenStorage } from '../utils/tokenStorage';
 import { forgetPurchaser, identifyPurchaser } from '../lib/purchases';
 
@@ -274,16 +275,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Reads SecureStore → validates tokens → sets auth state → hides splash.
   hydrate: async () => {
     set({ isLoading: true });
-    try {
-      const tokens = await tokenStorage.getTokens();
-      if (!tokens) {
-        set({ isLoading: false, isHydrated: true });
-        return;
-      }
+    const tokens = await tokenStorage.getTokens().catch(() => null);
+    if (!tokens) {
+      set({ isLoading: false, isHydrated: true });
+      return;
+    }
 
+    try {
       // Fetch current user to validate the stored access token
       const { authApi } = await import('../api/auth');
       const user = await authApi.me();
+      await tokenStorage.saveUser(user);
 
       set({
         user,
@@ -300,8 +302,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // shows "plans unavailable" — no purchase path, which is the Guideline 3.1.1
       // finding all over again.
       void identifyPurchaser(user.id);
-    } catch {
-      // Token invalid or network error — treat as logged out
+    } catch (err) {
+      // A failed request is not an invalid session. Relaunching with no network
+      // cleared the tokens and logged the user out; only the server gets to say
+      // the session is gone. An axios error with no response never reached it.
+      const unreachable = axios.isAxiosError(err) && !err.response;
+      const cachedUser = unreachable ? await tokenStorage.getUser<AuthUser>() : null;
+      if (cachedUser) {
+        set({
+          user:            cachedUser,
+          accessToken:     tokens.accessToken,
+          refreshToken:    tokens.refreshToken,
+          isAuthenticated: true,
+          isLoading:       false,
+          isHydrated:      true,
+        });
+        void identifyPurchaser(cachedUser.id);
+        return;
+      }
+
       await tokenStorage.clearTokens();
       set({
         user:            null,

@@ -11,11 +11,18 @@ import { useTranslation } from 'react-i18next';
 import { Feather } from '@expo/vector-icons';
 import { authApi } from '../../api/auth';
 import { useUIStore } from '../../stores/uiStore';
+import { useTheme } from '../../theme/ThemeContext';
 
 export function ConfirmationBanner() {
   const { t }    = useTranslation();
   const insets   = useSafeAreaInsets();
   const setHide  = useUIStore((s) => s.setHideConfirmationBanner);
+  const { isDark } = useTheme();
+  // Amber-on-cream is unreadable over a dark app; mirror it rather than dim it.
+  const bannerBg = isDark ? '#3b2f0b' : '#fef3c7';
+  const bannerBorder = isDark ? '#5a4a12' : '#fde68a';
+  const ink = isDark ? '#fcd34d' : '#92400e';
+  const inkSoft = isDark ? '#fbbf24' : '#b45309';
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
 
@@ -33,12 +40,12 @@ export function ConfirmationBanner() {
   }
 
   return (
-    <View style={[styles.banner, { paddingTop: insets.top + 10 }]}>
+    <View style={[styles.banner, { paddingTop: insets.top + 10, backgroundColor: bannerBg, borderBottomColor: bannerBorder }]}>
       <View style={styles.left}>
-        <Feather name="mail" size={16} color="#92400e" style={styles.icon} />
+        <Feather name="mail" size={16} color={ink} style={styles.icon} />
         <View style={styles.textBlock}>
-          <Text style={styles.title}>{t('auth.confirmation.bannerTitle')}</Text>
-          <Text style={styles.body}>
+          <Text style={[styles.title, { color: ink }]}>{t('auth.confirmation.bannerTitle')}</Text>
+          <Text style={[styles.body, { color: inkSoft }]}>
             {sent ? t('auth.confirmation.resendSuccess') : t('auth.confirmation.bannerBody')}
           </Text>
         </View>
@@ -53,8 +60,8 @@ export function ConfirmationBanner() {
             accessibilityRole="button"
           >
             {sending
-              ? <ActivityIndicator size="small" color="#92400e" />
-              : <Text style={styles.resendText}>{t('auth.confirmation.resendButton')}</Text>
+              ? <ActivityIndicator size="small" color={ink} />
+              : <Text style={[styles.resendText, { color: ink }]}>{t('auth.confirmation.resendButton')}</Text>
             }
           </TouchableOpacity>
         )}
@@ -64,7 +71,7 @@ export function ConfirmationBanner() {
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
         >
-          <Feather name="x" size={16} color="#92400e" />
+          <Feather name="x" size={16} color={ink} />
         </TouchableOpacity>
       </View>
     </View>
@@ -76,9 +83,7 @@ const styles = StyleSheet.create({
     flexDirection:    'row',
     alignItems:       'center',
     justifyContent:   'space-between',
-    backgroundColor:  '#fef3c7',
     borderBottomWidth: 1,
-    borderBottomColor: '#fde68a',
     paddingHorizontal: 16,
     paddingVertical:   10,
     gap:               8,
