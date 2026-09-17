@@ -173,6 +173,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loginWithGoogle: async (tokens) => {
     set({ isLoading: true });
     try {
+      const { resetConsentRedirect } = await import('../api/client');
+      resetConsentRedirect();
       await tokenStorage.saveTokens(tokens.access_token, tokens.refresh_token);
       set({ accessToken: tokens.access_token, refreshToken: tokens.refresh_token });
       const { authApi } = await import('../api/auth');

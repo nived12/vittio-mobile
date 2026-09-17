@@ -38,10 +38,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import * as SystemUI from 'expo-system-ui';
+import * as WebBrowser from 'expo-web-browser';
 
 // Match the splash background so there's no white flash during the
 // splash-to-first-screen transition on Android.
 SystemUI.setBackgroundColorAsync('#4f46e5');
+
+// Dismisses a web-auth popup left open when the OAuth callback returns.
+WebBrowser.maybeCompleteAuthSession();
 
 // Freeze inactive screens so off-screen tabs don't re-render when state changes
 // elsewhere. Critical for low-end Android perf in a 5-tab app.
