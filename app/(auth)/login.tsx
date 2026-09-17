@@ -277,13 +277,13 @@ export default function LoginScreen() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: bg }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
-          style={styles.flex}
+          style={[styles.flex, { backgroundColor: bg }]}
           contentContainerStyle={[styles.scrollContent, { backgroundColor: bg }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

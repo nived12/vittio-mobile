@@ -239,8 +239,11 @@ export default function DashboardScreen() {
 
   return (
     <>
+      {/* Opaque strip behind the status bar. paddingTop on the ScrollView folds
+          into the content frame, so content scrolled up under the clock. */}
+      <View style={{ height: insets.top, backgroundColor: bg }} />
       <ScrollView
-        style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}
+        style={[styles.screen, { backgroundColor: bg }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={

@@ -26,6 +26,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, getApiErrorDetails } from '../../src/api/client';
 import { colors, components, spacing, textStyles } from '../../src/theme';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
 import { LEGAL_URLS, openLegalDoc } from '../../src/utils/legal';
 import {
@@ -54,6 +55,8 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupScreen() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  const bg = theme.background;
   const signup = useAuthStore((s) => s.signup);
   const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -211,14 +214,14 @@ export default function SignupScreen() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: bg }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
           ref={scrollViewRef}
-          style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
+          style={[styles.flex, { backgroundColor: bg }]}
+          contentContainerStyle={[styles.scrollContent, { backgroundColor: bg }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

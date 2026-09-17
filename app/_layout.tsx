@@ -58,7 +58,7 @@ import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { AnalyticsPrivacyNotice, OPT_OUT_KEY } from '../src/components/AnalyticsPrivacyNotice';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { registerForPushNotifications } from '../src/utils/notifications';
-import { ThemeProvider } from '../src/theme/ThemeContext';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
 
 // Show notifications as banners when app is in foreground
@@ -95,6 +95,16 @@ function isAllowedScreen(screen: string): boolean {
 SplashScreen.preventAutoHideAsync();
 
 // ── Root layout ────────────────────────────────────────────────────────────
+
+/**
+ * `style="auto"` reads the *system* scheme, which app.config.js pins to light on
+ * iOS — so app-level dark mode drew dark glyphs on a dark background. Follow the
+ * resolved theme instead. Must sit inside ThemeProvider to read it.
+ */
+function ThemedStatusBar() {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
 
 function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -271,7 +281,7 @@ function RootLayout() {
               },
             }}
           >
-            <StatusBar style="auto" />
+            <ThemedStatusBar />
             <Slot />
             <OfflineBanner />
             {showLock && (

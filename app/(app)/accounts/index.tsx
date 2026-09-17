@@ -150,7 +150,7 @@ export default function AccountsScreen() {
 
   if (isError && !accounts) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <View style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}>
         <View style={styles.navHeader}>
           <Text style={styles.navTitle}>{t('accounts.title')}</Text>
         </View>
