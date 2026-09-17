@@ -3,7 +3,15 @@ import { useTranslation } from 'react-i18next';
 
 export type BiometricType = 'faceId' | 'touchId' | 'biometrics' | 'none';
 
+/**
+ * 'checking' exists because the hardware probe is a native round-trip. A plain
+ * boolean starts false, and a caller that decides on mount reads "unsupported"
+ * before the probe answers — which silently skipped the lock screen entirely.
+ */
+export type BiometricStatus = 'checking' | 'supported' | 'unsupported';
+
 interface UseBiometricLockReturn {
+  status:        BiometricStatus;
   isSupported:   boolean;
   biometricType: BiometricType;
   authenticate:  () => Promise<boolean>;
@@ -24,19 +32,23 @@ function getLocalAuth() {
 
 export function useBiometricLock(): UseBiometricLockReturn {
   const { t } = useTranslation();
-  const [isSupported,   setIsSupported]   = useState(false);
+  const [status,        setStatus]        = useState<BiometricStatus>('checking');
   const [biometricType, setBiometricType] = useState<BiometricType>('none');
+  const isSupported = status === 'supported';
 
   useEffect(() => {
     async function check() {
       const LA = getLocalAuth();
-      if (!LA) return; // Expo Go or simulator without native module
+      if (!LA) {
+        setStatus('unsupported'); // Expo Go or simulator without native module
+        return;
+      }
 
       try {
         const hasHardware = await LA.hasHardwareAsync();
         const isEnrolled  = await LA.isEnrolledAsync();
         const supported   = hasHardware && isEnrolled;
-        setIsSupported(supported);
+        setStatus(supported ? 'supported' : 'unsupported');
 
         if (supported) {
           const types = await LA.supportedAuthenticationTypesAsync();
@@ -50,7 +62,7 @@ export function useBiometricLock(): UseBiometricLockReturn {
         }
       } catch {
         // Native module present but check failed — treat as unsupported
-        setIsSupported(false);
+        setStatus('unsupported');
       }
     }
     void check();
@@ -74,5 +86,5 @@ export function useBiometricLock(): UseBiometricLockReturn {
     }
   }, [isSupported, t]);
 
-  return { isSupported, biometricType, authenticate };
+  return { status, isSupported, biometricType, authenticate };
 }

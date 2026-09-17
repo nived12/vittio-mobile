@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Lock } from 'lucide-react-native';
-import { colors, spacing, textStyles } from '../theme';
+import { spacing, textStyles } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 import { useBiometricLock } from '../hooks/useBiometricLock';
 
 interface Props {
@@ -17,16 +18,13 @@ interface Props {
 
 export function BiometricLockScreen({ onUnlock }: Props) {
   const { t }            = useTranslation();
-  const { authenticate, isSupported } = useBiometricLock();
+  const { theme }        = useTheme();
+  const { authenticate, status } = useBiometricLock();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [failed,           setFailed]           = useState(false);
+  const autoTriggered = useRef(false);
 
   const tryAuth = useCallback(async () => {
-    // If biometrics aren't enrolled on this device, skip the lock
-    if (!isSupported) {
-      onUnlock();
-      return;
-    }
     setIsAuthenticating(true);
     setFailed(false);
     const success = await authenticate();
@@ -36,33 +34,43 @@ export function BiometricLockScreen({ onUnlock }: Props) {
     } else {
       setFailed(true);
     }
-  }, [authenticate, isSupported, onUnlock]);
+  }, [authenticate, onUnlock]);
 
-  // Auto-trigger on mount
+  // Keyed on status, not []: the hardware probe is async, so an effect that ran
+  // on mount would read 'checking' and fall through the gate without prompting.
   useEffect(() => {
+    if (status === 'checking' || autoTriggered.current) return;
+    autoTriggered.current = true;
+    if (status === 'unsupported') {
+      onUnlock(); // Nothing enrolled on this device — never strand the user out.
+      return;
+    }
     void tryAuth();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [status, tryAuth, onUnlock]);
 
   return (
-    <View style={styles.overlay}>
+    <View style={[styles.overlay, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
-        <View style={styles.iconCircle}>
-          <Lock size={32} color={colors.brand.primary} strokeWidth={2} />
+        <View style={[styles.iconCircle, { backgroundColor: theme.primaryLight }]}>
+          <Lock size={32} color={theme.primary} strokeWidth={2} />
         </View>
 
-        <Text style={styles.title}>{t('auth.biometric.lockTitle')}</Text>
-        <Text style={styles.subtitle}>{t('auth.biometric.lockSubtitle')}</Text>
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          {t('auth.biometric.lockTitle')}
+        </Text>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+          {t('auth.biometric.lockSubtitle')}
+        </Text>
 
-        {isAuthenticating ? (
+        {isAuthenticating || status === 'checking' ? (
           <ActivityIndicator
             size="large"
-            color={colors.brand.primary}
+            color={theme.primary}
             style={styles.spinner}
           />
         ) : (
           <TouchableOpacity
-            style={styles.button}
+            style={[styles.button, { backgroundColor: theme.primary }]}
             onPress={tryAuth}
             activeOpacity={0.8}
             accessibilityRole="button"
@@ -82,7 +90,6 @@ export function BiometricLockScreen({ onUnlock }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.bg.screen,
     zIndex:          999,
     alignItems:      'center',
     justifyContent:  'center',
@@ -95,20 +102,17 @@ const styles = StyleSheet.create({
     width:           80,
     height:          80,
     borderRadius:    40,
-    backgroundColor: colors.brand.primaryLight,
     alignItems:      'center',
     justifyContent:  'center',
     marginBottom:    spacing.lg,
   },
   title: {
     ...textStyles.headingLg,
-    color:        colors.text.primary,
     marginBottom: spacing.xs,
     textAlign:    'center',
   },
   subtitle: {
     ...textStyles.bodyMd,
-    color:        colors.text.secondary,
     marginBottom: spacing.xl,
     textAlign:    'center',
   },
@@ -116,7 +120,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   button: {
-    backgroundColor: colors.brand.primary,
     paddingHorizontal: spacing.xl,
     paddingVertical:   spacing.md,
     borderRadius:      12,

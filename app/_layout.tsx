@@ -119,7 +119,12 @@ function RootLayout() {
   // and anything memoized on the `t` identity (the tab bar titles) stays frozen
   // in the wrong language for the whole session.
   const [localeReady, setLocaleReady] = useState(false);
+  // Separate from isHydrated: that flag belongs to the auth store, and the
+  // preference reads run alongside it rather than before it. Gating the lock on
+  // isHydrated alone would race an AsyncStorage read against a network call.
+  const [prefsReady, setPrefsReady] = useState(false);
   const pushRegistered = useRef(false);
+  const coldStartLockEvaluated = useRef(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
   useEffect(() => {
@@ -140,15 +145,21 @@ function RootLayout() {
       } finally {
         setFontsLoaded(true);
       }
-      const [optedOut] = await Promise.all([
-        AsyncStorage.getItem(OPT_OUT_KEY),
-        hydrate(),
-        hydrateLocale().finally(() => setLocaleReady(true)),
-        hydrateBiometricLock(),
-        hydrateColorScheme(),
-        hydrateCelebrationState(),
-      ]);
-      if (optedOut === 'true') analytics?.optOut();
+      try {
+        const [optedOut] = await Promise.all([
+          AsyncStorage.getItem(OPT_OUT_KEY),
+          hydrate(),
+          hydrateLocale().finally(() => setLocaleReady(true)),
+          hydrateBiometricLock(),
+          hydrateColorScheme(),
+          hydrateCelebrationState(),
+        ]);
+        if (optedOut === 'true') analytics?.optOut();
+      } catch (err) {
+        Sentry.captureException(err);
+      } finally {
+        setPrefsReady(true);
+      }
     }
     prepare();
   }, [hydrate, hydrateLocale, hydrateBiometricLock, hydrateColorScheme, hydrateCelebrationState]);
@@ -160,7 +171,14 @@ function RootLayout() {
     // happens to be sufficient — but that is an ordering coincidence inside
     // prepare(), and relying on it is what shipped the clipping bug. Reordering
     // those awaits must not be able to uncover the splash over unmeasured text.
-    if (!isHydrated || !fontsLoaded) return;
+    if (!isHydrated || !fontsLoaded || !prefsReady) return;
+
+    // Set before hideAsync, or the dashboard is briefly visible underneath.
+    // A ref, not state: re-running this effect must not re-lock mid-session.
+    if (!coldStartLockEvaluated.current) {
+      coldStartLockEvaluated.current = true;
+      if (biometricLock && isAuthenticated) setShowLock(true);
+    }
 
     SplashScreen.hideAsync();
 
@@ -183,7 +201,7 @@ function RootLayout() {
     if (isAuthenticated && inAuth && !onConsentScreen) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated, isHydrated, fontsLoaded, segments, user]);
+  }, [isAuthenticated, isHydrated, fontsLoaded, prefsReady, biometricLock, segments, user]);
 
   // ── 3. Register push + hydrate server-side notification prefs after auth ─
   useEffect(() => {
