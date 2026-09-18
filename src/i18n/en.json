@@ -797,7 +797,6 @@
     "addTransactionHint": "Tap to add a transaction. Long press for more options.",
     "assistant": "Vittbot",
     "fab": {
-      "longPressHint": "Press and hold for more options",
       "cancel": "Cancel",
       "newTransaction": "New transaction",
       "newTransactionSubtitle": "Voice, photo, or manual entry",

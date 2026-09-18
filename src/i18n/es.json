@@ -797,7 +797,6 @@
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
     "assistant": "Vittbot",
     "fab": {
-      "longPressHint": "Mantén presionado para más opciones",
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "newTransactionSubtitle": "Voz, foto o ingreso manual",
