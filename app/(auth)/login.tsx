@@ -16,8 +16,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as WebBrowser from 'expo-web-browser';
-import * as ExpoLinking from 'expo-linking';
+import { signInWithGoogle } from '../../src/lib/googleSignIn';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -62,7 +61,6 @@ export default function LoginScreen() {
   const textPrimary = theme.textPrimary;
   const textSecondary = theme.textSecondary;
   const login = useAuthStore((s) => s.login);
-  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const isLoading = useAuthStore((s) => s.isLoading);
 
@@ -242,38 +240,15 @@ export default function LoginScreen() {
     setErrorCode(null);
 
     try {
-      const apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
-      const baseUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
-      const redirectUri = 'vittio://auth/callback';
-      const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-      const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
-      if (__DEV__) { console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : ''); }
-
-      if (result.type !== 'success') return;
-
-      const parsed = ExpoLinking.parse(result.url);
-      const access_token = parsed.queryParams?.['access_token'] as string | undefined;
-      const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
-      const expires_in = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
-      const error = parsed.queryParams?.['error'] as string | undefined;
-
-      if (error != null) {
+      // Routing is the root layout's job — a replace here raced its auth guard.
+      const outcome = await signInWithGoogle();
+      if (outcome === 'success') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else if (outcome === 'failed') {
         setErrorCode('INVALID_CREDENTIALS');
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        return;
       }
-
-      if (!access_token || !refresh_token) {
-        setErrorCode('INVALID_CREDENTIALS');
-        return;
-      }
-
-      await loginWithGoogle({ access_token, refresh_token, expires_in, token_type: 'Bearer' });
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(app)');
-    } catch (err) {
-      console.error('[Google OAuth] error:', err);
+    } catch {
       setErrorCode('NETWORK_ERROR');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -302,13 +277,13 @@ export default function LoginScreen() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: bg }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
-          style={styles.flex}
+          style={[styles.flex, { backgroundColor: bg }]}
           contentContainerStyle={[styles.scrollContent, { backgroundColor: bg }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

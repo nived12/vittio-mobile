@@ -62,6 +62,7 @@ const ACCOUNT_DOT_COLORS: Record<string, string> = {
 };
 
 interface RecentTransactionsListProps {
+  hasAccounts: boolean;
   transactions: DashboardTransaction[];
   isLoading: boolean;
   surface: string;
@@ -71,6 +72,7 @@ interface RecentTransactionsListProps {
 
 const RecentTransactionsList = React.memo(function RecentTransactionsList({
   transactions,
+  hasAccounts,
   isLoading,
   surface,
   borderCol,
@@ -78,6 +80,7 @@ const RecentTransactionsList = React.memo(function RecentTransactionsList({
 }: RecentTransactionsListProps) {
   const { t } = useTranslation();
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   return (
     <View style={[styles.card, { padding: 0, overflow: 'hidden', backgroundColor: surface, borderColor: borderCol }]}>
       {isLoading ? (
@@ -93,10 +96,10 @@ const RecentTransactionsList = React.memo(function RecentTransactionsList({
           iconSize={48}
           iconColor="#c7d2fe"
           title={t('dashboard.transactionsEmpty.title')}
-          subtitle={t('dashboard.transactionsEmpty.subtitle')}
-          ctaLabel={t('statement_upload.upload_button')}
+          subtitle={hasAccounts ? t('dashboard.transactionsEmpty.subtitle') : t('dashboard.no_accounts_hint')}
+          ctaLabel={hasAccounts ? t('statement_upload.upload_button') : t('accounts.empty.cta')}
           ctaVariant="ghost"
-          onCta={() => openStatementUpload()}
+          onCta={hasAccounts ? () => openStatementUpload() : () => openAddBankAccount()}
           topPadding={8}
         />
       ) : (
@@ -126,6 +129,7 @@ export default function DashboardScreen() {
   const locale = useUIStore((s) => s.locale);
   const selectedMonth = useUIStore((s) => s.selectedMonth);
   const setSelectedMonth = useUIStore((s) => s.setSelectedMonth);
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -235,8 +239,11 @@ export default function DashboardScreen() {
 
   return (
     <>
+      {/* Opaque strip behind the status bar. paddingTop on the ScrollView folds
+          into the content frame, so content scrolled up under the clock. */}
+      <View style={{ height: insets.top, backgroundColor: bg }} />
       <ScrollView
-        style={[styles.screen, { paddingTop: insets.top, backgroundColor: bg }]}
+        style={[styles.screen, { backgroundColor: bg }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -336,10 +343,10 @@ export default function DashboardScreen() {
                 iconSize={48}
                 iconColor="#c7d2fe"
                 title={t('dashboard.accountsEmpty.title')}
-                subtitle={t('dashboard.accountsEmpty.subtitle')}
+                subtitle={t('dashboard.no_accounts_hint')}
                 ctaLabel={t('dashboard.accountsEmpty.cta')}
                 ctaVariant="primary"
-                onCta={() => router.navigate('/(app)/accounts')}
+                onCta={() => openAddBankAccount()}
                 topPadding={8}
               />
             </View>
@@ -407,6 +414,7 @@ export default function DashboardScreen() {
           </View>
           <RecentTransactionsList
             transactions={data?.recent_transactions ?? []}
+            hasAccounts={(data?.bank_accounts?.length ?? 0) > 0}
             isLoading={isLoading}
             surface={surface}
             borderCol={borderCol}

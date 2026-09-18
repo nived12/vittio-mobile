@@ -15,8 +15,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as WebBrowser from 'expo-web-browser';
-import * as ExpoLinking from 'expo-linking';
+import { signInWithGoogle } from '../../src/lib/googleSignIn';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +26,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/stores/authStore';
 import { getApiErrorCode, getApiErrorDetails } from '../../src/api/client';
 import { colors, components, spacing, textStyles } from '../../src/theme';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { GoogleLogo } from '../../src/components/ui/GoogleLogo';
 import { LEGAL_URLS, openLegalDoc } from '../../src/utils/legal';
 import {
@@ -55,8 +55,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupScreen() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  const bg = theme.background;
   const signup = useAuthStore((s) => s.signup);
-  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const isLoading = useAuthStore((s) => s.isLoading);
 
@@ -194,38 +195,15 @@ export default function SignupScreen() {
     setGoogleError(null);
 
     try {
-      const apiUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000/api/v1';
-      const baseUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
-      const redirectUri = 'vittio://auth/callback';
-      const oauthUrl = `${baseUrl}/auth/google_oauth2?mobile_redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-      const result = await WebBrowser.openAuthSessionAsync(oauthUrl, redirectUri);
-      if (__DEV__) { console.log('[Google OAuth] result:', result.type, 'url' in result ? result.url : ''); }
-
-      if (result.type !== 'success') return;
-
-      const parsed = ExpoLinking.parse(result.url);
-      const access_token = parsed.queryParams?.['access_token'] as string | undefined;
-      const refresh_token = parsed.queryParams?.['refresh_token'] as string | undefined;
-      const expires_in = parseInt((parsed.queryParams?.['expires_in'] as string) ?? '900', 10);
-      const error = parsed.queryParams?.['error'] as string | undefined;
-
-      if (error != null) {
+      // Routing is the root layout's job — a replace here raced its auth guard.
+      const outcome = await signInWithGoogle();
+      if (outcome === 'success') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else if (outcome === 'failed') {
         setGoogleError(t('auth.oauth.error'));
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        return;
       }
-
-      if (!access_token || !refresh_token) {
-        setGoogleError(t('auth.oauth.error'));
-        return;
-      }
-
-      await loginWithGoogle({ access_token, refresh_token, expires_in, token_type: 'Bearer' });
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(app)');
-    } catch (err) {
-      console.error('[Google OAuth] error:', err);
+    } catch {
       setGoogleError(t('auth.oauth.error'));
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -236,14 +214,14 @@ export default function SignupScreen() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      style={[styles.flex, { backgroundColor: bg }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
           ref={scrollViewRef}
-          style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
+          style={[styles.flex, { backgroundColor: bg }]}
+          contentContainerStyle={[styles.scrollContent, { backgroundColor: bg }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

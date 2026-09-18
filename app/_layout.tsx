@@ -19,7 +19,7 @@ Sentry.init({
 export const analytics = process.env.EXPO_PUBLIC_POSTHOG_KEY
   ? new PostHog(process.env.EXPO_PUBLIC_POSTHOG_KEY, { host: 'https://eu.i.posthog.com' })
   : null;
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, View } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
@@ -38,10 +38,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import * as SystemUI from 'expo-system-ui';
+import * as WebBrowser from 'expo-web-browser';
 
 // Match the splash background so there's no white flash during the
 // splash-to-first-screen transition on Android.
 SystemUI.setBackgroundColorAsync('#4f46e5');
+
+// Dismisses a web-auth popup left open when the OAuth callback returns.
+WebBrowser.maybeCompleteAuthSession();
 
 // Freeze inactive screens so off-screen tabs don't re-render when state changes
 // elsewhere. Critical for low-end Android perf in a 5-tab app.
@@ -54,7 +58,7 @@ import { BiometricLockScreen } from '../src/components/BiometricLockScreen';
 import { AnalyticsPrivacyNotice, OPT_OUT_KEY } from '../src/components/AnalyticsPrivacyNotice';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { registerForPushNotifications } from '../src/utils/notifications';
-import { ThemeProvider } from '../src/theme/ThemeContext';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import '../src/i18n'; // Initialize i18next
 
 // Show notifications as banners when app is in foreground
@@ -92,6 +96,33 @@ SplashScreen.preventAutoHideAsync();
 
 // ── Root layout ────────────────────────────────────────────────────────────
 
+/**
+ * `style="auto"` reads the *system* scheme rather than the app's own, so
+ * app-level dark mode drew dark glyphs on a dark background. Follow the
+ * resolved theme instead. Must sit inside ThemeProvider to read it.
+ */
+function ThemedStatusBar() {
+  const { theme, isDark } = useTheme();
+
+  // The window background is set to the splash indigo at module scope and then
+  // never moves. Under edge-to-edge the system bars are transparent, so that
+  // stale colour is what shows through them — visible as a pale strip along the
+  // bottom once the keyboard has opened and resized the window. Track the theme
+  // once the tree is up; the module-scope call still covers the splash hand-off.
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(theme.background);
+  }, [theme.background]);
+
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
+
+/** GestureHandlerRootView is outside ThemeProvider, so the tree's own backdrop
+ *  has to be painted from in here. Without it the bare window shows through. */
+function ThemedRoot({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return <View style={{ flex: 1, backgroundColor: theme.background }}>{children}</View>;
+}
+
 function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrated = useAuthStore((s) => s.isHydrated);
@@ -119,7 +150,12 @@ function RootLayout() {
   // and anything memoized on the `t` identity (the tab bar titles) stays frozen
   // in the wrong language for the whole session.
   const [localeReady, setLocaleReady] = useState(false);
+  // Separate from isHydrated: that flag belongs to the auth store, and the
+  // preference reads run alongside it rather than before it. Gating the lock on
+  // isHydrated alone would race an AsyncStorage read against a network call.
+  const [prefsReady, setPrefsReady] = useState(false);
   const pushRegistered = useRef(false);
+  const coldStartLockEvaluated = useRef(false);
 
   // ── 1. Load fonts + hydrate auth on mount ──────────────────────────────
   useEffect(() => {
@@ -140,15 +176,21 @@ function RootLayout() {
       } finally {
         setFontsLoaded(true);
       }
-      const [optedOut] = await Promise.all([
-        AsyncStorage.getItem(OPT_OUT_KEY),
-        hydrate(),
-        hydrateLocale().finally(() => setLocaleReady(true)),
-        hydrateBiometricLock(),
-        hydrateColorScheme(),
-        hydrateCelebrationState(),
-      ]);
-      if (optedOut === 'true') analytics?.optOut();
+      try {
+        const [optedOut] = await Promise.all([
+          AsyncStorage.getItem(OPT_OUT_KEY),
+          hydrate(),
+          hydrateLocale().finally(() => setLocaleReady(true)),
+          hydrateBiometricLock(),
+          hydrateColorScheme(),
+          hydrateCelebrationState(),
+        ]);
+        if (optedOut === 'true') analytics?.optOut();
+      } catch (err) {
+        Sentry.captureException(err);
+      } finally {
+        setPrefsReady(true);
+      }
     }
     prepare();
   }, [hydrate, hydrateLocale, hydrateBiometricLock, hydrateColorScheme, hydrateCelebrationState]);
@@ -160,7 +202,14 @@ function RootLayout() {
     // happens to be sufficient — but that is an ordering coincidence inside
     // prepare(), and relying on it is what shipped the clipping bug. Reordering
     // those awaits must not be able to uncover the splash over unmeasured text.
-    if (!isHydrated || !fontsLoaded) return;
+    if (!isHydrated || !fontsLoaded || !prefsReady) return;
+
+    // Set before hideAsync, or the dashboard is briefly visible underneath.
+    // A ref, not state: re-running this effect must not re-lock mid-session.
+    if (!coldStartLockEvaluated.current) {
+      coldStartLockEvaluated.current = true;
+      if (biometricLock && isAuthenticated) setShowLock(true);
+    }
 
     SplashScreen.hideAsync();
 
@@ -183,7 +232,7 @@ function RootLayout() {
     if (isAuthenticated && inAuth && !onConsentScreen) {
       router.replace('/(app)');
     }
-  }, [isAuthenticated, isHydrated, fontsLoaded, segments, user]);
+  }, [isAuthenticated, isHydrated, fontsLoaded, prefsReady, biometricLock, segments, user]);
 
   // ── 3. Register push + hydrate server-side notification prefs after auth ─
   useEffect(() => {
@@ -249,8 +298,10 @@ function RootLayout() {
               },
             }}
           >
-            <StatusBar style="auto" />
-            <Slot />
+            <ThemedStatusBar />
+            <ThemedRoot>
+              <Slot />
+            </ThemedRoot>
             <OfflineBanner />
             {showLock && (
               <BiometricLockScreen onUnlock={() => setShowLock(false)} />

@@ -166,7 +166,8 @@
     "offline": "Sin conexión — mostrando datos guardados",
     "errors": {
       "DASHBOARD_LOAD_FAILED": "Error al cargar el panel"
-    }
+    },
+    "no_accounts_hint": "Agrega una cuenta para registrar transacciones y subir estados de cuenta."
   },
   "balanceCard": {
     "totalBalance": "Saldo total",
@@ -297,7 +298,9 @@
     "merchant_placeholder": "Walmart, Cinépolis...",
     "reference_placeholder": "Folio, número de orden...",
     "category_updated": "Categoría actualizada",
-    "category_update_error": "No se pudo actualizar la categoría"
+    "category_update_error": "No se pudo actualizar la categoría",
+    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones.",
+    "details_section": "Detalles"
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
@@ -528,7 +531,12 @@
     "statementUploadTitle": "Próximamente",
     "statementUploadMessage": "La subida de estados de cuenta estará disponible en una próxima actualización.",
     "downloadReport": "Descargar reporte mensual",
-    "comingSoon": "Pronto"
+    "comingSoon": "Pronto",
+    "changeAvatar": "Cambiar foto de perfil",
+    "avatarUpdated": "Foto de perfil actualizada",
+    "avatarUpdateError": "No se pudo actualizar la foto de perfil",
+    "avatarPermissionTitle": "Acceso a fotos",
+    "avatarPermissionMessage": "Vittio necesita acceso a tus fotos para cambiar tu foto de perfil."
   },
   "settings": {
     "title": "Ajustes",
@@ -772,7 +780,8 @@
         "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
       }
     },
-    "file_hint": "PDF · máx 10 MB"
+    "file_hint": "PDF · máx 10 MB",
+    "no_accounts_hint": "Necesitas una cuenta bancaria para poder subir un estado de cuenta."
   },
   "navigation": {
     "home": "Inicio",
@@ -788,7 +797,6 @@
     "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
     "assistant": "Vittbot",
     "fab": {
-      "longPressHint": "Mantén presionado para más opciones",
       "cancel": "Cancelar",
       "newTransaction": "Nueva transacción",
       "newTransactionSubtitle": "Voz, foto o ingreso manual",
@@ -1152,7 +1160,8 @@
       "noRecognizerAvailable": "El reconocimiento de voz no está disponible en este dispositivo.",
       "recognitionFailed": "Error al reconocer la voz. Intenta de nuevo.",
       "noSpeechDetected": "No te escuché. Intenta de nuevo.",
-      "hint": "Toca para hablar, toca de nuevo para terminar"
+      "hint": "Toca para hablar, toca de nuevo para terminar",
+      "rateLimited": "Demasiadas solicitudes. Intenta de nuevo pronto."
     },
     "camera": {
       "tap": "Escanear recibo",

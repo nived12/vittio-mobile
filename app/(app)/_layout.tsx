@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Platform, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Platform, TouchableOpacity, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { StatementUploadModal } from '../../src/components/modals/StatementUploadModal';
+import { AddEditBankAccountModal } from '../../src/components/modals/AddEditBankAccountModal';
 import { ConfirmationBanner } from '../../src/components/ui/ConfirmationBanner';
 import { FabSpeedDial, FabAction } from '../../src/components/ui/FabSpeedDial';
 import { Toast } from '../../src/components/ui/Toast';
@@ -12,7 +13,6 @@ import { useUIStore } from '../../src/stores/uiStore';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useRequireConfirmed } from '../../src/hooks/useRequireConfirmed';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { tokenStorage } from '../../src/utils/tokenStorage';
 import { useTheme } from '../../src/theme/ThemeContext';
 
 // Default React Navigation bottom tab bar content heights per platform.
@@ -66,6 +66,9 @@ export default function AppLayout() {
   const statementUploadAccount = useUIStore((s) => s.statementUploadAccount);
   const openStatementUpload = useUIStore((s) => s.openStatementUpload);
   const closeStatementUpload = useUIStore((s) => s.closeStatementUpload);
+  const showAddBankAccount = useUIStore((s) => s.showAddBankAccount);
+  const addBankAccountCallback = useUIStore((s) => s.addBankAccountCallback);
+  const closeAddBankAccount = useUIStore((s) => s.closeAddBankAccount);
   const hideConfirmationBanner = useUIStore((s) => s.hideConfirmationBanner);
   const toasts = useUIStore((s) => s.toasts);
   const dismissToast = useUIStore((s) => s.dismissToast);
@@ -88,49 +91,11 @@ export default function AppLayout() {
   });
 
   const showBanner = user != null && !user.confirmed && !hideConfirmationBanner;
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const tabBarBg = theme.tabBarBg;
   const tabBarBorder = theme.tabBarBorder;
   const tabBarActive = theme.tabBarActive;
   const tabBarInactive = theme.tabBarInactive;
-
-  const handleFabLongPress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    setShowFabSheet(true);
-    setShowFabHint(false);
-    // Finding the shortcut unaided is the outcome the hint exists to produce.
-    fabHintPending.current = false;
-    tokenStorage.saveFabHintSeen();
-  }, []);
-
-  // Long-press is an accelerator, not a discoverable affordance. Surface it once
-  // on the first tap; every action behind it also has its own entry point, so
-  // this is a shortcut hint rather than the only way in.
-  const [showFabHint, setShowFabHint] = useState(false);
-  // null = the stored flag has not been read yet. Starting at `false` dropped the
-  // hint entirely when the first tap beat the async read, which is exactly what
-  // happens on a cold launch.
-  const fabHintPending = useRef<boolean | null>(null);
-  useEffect(() => {
-    tokenStorage.getFabHintSeen().then((seen) => {
-      if (fabHintPending.current === null) fabHintPending.current = !seen;
-    });
-  }, []);
-
-  const revealFabHintOnce = useCallback(async () => {
-    if (fabHintPending.current === false) return;
-    if (fabHintPending.current === null) {
-      const seen = await tokenStorage.getFabHintSeen();
-      if (seen) {
-        fabHintPending.current = false;
-        return;
-      }
-    }
-    fabHintPending.current = false;
-    setShowFabHint(true);
-    tokenStorage.saveFabHintSeen();
-    setTimeout(() => setShowFabHint(false), 4000);
-  }, []);
 
   const fabActions: FabAction[] = useMemo(() => [
     {
@@ -139,7 +104,7 @@ export default function AppLayout() {
       tint: 'indigo',
       title: t('navigation.fab.newTransaction'),
       subtitle: t('navigation.fab.newTransactionSubtitle'),
-      onPress: () => requireConfirmed(() => router.push('/(app)/transactions/new')),
+      onPress: () => requireConfirmed(() => router.push('/(app)/new-transaction')),
     },
     {
       key: 'uploadStatement',
@@ -164,6 +129,7 @@ export default function AppLayout() {
     () => ({ tabPress: () => Haptics.selectionAsync() }),
     [],
   );
+
 
   const screenOptions = useMemo(() => ({
     headerShown: false,
@@ -213,15 +179,9 @@ export default function AppLayout() {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <TouchableOpacity
           onPress={() => {
-            if (showFabSheet) {
-              setShowFabSheet(false);
-              return;
-            }
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            revealFabHintOnce();
-            requireConfirmed(() => router.push('/(app)/transactions/new'));
+            setShowFabSheet((open) => !open);
           }}
-          onLongPress={handleFabLongPress}
           style={fabButtonStyle}
           accessibilityLabel={t('navigation.addTransaction')}
           accessibilityRole="button"
@@ -233,7 +193,7 @@ export default function AppLayout() {
         </TouchableOpacity>
       </View>
     ),
-  }), [showFabSheet, requireConfirmed, handleFabLongPress, revealFabHintOnce, iconRotate, t, language]);
+  }), [requireConfirmed, iconRotate, t, language]);
 
   return (
     <>
@@ -246,6 +206,7 @@ export default function AppLayout() {
         <Tabs.Screen name="finances" options={financesOptions} listeners={tabPressListeners} />
 
         {/* Routes hidden from the tab bar but accessible via deep links / profile menu */}
+        <Tabs.Screen name="new-transaction" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="profile" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="settings" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="delete-account" options={HIDDEN_TAB_OPTIONS} />
@@ -264,27 +225,12 @@ export default function AppLayout() {
           {...(statementUploadAccount ? { preselectedAccount: statementUploadAccount } : {})}
         />
       )}
-      {showFabHint && (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            bottom:
-              (Platform.OS === 'ios'
-                ? TAB_BAR_CONTENT_HEIGHT_IOS + insets.bottom
-                : TAB_BAR_CONTENT_HEIGHT_ANDROID) + 52,
-            alignSelf: 'center',
-            backgroundColor: isDark ? '#1e293b' : '#0f172a',
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            borderRadius: 999,
-          }}
-          accessibilityLiveRegion="polite"
-        >
-          <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '500' }}>
-            {t('navigation.fab.longPressHint')}
-          </Text>
-        </View>
+      {showAddBankAccount && (
+        <AddEditBankAccountModal
+          visible={showAddBankAccount}
+          onClose={closeAddBankAccount}
+          {...(addBankAccountCallback ? { onCreated: addBankAccountCallback } : {})}
+        />
       )}
       {showFabSheet && (
         <FabSpeedDial

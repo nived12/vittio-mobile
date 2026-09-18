@@ -26,6 +26,7 @@ import Animated, {
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -39,6 +40,7 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowLeftRight,
+  Plus,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { resolveBankAccountName } from '../../utils/displayNames';
@@ -122,6 +124,7 @@ interface AccountPickerProps {
 function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSelect, onClose }: AccountPickerProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
   const textPrimary = isDark ? theme.textPrimary : '#0f172a';
@@ -168,7 +171,22 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
               );
             }}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>{t('transactions.no_account_warning')}</Text>
+              <View style={styles.pickerEmpty}>
+                <Text style={[styles.emptyText, { color: textSecondary }]}>
+                  {t('transactions.no_accounts_hint')}
+                </Text>
+                <TouchableOpacity
+                  style={[styles.pickerEmptyBtn, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    onClose();
+                    openAddBankAccount((created) => onSelect(created));
+                  }}
+                  accessibilityRole="button"
+                >
+                  <Plus size={16} color="#ffffff" />
+                  <Text style={styles.pickerEmptyBtnText}>{t('accounts.empty.cta')}</Text>
+                </TouchableOpacity>
+              </View>
             }
           />
         </View>
@@ -183,6 +201,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   const isPremiumLocked = useIsPremiumLocked();
   const isEditMode = Boolean(transaction);
 
@@ -989,9 +1008,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
                 maximumDate={new Date()}
-                onChange={(_event, selected) => {
-                  if (selected) setDate(selected);
-                }}
+                onChange={onDatePicked(setShowDatePicker, setDate)}
               />
             )}
             {showDatePicker && Platform.OS === 'ios' && (
@@ -1009,7 +1026,14 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
               <Text style={[styles.fieldLabel, { color: textSecondary }]}>{t('transactions.account_label')} *</Text>
               <TouchableOpacity
                 style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
-                onPress={() => { Keyboard.dismiss(); setShowAccountPicker(true); }}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  if (accounts.length === 0) {
+                    openAddBankAccount((created) => setSelectedAccount(created));
+                  } else {
+                    setShowAccountPicker(true);
+                  }
+                }}
                 accessibilityRole="button"
               >
                 <Text style={selectedAccount ? [styles.fieldRowText, { color: textPrimary }] : styles.fieldRowPlaceholder}>
@@ -1296,6 +1320,27 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
 // ── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  pickerEmpty: {
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
+  pickerEmptyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    alignSelf: 'stretch',
+  },
+  pickerEmptyBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: '#ffffff',
+  },
   screenRoot: {
     flex: 1,
   },

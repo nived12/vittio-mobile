@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X, Calendar } from 'lucide-react-native';
@@ -220,7 +221,7 @@ export function AddEditRecurringModal({ visible, onClose, series }: Props) {
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 minimumDate={isEdit ? undefined : new Date()}
-                onChange={(_e, d) => { setShowDatePicker(Platform.OS === 'ios'); if (d) setNextDue(d); }}
+                onChange={onDatePicked(setShowDatePicker, setNextDue)}
               />
             )}
           </View>

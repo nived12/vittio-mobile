@@ -99,7 +99,6 @@ const KEYS = {
   LOCALE: 'vittio_locale',
   BIOMETRIC_LOCK: 'vittio_biometric_lock',
   COLOR_SCHEME: 'vittio_color_scheme',
-  FAB_HINT_SEEN: 'vittio_fab_hint_seen',
   CELEBRATED_GOALS: 'vittio_celebrated_goals',
   CELEBRATED_DEBTS: 'vittio_celebrated_debts',
 } as const;
@@ -188,13 +187,7 @@ async function getColorScheme(): Promise<'system' | 'light' | 'dark'> {
   return 'system';
 }
 
-async function saveFabHintSeen(): Promise<void> {
-  await prefSet(KEYS.FAB_HINT_SEEN, '1');
-}
 
-async function getFabHintSeen(): Promise<boolean> {
-  return (await prefGet(KEYS.FAB_HINT_SEEN)) === '1';
-}
 
 async function saveCelebratedGoals(ids: string[]): Promise<void> {
   await prefSet(KEYS.CELEBRATED_GOALS, JSON.stringify(ids));
@@ -242,8 +235,6 @@ export const tokenStorage = {
   getBiometricLock,
   saveColorScheme,
   getColorScheme,
-  saveFabHintSeen,
-  getFabHintSeen,
   saveCelebratedGoals,
   getCelebratedGoals,
   saveCelebratedDebts,

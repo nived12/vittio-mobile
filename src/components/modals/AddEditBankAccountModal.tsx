@@ -12,7 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X, ChevronRight, Lock, Search, CreditCard, Banknote, ChevronLeft, Calendar, TrendingUp } from 'lucide-react-native';
@@ -35,6 +36,8 @@ interface Props {
   onClose: () => void;
   /** If provided, opens in Edit mode */
   account?: BankAccount;
+  /** Create mode only — lets the opener resume with the account just made. */
+  onCreated?: (account: BankAccount) => void;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -64,7 +67,7 @@ function BankLogo({ bank, size = 40 }: { bank: Bank; size?: number }) {
 
 // ── Main Modal ─────────────────────────────────────────────────────────────
 
-export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
+export function AddEditBankAccountModal({ visible, onClose, account, onCreated }: Props) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useUIStore();
@@ -193,12 +196,6 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
     : (selectedBank !== null || isCash) &&
       (isCash || accountNumber.trim().length > 0); // account_number required for non-cash
 
-  // ── Date picker handler ──
-  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
-    if (Platform.OS === 'android') setShowDatePicker(false);
-    if (date) setOpeningBalanceDate(date);
-  };
-
   // ── Save ──
   const handleSave = async () => {
     setHasAttemptedSave(true);
@@ -227,8 +224,9 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
           opening_balance: accountType === 'credit' ? -Math.abs(openingBalance) : openingBalance,
           opening_balance_date: toISODate(openingBalanceDate),
         };
-        await createMutation.mutateAsync(body);
+        const created = await createMutation.mutateAsync(body);
         showToast(t('bank_accounts.saved_toast'), 'success');
+        onCreated?.(created);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onClose();
@@ -570,7 +568,7 @@ export function AddEditBankAccountModal({ visible, onClose, account }: Props) {
                             mode="date"
                             display={Platform.OS === 'ios' ? 'inline' : 'default'}
                             maximumDate={new Date()}
-                            onChange={handleDateChange}
+                            onChange={onDatePicked(setShowDatePicker, setOpeningBalanceDate)}
                             locale={displayLocale}
                           />
                           {Platform.OS === 'ios' && (

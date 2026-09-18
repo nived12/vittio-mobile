@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X, Calendar } from 'lucide-react-native';
@@ -183,7 +184,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
             </TouchableOpacity>
             {showStartPicker && (
               <DateTimePicker value={startDate} mode="date" display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(_e, d) => { setShowStartPicker(Platform.OS === 'ios'); if (d) setStartDate(d); }} />
+                onChange={onDatePicked(setShowStartPicker, setStartDate)} />
             )}
           </View>
 
@@ -202,7 +203,7 @@ export function AddEditGoalModal({ visible, onClose, goal }: Props) {
               <DateTimePicker value={deadline ?? new Date()} mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 minimumDate={startDate}
-                onChange={(_e, d) => { setShowDeadlinePicker(Platform.OS === 'ios'); if (d) setDeadline(d); }} />
+                onChange={onDatePicked(setShowDeadlinePicker, setDeadline)} />
             )}
           </View>
 

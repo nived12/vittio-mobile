@@ -18,10 +18,11 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { onDatePicked } from '../../utils/datePicker';
 import { format } from 'date-fns';
 import { es as dateFnsEs } from 'date-fns/locale';
 import * as Haptics from 'expo-haptics';
-import { X, FileText, CheckCircle, AlertTriangle, ChevronRight, ArrowRight, Sparkles } from 'lucide-react-native';
+import { X, FileText, CheckCircle, AlertTriangle, ChevronRight, ArrowRight, Sparkles, Plus } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { resolveBankAccountName } from '../../utils/displayNames';
 import { useTheme } from '../../theme/ThemeContext';
@@ -177,6 +178,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { locale, showToast } = useUIStore();
+  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
 
   // ── Dark mode ──
   const { theme, isDark } = useTheme();
@@ -527,9 +529,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   maximumDate={new Date()}
                   locale={displayLocale}
-                  onChange={(_evt, d) => {
-                    if (d) setCutoffDate(d);
-                  }}
+                  onChange={onDatePicked(setShowDatePicker, setCutoffDate)}
                 />
               )}
               {showDatePicker && Platform.OS === 'ios' && (
@@ -542,8 +542,29 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                 </TouchableOpacity>
               )}
 
+              {/* No account yet — the upload cannot proceed without one, so offer
+                  to make it here rather than leaving the button greyed out. */}
+              {!preselectedAccount && accounts.length === 0 && (
+                <>
+                  <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('statement_upload.account_question')}</Text>
+                  <View style={[styles.noAccountCard, { backgroundColor: inputBg, borderColor: borderCol }]}>
+                    <Text style={[styles.noAccountText, { color: textSecondary }]}>
+                      {t('statement_upload.no_accounts_hint')}
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.noAccountBtn, { backgroundColor: theme.primary }]}
+                      onPress={() => openAddBankAccount((created) => setSelectedAccount(created))}
+                      accessibilityRole="button"
+                    >
+                      <Plus size={16} color="#ffffff" />
+                      <Text style={styles.noAccountBtnText}>{t('accounts.empty.cta')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+
               {/* Account list (collapsed if pre-selected from Account Detail) */}
-              {!preselectedAccount && (
+              {!preselectedAccount && accounts.length > 0 && (
                 <>
                   <Text style={[styles.sectionLabel, { color: textSecondary }]}>{t('statement_upload.account_question')}</Text>
                   <FlatList
@@ -872,6 +893,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   // Account rows
+  noAccountCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    alignItems: 'center',
+  },
+  noAccountText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  noAccountBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    alignSelf: 'stretch',
+  },
+  noAccountBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: '#ffffff',
+  },
   accountList: {
     maxHeight: 200,
     marginBottom: 12,
