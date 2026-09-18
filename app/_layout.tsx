@@ -19,7 +19,7 @@ Sentry.init({
 export const analytics = process.env.EXPO_PUBLIC_POSTHOG_KEY
   ? new PostHog(process.env.EXPO_PUBLIC_POSTHOG_KEY, { host: 'https://eu.i.posthog.com' })
   : null;
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, View } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
@@ -114,6 +114,13 @@ function ThemedStatusBar() {
   }, [theme.background]);
 
   return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
+
+/** GestureHandlerRootView is outside ThemeProvider, so the tree's own backdrop
+ *  has to be painted from in here. Without it the bare window shows through. */
+function ThemedRoot({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return <View style={{ flex: 1, backgroundColor: theme.background }}>{children}</View>;
 }
 
 function RootLayout() {
@@ -292,7 +299,9 @@ function RootLayout() {
             }}
           >
             <ThemedStatusBar />
-            <Slot />
+            <ThemedRoot>
+              <Slot />
+            </ThemedRoot>
             <OfflineBanner />
             {showLock && (
               <BiometricLockScreen onUnlock={() => setShowLock(false)} />

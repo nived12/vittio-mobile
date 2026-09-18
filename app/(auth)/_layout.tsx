@@ -1,9 +1,11 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { useStackScreenOptions } from '../../src/theme/useStackScreenOptions';
 
 export default function AuthLayout() {
+  const screenOptions = useStackScreenOptions();
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={screenOptions}>
       {/* Login is the root — no entrance animation, appears instantly */}
       <Stack.Screen name="login" options={{ animation: 'none' }} />
       <Stack.Screen name="signup" options={{ animation: 'slide_from_right' }} />
