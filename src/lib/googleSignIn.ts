@@ -76,10 +76,21 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
     ]);
     if (raced) return await consumeCallbackUrl(raced, claim);
 
-    // A real dismissal looks identical to a swallowed callback, so record which
-    // one the browser reported rather than failing silently the way this did.
-    Sentry.captureMessage(`Google OAuth did not complete: ${result.type}`, 'warning');
-    return result.type === 'cancel' || result.type === 'dismiss' ? 'cancelled' : 'failed';
+    const cancelled = result.type === 'cancel' || result.type === 'dismiss';
+
+    // Closing the sheet is a choice, not a fault: as an issue it is indistinguishable
+    // from the swallowed-callback bug this instrumentation exists to catch. Keep it
+    // as context for a later failure instead. The Linking race above has already had
+    // its window, so a callback that was going to arrive has arrived by now.
+    Sentry.addBreadcrumb({
+      category: 'auth',
+      level: cancelled ? 'info' : 'warning',
+      message: `Google OAuth did not complete: ${result.type}`,
+    });
+    if (!cancelled) {
+      Sentry.captureMessage(`Google OAuth did not complete: ${result.type}`, 'warning');
+    }
+    return cancelled ? 'cancelled' : 'failed';
   } finally {
     subscription.remove();
   }
