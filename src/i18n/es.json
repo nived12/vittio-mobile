@@ -299,7 +299,6 @@
     "reference_placeholder": "Folio, número de orden...",
     "category_updated": "Categoría actualizada",
     "category_update_error": "No se pudo actualizar la categoría",
-    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones.",
     "details_section": "Detalles"
   },
   "bank_accounts": {

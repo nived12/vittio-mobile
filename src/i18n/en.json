@@ -299,7 +299,6 @@
     "reference_placeholder": "Folio, order number...",
     "category_updated": "Category updated",
     "category_update_error": "Couldn't update the category",
-    "no_accounts_hint": "You need a bank account before you can record transactions.",
     "details_section": "Details"
   },
   "bank_accounts": {
