@@ -299,7 +299,8 @@
     "reference_placeholder": "Folio, número de orden...",
     "category_updated": "Categoría actualizada",
     "category_update_error": "No se pudo actualizar la categoría",
-    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones."
+    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones.",
+    "details_section": "Detalles"
   },
   "bank_accounts": {
     "add_title": "Nueva Cuenta",
@@ -530,7 +531,12 @@
     "statementUploadTitle": "Próximamente",
     "statementUploadMessage": "La subida de estados de cuenta estará disponible en una próxima actualización.",
     "downloadReport": "Descargar reporte mensual",
-    "comingSoon": "Pronto"
+    "comingSoon": "Pronto",
+    "changeAvatar": "Cambiar foto de perfil",
+    "avatarUpdated": "Foto de perfil actualizada",
+    "avatarUpdateError": "No se pudo actualizar la foto de perfil",
+    "avatarPermissionTitle": "Acceso a fotos",
+    "avatarPermissionMessage": "Vittio necesita acceso a tus fotos para cambiar tu foto de perfil."
   },
   "settings": {
     "title": "Ajustes",
@@ -1155,7 +1161,8 @@
       "noRecognizerAvailable": "El reconocimiento de voz no está disponible en este dispositivo.",
       "recognitionFailed": "Error al reconocer la voz. Intenta de nuevo.",
       "noSpeechDetected": "No te escuché. Intenta de nuevo.",
-      "hint": "Toca para hablar, toca de nuevo para terminar"
+      "hint": "Toca para hablar, toca de nuevo para terminar",
+      "rateLimited": "Demasiadas solicitudes. Intenta de nuevo pronto."
     },
     "camera": {
       "tap": "Escanear recibo",

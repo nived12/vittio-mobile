@@ -299,7 +299,8 @@
     "reference_placeholder": "Folio, order number...",
     "category_updated": "Category updated",
     "category_update_error": "Couldn't update the category",
-    "no_accounts_hint": "You need a bank account before you can record transactions."
+    "no_accounts_hint": "You need a bank account before you can record transactions.",
+    "details_section": "Details"
   },
   "bank_accounts": {
     "add_title": "New Account",
@@ -530,7 +531,12 @@
     "statementUploadTitle": "Coming soon",
     "statementUploadMessage": "Bank statement upload will be available in a future update.",
     "downloadReport": "Download monthly report",
-    "comingSoon": "Soon"
+    "comingSoon": "Soon",
+    "changeAvatar": "Change profile photo",
+    "avatarUpdated": "Profile photo updated",
+    "avatarUpdateError": "Couldn't update your profile photo",
+    "avatarPermissionTitle": "Photo access",
+    "avatarPermissionMessage": "Vittio needs access to your photos to change your profile picture."
   },
   "settings": {
     "title": "Settings",
@@ -1155,7 +1161,8 @@
       "noRecognizerAvailable": "Speech recognition is not available on this device.",
       "recognitionFailed": "Speech recognition failed. Try again.",
       "noSpeechDetected": "Didn't hear anything. Try again.",
-      "hint": "Tap once to speak, tap again to stop"
+      "hint": "Tap once to speak, tap again to stop",
+      "rateLimited": "Too many requests. Please try again shortly."
     },
     "camera": {
       "tap": "Scan receipt",

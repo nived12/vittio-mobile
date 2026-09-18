@@ -97,12 +97,22 @@ SplashScreen.preventAutoHideAsync();
 // ── Root layout ────────────────────────────────────────────────────────────
 
 /**
- * `style="auto"` reads the *system* scheme, which app.config.js pins to light on
- * iOS — so app-level dark mode drew dark glyphs on a dark background. Follow the
+ * `style="auto"` reads the *system* scheme rather than the app's own, so
+ * app-level dark mode drew dark glyphs on a dark background. Follow the
  * resolved theme instead. Must sit inside ThemeProvider to read it.
  */
 function ThemedStatusBar() {
-  const { isDark } = useTheme();
+  const { theme, isDark } = useTheme();
+
+  // The window background is set to the splash indigo at module scope and then
+  // never moves. Under edge-to-edge the system bars are transparent, so that
+  // stale colour is what shows through them — visible as a pale strip along the
+  // bottom once the keyboard has opened and resized the window. Track the theme
+  // once the tree is up; the module-scope call still covers the splash hand-off.
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(theme.background);
+  }, [theme.background]);
+
   return <StatusBar style={isDark ? 'light' : 'dark'} />;
 }
 
