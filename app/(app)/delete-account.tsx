@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { CaretLeft, Trash, X, CheckCircle, Warning } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 import { deleteAccount } from '../../src/api/user';
@@ -37,6 +37,11 @@ export default function DeleteAccountScreen() {
     [i18n.language],
   );
   const canSubmit = confirmText.trim() === confirmWord && !submitting;
+
+  // This screen is a tab route, so it stays mounted after navigating away and the
+  // typed confirmation would still be there — and the delete button still enabled
+  // — on the next visit. Clear it on the way out.
+  useFocusEffect(useCallback(() => () => setConfirmText(''), []));
 
   const bg = isDark ? theme.background : '#f8fafc';
   const surface = isDark ? theme.surface : '#ffffff';
