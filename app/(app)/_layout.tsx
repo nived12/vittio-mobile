@@ -143,7 +143,7 @@ export default function AppLayout() {
       tint: 'indigo',
       title: t('navigation.fab.newTransaction'),
       subtitle: t('navigation.fab.newTransactionSubtitle'),
-      onPress: () => requireConfirmed(() => router.push('/(app)/transactions/new')),
+      onPress: () => requireConfirmed(() => router.push('/(app)/new-transaction')),
     },
     {
       key: 'uploadStatement',
@@ -169,20 +169,6 @@ export default function AppLayout() {
     [],
   );
 
-  // Tapping a tab must land on that tab's root. Each of these tabs is a Stack,
-  // and React Navigation restores whatever was last pushed onto it — so after
-  // the FAB pushed transactions/new, tapping Actividad reopened the form
-  // instead of the list.
-  const rootOnTabPress = useCallback(
-    (tab: 'transactions' | 'accounts' | 'finances') =>
-      ({ navigation }: { navigation: { navigate: (n: string, p?: object) => void } }) => ({
-        tabPress: () => {
-          Haptics.selectionAsync();
-          navigation.navigate(tab, { screen: 'index' });
-        },
-      }),
-    [],
-  );
 
   const screenOptions = useMemo(() => ({
     headerShown: false,
@@ -238,7 +224,7 @@ export default function AppLayout() {
             }
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             revealFabHintOnce();
-            requireConfirmed(() => router.push('/(app)/transactions/new'));
+            requireConfirmed(() => router.push('/(app)/new-transaction'));
           }}
           onLongPress={handleFabLongPress}
           style={fabButtonStyle}
@@ -259,12 +245,13 @@ export default function AppLayout() {
       {showBanner && <ConfirmationBanner />}
       <Tabs screenOptions={screenOptions}>
         <Tabs.Screen name="index" options={homeOptions} listeners={tabPressListeners} />
-        <Tabs.Screen name="transactions" options={activityOptions} listeners={rootOnTabPress('transactions')} />
+        <Tabs.Screen name="transactions" options={activityOptions} listeners={tabPressListeners} />
         <Tabs.Screen name="add" options={addOptions} />
-        <Tabs.Screen name="accounts" options={accountsOptions} listeners={rootOnTabPress('accounts')} />
-        <Tabs.Screen name="finances" options={financesOptions} listeners={rootOnTabPress('finances')} />
+        <Tabs.Screen name="accounts" options={accountsOptions} listeners={tabPressListeners} />
+        <Tabs.Screen name="finances" options={financesOptions} listeners={tabPressListeners} />
 
         {/* Routes hidden from the tab bar but accessible via deep links / profile menu */}
+        <Tabs.Screen name="new-transaction" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="profile" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="settings" options={HIDDEN_TAB_OPTIONS} />
         <Tabs.Screen name="delete-account" options={HIDDEN_TAB_OPTIONS} />

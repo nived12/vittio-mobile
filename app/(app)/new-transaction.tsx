@@ -1,6 +1,6 @@
 import React from 'react';
 import { router } from 'expo-router';
-import { AddEditTransactionModal } from '../../../src/components/modals/AddEditTransactionModal';
+import { AddEditTransactionModal } from '../../src/components/modals/AddEditTransactionModal';
 
 export default function NewTransactionScreen() {
   return (
