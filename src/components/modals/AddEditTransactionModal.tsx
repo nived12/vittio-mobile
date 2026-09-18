@@ -40,7 +40,6 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowLeftRight,
-  Plus,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { resolveBankAccountName } from '../../utils/displayNames';
@@ -124,7 +123,6 @@ interface AccountPickerProps {
 function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSelect, onClose }: AccountPickerProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const openAddBankAccount = useUIStore((s) => s.openAddBankAccount);
   const { theme, isDark } = useTheme();
   const surface = isDark ? theme.surface : '#ffffff';
   const textPrimary = isDark ? theme.textPrimary : '#0f172a';
@@ -170,24 +168,6 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
                 </TouchableOpacity>
               );
             }}
-            ListEmptyComponent={
-              <View style={styles.pickerEmpty}>
-                <Text style={[styles.emptyText, { color: textSecondary }]}>
-                  {t('transactions.no_accounts_hint')}
-                </Text>
-                <TouchableOpacity
-                  style={[styles.pickerEmptyBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => {
-                    onClose();
-                    openAddBankAccount((created) => onSelect(created));
-                  }}
-                  accessibilityRole="button"
-                >
-                  <Plus size={16} color="#ffffff" />
-                  <Text style={styles.pickerEmptyBtnText}>{t('accounts.empty.cta')}</Text>
-                </TouchableOpacity>
-              </View>
-            }
           />
         </View>
       </View>
@@ -1320,27 +1300,6 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
 // ── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  pickerEmpty: {
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-  },
-  pickerEmptyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    minHeight: 44,
-    alignSelf: 'stretch',
-  },
-  pickerEmptyBtnText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: '#ffffff',
-  },
   screenRoot: {
     flex: 1,
   },
@@ -1648,12 +1607,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748b',
     marginTop: 2,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#94a3b8',
-    textAlign: 'center',
-    paddingVertical: 24,
   },
   categorySearch: {
     marginHorizontal: 16,

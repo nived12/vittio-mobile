@@ -44,3 +44,56 @@ test("bottom nav shows exactly the expected tabs (no leaked routes)", async ({ p
     });
   }
 });
+
+test("the FAB opens the action sheet instead of jumping straight to a form", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel(/agregar transacci[oó]n|add transaction/i).first().click();
+
+  // All three entry points must be reachable from one tap. Upload in particular
+  // used to be hidden behind a long-press nobody discovered.
+  await expect(page.getByText(/^(Nueva transacci[oó]n|New transaction)$/i).first()).toBeVisible();
+  await expect(page.getByText(/^(Subir estado de cuenta|Upload statement)$/i).first()).toBeVisible();
+  await expect(page.getByText(/^Vittbot$/i).first()).toBeVisible();
+
+  // The FAB opens a menu; it must not navigate on its own.
+  await expect(page).not.toHaveURL(/new-transaction/);
+});
+
+test("the Activity tab returns to the list after the new-transaction form was open", async ({ page }) => {
+  await page.goto("/");
+
+  // Reproduces the original report: new-transaction used to live inside the
+  // Activity stack, so the tab restored it and alternated list / form per tap.
+  await page.getByLabel(/agregar transacci[oó]n|add transaction/i).first().click();
+  await page.getByLabel(/^(Nueva transacci[oó]n|New transaction)$/i).first().click();
+  await page.waitForURL(/new-transaction/, { timeout: 10_000 });
+
+  for (let i = 0; i < 2; i += 1) {
+    await page.getByText("Actividad", { exact: true }).first().click();
+    await page.waitForURL(/\/transactions/, { timeout: 10_000 });
+    await expect(page).not.toHaveURL(/new-transaction/);
+  }
+});
+
+test("the new-transaction form does not keep what was typed last time", async ({ page }) => {
+  await page.goto("/");
+
+  // The route is a tab, not a stack push, so React Navigation keeps it mounted.
+  // Without an explicit remount the next visit came back holding the last entry.
+  const openForm = async () => {
+    await page.getByLabel(/agregar transacci[oó]n|add transaction/i).first().click();
+    await page.getByLabel(/^(Nueva transacci[oó]n|New transaction)$/i).first().click();
+    await page.waitForURL(/new-transaction/, { timeout: 10_000 });
+  };
+
+  await openForm();
+  const description = page.getByPlaceholder(/Starbucks, Oxxo, Netflix/i).first();
+  await description.fill("CASHBACK DE PRUEBA");
+  await expect(description).toHaveValue("CASHBACK DE PRUEBA");
+
+  await page.getByText("Inicio", { exact: true }).first().click();
+  await page.waitForURL((url) => !url.pathname.includes("new-transaction"), { timeout: 10_000 });
+
+  await openForm();
+  await expect(page.getByPlaceholder(/Starbucks, Oxxo, Netflix/i).first()).toHaveValue("");
+});

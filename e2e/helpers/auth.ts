@@ -7,12 +7,19 @@ import { setupApiMocks } from "../mocks/api-mocks";
  * @param userOverrides merged into the logged-in user. The app keeps this object in
  *   the auth store and reads it directly, so overriding the login response — not
  *   GET /user — is what changes what a screen renders.
+ * @param stubRoutes registered before the app's first fetch, for specs that need a
+ *   different API shape from the start (e.g. a user with no bank accounts).
  */
 export async function login(
   page: Page,
-  userOverrides?: Record<string, unknown>
+  userOverrides?: Record<string, unknown>,
+  stubRoutes?: (page: Page) => Promise<void>
 ): Promise<void> {
   await setupApiMocks(page);
+
+  // Runs before the first navigation on purpose: React Query persists its cache,
+  // so a stub registered after login survives into a reload showing stale data.
+  if (stubRoutes) await stubRoutes(page);
 
   // Registered after setupApiMocks on purpose: Playwright matches the most recently
   // added route first, so this wins over the catch-all.

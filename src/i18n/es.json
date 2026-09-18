@@ -299,7 +299,6 @@
     "reference_placeholder": "Folio, número de orden...",
     "category_updated": "Categoría actualizada",
     "category_update_error": "No se pudo actualizar la categoría",
-    "no_accounts_hint": "Necesitas una cuenta bancaria antes de registrar transacciones.",
     "details_section": "Detalles"
   },
   "bank_accounts": {
@@ -794,7 +793,7 @@
     "accountsTab": "Pestaña Cuentas",
     "financesTab": "Pestaña Finanzas",
     "addTransaction": "Agregar transacción",
-    "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
+    "addTransactionHint": "Toca para elegir qué agregar.",
     "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancelar",
