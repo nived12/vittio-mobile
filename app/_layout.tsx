@@ -19,7 +19,7 @@ Sentry.init({
 export const analytics = process.env.EXPO_PUBLIC_POSTHOG_KEY
   ? new PostHog(process.env.EXPO_PUBLIC_POSTHOG_KEY, { host: 'https://eu.i.posthog.com' })
   : null;
-import { AppState, AppStateStatus, View } from 'react-native';
+import { View } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
@@ -136,7 +136,6 @@ function RootLayout() {
   const biometricLock = useUIStore((s) => s.biometricLock);
 
   const segments = useSegments();
-  const appState = useRef<AppStateStatus>(AppState.currentState);
   const [showLock, setShowLock] = useState(false);
   // Nothing may render until Inter is registered. Text measured with the system
   // font and then drawn in Inter comes out wider than the frame it was given, so
@@ -258,24 +257,6 @@ function RootLayout() {
     return () => subscription.remove();
   }, []);
 
-  // ── 5. Biometric lock on app resume from background ───────────────────
-  useEffect(() => {
-    const subscription = AppState.addEventListener(
-      'change',
-      (nextState: AppStateStatus) => {
-        const wasBackground =
-          appState.current === 'background' ||
-          appState.current === 'inactive';
-        const isNowActive = nextState === 'active';
-
-        if (wasBackground && isNowActive && biometricLock && isAuthenticated) {
-          setShowLock(true);
-        }
-        appState.current = nextState;
-      },
-    );
-    return () => subscription.remove();
-  }, [biometricLock, isAuthenticated]);
 
   // The splash screen is still up at this point, so returning null shows nothing
   // new — it only keeps the screen tree from mounting and measuring text before
