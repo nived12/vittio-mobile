@@ -54,10 +54,9 @@ import { useIsPremiumLocked } from '../../hooks/useIsPremiumLocked';
 import { parseVoice, parseImage } from '../../api/transactions';
 import { PremiumBadge } from '../PremiumBadge';
 import { Toast } from '../ui/Toast';
-import { setCategoryPickerCallback } from '../../utils/categoryPickerCallback';
+import { CategoryPickerSheet, type CategorySelection } from './CategoryPickerSheet';
 import type { Transaction, TransactionType, CreateTransactionBody, TransactionItemAttribute, AiParseResult } from '../../api/transactions';
 import type { BankAccount } from '../../api/bankAccounts';
-import type { Category } from '../../api/categories';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -214,7 +213,8 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategorySelection>(null);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [concept, setConcept] = useState('');
   const [merchant, setMerchant] = useState('');
   const [reference, setReference] = useState('');
@@ -1055,17 +1055,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
                 style={[styles.fieldRow, { backgroundColor: inputBg, borderColor: borderCol }]}
                 onPress={() => {
                   Keyboard.dismiss();
-                  setCategoryPickerCallback((cat) => {
-                    setSelectedCategory(cat as Category | null);
-                    const merchantName = merchant.trim() || committedMerchant;
-                    if (cat && merchantName) {
-                      createRuleMutation.mutate({ merchant_name: merchantName, category_id: cat.id });
-                    }
-                  });
-                  router.push({
-                    pathname: '/(app)/transactions/select-category',
-                    params: { selectedId: selectedCategory?.id ?? '' },
-                  });
+                  setShowCategoryPicker(true);
                 }}
                 accessibilityRole="button"
               >
@@ -1274,6 +1264,19 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
       </View>
 
       {/* Sub-sheets — no longer nested Modals, parent is a full screen */}
+      <CategoryPickerSheet
+        visible={showCategoryPicker}
+        selectedId={selectedCategory?.id ?? null}
+        onClose={() => setShowCategoryPicker(false)}
+        onSelect={(cat) => {
+          setSelectedCategory(cat);
+          const merchantName = merchant.trim() || committedMerchant;
+          if (cat && merchantName) {
+            createRuleMutation.mutate({ merchant_name: merchantName, category_id: cat.id });
+          }
+        }}
+      />
+
       <AccountPickerSheet
         visible={showAccountPicker}
         accounts={accounts}
