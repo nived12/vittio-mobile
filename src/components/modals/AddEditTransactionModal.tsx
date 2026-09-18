@@ -176,7 +176,7 @@ function AccountPickerSheet({ visible, accounts, selectedId, locale, title, onSe
                   {t('transactions.no_accounts_hint')}
                 </Text>
                 <TouchableOpacity
-                  style={styles.pickerEmptyBtn}
+                  style={[styles.pickerEmptyBtn, { backgroundColor: theme.primary }]}
                   onPress={() => {
                     onClose();
                     openAddBankAccount((created) => onSelect(created));
@@ -1331,7 +1331,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#4f46e5',
     borderRadius: 10,
     paddingHorizontal: 16,
     minHeight: 44,

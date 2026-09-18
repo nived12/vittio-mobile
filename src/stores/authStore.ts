@@ -285,7 +285,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Fetch current user to validate the stored access token
       const { authApi } = await import('../api/auth');
       const user = await authApi.me();
-      await tokenStorage.saveUser(user);
+      // Refreshing the cache must not be able to end the session: /user already
+      // succeeded, so a SecureStore write failure is not grounds for a logout.
+      await tokenStorage.saveUser(user).catch(() => {});
 
       set({
         user,

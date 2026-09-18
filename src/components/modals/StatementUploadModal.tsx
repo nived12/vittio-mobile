@@ -552,7 +552,7 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
                       {t('statement_upload.no_accounts_hint')}
                     </Text>
                     <TouchableOpacity
-                      style={styles.noAccountBtn}
+                      style={[styles.noAccountBtn, { backgroundColor: theme.primary }]}
                       onPress={() => openAddBankAccount((created) => setSelectedAccount(created))}
                       accessibilityRole="button"
                     >
@@ -911,7 +911,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#4f46e5',
     borderRadius: 10,
     paddingHorizontal: 16,
     minHeight: 44,
