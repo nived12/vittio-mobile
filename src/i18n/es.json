@@ -794,7 +794,7 @@
     "accountsTab": "Pestaña Cuentas",
     "financesTab": "Pestaña Finanzas",
     "addTransaction": "Agregar transacción",
-    "addTransactionHint": "Toca para agregar una transacción. Mantén presionado para más opciones.",
+    "addTransactionHint": "Toca para elegir qué agregar.",
     "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancelar",

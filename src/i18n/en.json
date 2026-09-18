@@ -794,7 +794,7 @@
     "accountsTab": "Accounts tab",
     "financesTab": "Finances tab",
     "addTransaction": "Add transaction",
-    "addTransactionHint": "Tap to add a transaction. Long press for more options.",
+    "addTransactionHint": "Tap to choose what to add.",
     "assistant": "Vittbot",
     "fab": {
       "cancel": "Cancel",
