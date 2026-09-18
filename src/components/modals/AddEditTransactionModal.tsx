@@ -1264,6 +1264,7 @@ export function AddEditTransactionModal({ onClose, transaction, prefill }: Props
       </View>
 
       {/* Sub-sheets — no longer nested Modals, parent is a full screen */}
+      {/* The sheet calls onClose itself after onSelect, so this does not close it. */}
       <CategoryPickerSheet
         visible={showCategoryPicker}
         selectedId={selectedCategory?.id ?? null}
