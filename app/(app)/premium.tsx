@@ -35,13 +35,15 @@ import {
 // ── UsageRow ───────────────────────────────────────────────────────────────
 
 function UsageRow({
-  label, used, limit, trackBg, labelColor,
+  label, used, limit, trackBg, labelColor, showCount = false,
 }: {
   label: string;
   used: number;
   limit: number;
   trackBg: string;
   labelColor?: string;
+  /** Show "8 / 12" instead of a percentage, for counts small enough to matter individually. */
+  showCount?: boolean;
 }) {
   const pct      = limit > 0 ? Math.min(used / limit, 1) : 0;
   const pctRound = Math.round(pct * 100);
@@ -66,7 +68,9 @@ function UsageRow({
     <View style={styles.usageRow}>
       <View style={styles.usageHeader}>
         <Text style={[styles.usageLabel, labelColor ? { color: labelColor } : undefined]}>{label}</Text>
-        <Text style={[styles.usagePercent, { color }]}>{pctRound}%</Text>
+        <Text style={[styles.usagePercent, { color }]}>
+          {showCount ? `${used} / ${limit}` : `${pctRound}%`}
+        </Text>
       </View>
       <View style={[styles.usageTrack, { backgroundColor: trackBg }]}>
         <Animated.View style={[styles.usageFill, { width: fillWidth, backgroundColor: color }]} />
@@ -183,6 +187,21 @@ export default function PremiumScreen() {
     if (!showIapPaywall) return;
     void loadPackages();
   }, [showIapPaywall, loadPackages]);
+
+  // authStore.user is written at login and after a plan change, so its usage counts
+  // are stale the moment anything is uploaded. This screen is where they are read.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const fresh = await authApi.me();
+        if (!cancelled) setUser(fresh);
+      } catch {
+        // Keep the cached numbers; a failed refresh should not blank the screen.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [setUser]);
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return 0;
@@ -355,13 +374,17 @@ export default function PremiumScreen() {
         {isOnTrial && user && (
           <View style={[styles.usageCard, { backgroundColor: surface, borderColor: borderCol }]}>
             <Text style={[styles.usageTitle, { color: textSecondary }]}>{t('premium.usageTitle')}</Text>
-            <UsageRow
-              label={t('premium.usageStatements')}
-              used={user.statement_files_used}
-              limit={user.statement_files_limit}
-              trackBg={usageTrackBg}
-              labelColor={textPrimary}
-            />
+            {/* Null limit means uncapped, so there is no bar to draw. */}
+            {user.statement_files_limit != null && (
+              <UsageRow
+                label={t('premium.usageStatements')}
+                used={user.statement_files_used}
+                limit={user.statement_files_limit}
+                trackBg={usageTrackBg}
+                labelColor={textPrimary}
+                showCount
+              />
+            )}
             <UsageRow
               label={t('premium.usageAi')}
               used={user.ai_calls_used}
@@ -379,6 +402,14 @@ export default function PremiumScreen() {
         <Text style={[styles.heroSubtitle, { color: textSecondary }]}>
           {t('premium.heroSubtitle')}
         </Text>
+
+        {/* Names the caps premium lifts. Both numbers are env-driven server-side, so
+            they are interpolated rather than written into the copy. */}
+        {!isActive && user?.statement_files_limit != null && (
+          <Text style={[styles.limitsNote, { color: textSecondary }]}>
+            {t('premium.removesLimits', { statements: user.statement_files_limit })}
+          </Text>
+        )}
 
         {/* Feature list */}
         <View style={[styles.featureCard, { backgroundColor: surface, borderColor: borderCol }]}>
@@ -590,7 +621,7 @@ export default function PremiumScreen() {
 
         {/* Manage subscription — Stripe billing portal, so never for Apple-billed users,
             and never on iOS (an external payment link-out). */}
-        {!isIOS && !billedByApple && isActive && (
+        {!isIOS && !billedByApple && isActive && user?.billing_source != null && (
           <TouchableOpacity
             style={[styles.manageBtn, { borderColor: borderCol, backgroundColor: surface }]}
             onPress={handleManage}
@@ -636,6 +667,7 @@ const styles = StyleSheet.create({
 
   heroTitle:    { ...textStyles.headingMd, textAlign: 'center', marginBottom: spacing.sm },
   heroSubtitle: { ...textStyles.bodyLg, textAlign: 'center', marginBottom: spacing.lg },
+  limitsNote:   { ...textStyles.bodySm, textAlign: 'center', marginBottom: spacing.lg },
 
   featureCard:    { borderRadius: 16, borderWidth: 1, padding: spacing.md, marginBottom: spacing.lg },
   featureRow:     { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },

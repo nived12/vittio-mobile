@@ -23,7 +23,8 @@ export interface AuthUser {
   ai_calls_used: number;
   ai_calls_limit: number;
   statement_files_used: number;
-  statement_files_limit: number;
+  /** Null for premium users — no cap, so nothing to show. */
+  statement_files_limit: number | null;
 }
 
 interface AuthState {

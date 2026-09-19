@@ -74,3 +74,61 @@ test("empty state offers the upload as its primary action", async ({ page }) => 
     page.getByRole("button", { name: /subir estado de cuenta|upload statement/i }).first()
   ).toBeVisible();
 });
+
+test("shows how many of the allowed statements are used", async ({ page }) => {
+  // The cap is a server-side env variable; the screen must render what the API
+  // reports rather than a number compiled into the app.
+  await expect(page.getByText(/3 (de|of) 12/)).toBeVisible();
+});
+
+test("hitting the cap explains itself instead of bouncing to the paywall", async ({ page }) => {
+  await page.route("**/api/v1/statement_files", async (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    await route.fulfill({
+      status: 403,
+      contentType: "application/json",
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({
+        error: {
+          code: "SUBSCRIPTION_REQUIRED",
+          reason: "upload_limit_reached",
+          message: "Ya usaste los 12 estados de cuenta de tu prueba gratis.",
+          details: [],
+        },
+      }),
+    });
+  });
+
+  await page
+    .getByRole("button", { name: /subir estado de cuenta|upload statement/i })
+    .first()
+    .click();
+
+  // expo-document-picker on web is an <input type="file"> it creates and clicks.
+  const chooser = page.waitForEvent("filechooser");
+  await page
+    .getByText(/seleccionar archivo pdf|select pdf file/i)
+    .first()
+    .click();
+  await (await chooser).setFiles({
+    name: "estado.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 test"),
+  });
+
+  // Upload stays a no-op until an account is chosen.
+  await page.getByText(/Santander TDC/).click();
+  await page.getByText(/^(Subir estado de cuenta|Upload statement)$/).last().click();
+
+  // The old behaviour closed the modal and pushed /premium with no explanation.
+  await expect(
+    page.getByText(/llegaste al l[ií]mite de estados|statement limit reached/i)
+  ).toBeVisible({ timeout: 15_000 });
+  // The app's own copy, not the server's: the API answers in Spanish regardless of
+  // Accept-Language, so rendering its message would leak Spanish to EN users.
+  await expect(
+    page.getByText(/ya usaste todos los estados de cuenta|used every statement file/i)
+  ).toBeVisible();
+  await expect(page.getByText(/^(Ver Premium|See Premium)$/)).toBeVisible();
+  await expect(page).not.toHaveURL(/premium/);
+});

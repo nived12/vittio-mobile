@@ -99,7 +99,7 @@ const STAGE_KEYS = [
 ] as const;
 const STAGE_ROTATE_MS = 5_000;
 
-type UploadErrorKind = 'network' | 'session' | 'validation' | 'processing' | 'timeout';
+type UploadErrorKind = 'network' | 'session' | 'validation' | 'processing' | 'timeout' | 'limit';
 
 // Celebration confetti flavors — a random one fires on each import that adds
 // at least one new transaction, so repeat imports stay fresh instead of stale.
@@ -316,11 +316,27 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
     } catch (err: unknown) {
       const axiosErr = err as {
         code?: string;
-        response?: { status?: number; data?: { error?: { code?: string; details?: unknown } } };
+        response?: {
+          status?: number;
+          data?: { error?: { code?: string; reason?: string; message?: string; details?: unknown } };
+        };
       };
       const code = axiosErr?.response?.data?.error?.code;
 
+      // Same code covers "trial over" and "out of statement files"; only the reason
+      // separates them. Bouncing a user who still has trial left to the paywall with
+      // no explanation is how the cap reads as a bug.
       if (code === 'SUBSCRIPTION_REQUIRED') {
+        const reason = axiosErr?.response?.data?.error?.reason;
+        if (reason === 'upload_limit_reached') {
+          setErrorKind('limit');
+          // Not the server's message: the API ignores Accept-Language and always
+          // answers in Spanish, so an English user would get a Spanish sentence.
+          setErrorDetail(null);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          setStep('error');
+          return;
+        }
         onClose();
         router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
         return;
@@ -739,14 +755,25 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
               <Text style={styles.stepSubtitle}>
                 {errorDetail ?? t(`statement_upload.errors.${errorKind}.body`)}
               </Text>
-              {errorKind !== 'session' && (
+              {/* Retrying a limit error just fails again — the only way forward is premium. */}
+              {errorKind === 'limit' ? (
+                <TouchableOpacity
+                  style={[styles.primaryBtn, styles.primaryBtnStretch, { marginTop: 32 }]}
+                  onPress={() => {
+                    onClose();
+                    router.push('/(app)/premium' as Parameters<typeof router.push>[0]);
+                  }}
+                >
+                  <Text style={styles.primaryBtnLabel}>{t('statement_upload.errors.limit.cta')}</Text>
+                </TouchableOpacity>
+              ) : errorKind !== 'session' ? (
                 <TouchableOpacity
                   style={[styles.primaryBtn, styles.primaryBtnStretch, { marginTop: 32 }]}
                   onPress={handleRetry}
                 >
                   <Text style={styles.primaryBtnLabel}>{t('statement_upload.retry_button')}</Text>
                 </TouchableOpacity>
-              )}
+              ) : null}
               <TouchableOpacity style={styles.ghostBtn} onPress={onClose}>
                 <Text style={styles.ghostBtnLabel}>{t('statement_upload.close_button')}</Text>
               </TouchableOpacity>
