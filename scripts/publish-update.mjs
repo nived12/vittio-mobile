@@ -13,7 +13,7 @@
 // app. --environment makes EAS supply the values, which dotenv cannot override.
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,6 +46,28 @@ const remote = Object.fromEntries(
       return [line.slice(0, at), line.slice(at + 1).trim()];
     }),
 );
+
+// A key EAS does not define is not overridden by anything, so dotenv sets it from
+// .env.local and the export inlines a dev value. eas.json cannot catch that: it only
+// lists what it declares, and this is about what it does not.
+const localEnv = resolve(root, '.env.local');
+if (existsSync(localEnv)) {
+  const orphans = readFileSync(localEnv, 'utf8')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^EXPO_PUBLIC_[A-Z0-9_]+=/.test(line))
+    .map((line) => line.slice(0, line.indexOf('=')))
+    .filter((key) => !(key in remote));
+
+  if (orphans.length > 0) {
+    console.error(`.env.local defines EXPO_PUBLIC_* keys the EAS "${profile}" environment does not.`);
+    console.error('Nothing would override them, so your local values would ship:\n');
+    for (const key of orphans) console.error(`  ${key}`);
+    console.error(`\nEither remove them from .env.local, or add them with:`);
+    console.error(`  npx eas env:create ${profile} --name <NAME> --value <VALUE> --type string --visibility plaintext --force`);
+    process.exit(1);
+  }
+}
 
 // eas.json drives builds, the EAS environment drives updates. They must not drift.
 const drift = Object.keys(expected)
