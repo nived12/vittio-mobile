@@ -147,6 +147,11 @@ export default function StatementFilesScreen() {
     [data],
   );
 
+  // Server-supplied: the cap is an env variable that changes without a deploy, so
+  // a number baked into the client would quietly go stale.
+  const usage = data?.pages[0]?.meta.usage;
+  const showUsage = usage != null && usage.statement_files_limit != null;
+
   async function handleDelete(sf: StatementFile) {
     try {
       await deleteMutation.mutateAsync(sf.id);
@@ -171,7 +176,17 @@ export default function StatementFilesScreen() {
         >
           <ChevronLeft size={24} color={textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: textPrimary }]}>{t('statement_files.title')}</Text>
+        <View style={styles.titleWrap}>
+          <Text style={[styles.title, { color: textPrimary }]}>{t('statement_files.title')}</Text>
+          {showUsage && (
+            <Text style={[styles.usageLine, { color: textSecondary }]}>
+              {t('statement_files.usageCount', {
+                used: usage.statement_files_used,
+                limit: usage.statement_files_limit,
+              })}
+            </Text>
+          )}
+        </View>
         <TouchableOpacity
           style={styles.headerBtn}
           onPress={() => openStatementUpload()}
@@ -248,7 +263,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  titleWrap: { flex: 1, alignItems: 'center' },
   title: { fontSize: 17, fontWeight: '600' },
+  usageLine: { fontSize: 12, marginTop: 2 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   emptyTitle: { fontSize: 17, fontWeight: '600', marginBottom: 6, textAlign: 'center' },
   emptySubtitle: { fontSize: 14, textAlign: 'center', marginBottom: spacing.lg },

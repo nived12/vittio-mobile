@@ -91,6 +91,10 @@
       "page_size": 20,
       "next_page": null,
       "prev_page": null
+    },
+    "usage": {
+      "statement_files_used": 3,
+      "statement_files_limit": 12
     }
   }
 }

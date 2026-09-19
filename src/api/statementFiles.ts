@@ -109,6 +109,11 @@ export interface StatementFileListResponse {
       next_page: number | null;
       prev_page: number | null;
     };
+    usage: {
+      statement_files_used: number;
+      /** Null for premium users — no cap, so nothing to show. */
+      statement_files_limit: number | null;
+    };
   };
 }
 

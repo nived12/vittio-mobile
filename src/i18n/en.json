@@ -719,7 +719,8 @@
       "parsed": "Done",
       "completed": "Done",
       "error": "Failed"
-    }
+    },
+    "usageCount": "{{used}} of {{limit}} statements used"
   },
   "statement_upload": {
     "modal_title": "Upload statement",
@@ -777,6 +778,11 @@
       "timeout": {
         "title": "This is taking a while",
         "body": "We're still processing it. Check Statements in a few minutes."
+      },
+      "limit": {
+        "title": "Statement limit reached",
+        "body": "You have used all {{limit}} statements included in your free trial. Premium removes the limit.",
+        "cta": "See Premium"
       }
     },
     "file_hint": "PDF · max 10 MB",
@@ -1277,7 +1283,8 @@
     "appleManaged": "Your subscription is billed by Apple.",
     "appleManageBtn": "Manage in Apple settings",
     "storePricePerMonth": "per month",
-    "storePricePerYear": "per year"
+    "storePricePerYear": "per year",
+    "removesLimits": "Premium lifts your trial limit of {{statements}} statement files and gives you a much larger monthly allowance of AI messages."
   },
   "assistant": {
     "headerTitle": "Vittbot",

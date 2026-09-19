@@ -58,6 +58,7 @@ export async function setupApiMocks(page: Page): Promise<void> {
 
     const isApiRequest =
       pathname.endsWith("/login") ||
+      pathname.endsWith("/refresh") ||
       pathname.endsWith("/user") ||
       pathname.includes("/dashboard") ||
       pathname.endsWith("/bank_accounts") ||
@@ -86,6 +87,18 @@ export async function setupApiMocks(page: Page): Promise<void> {
 
     if (pathname.endsWith("/login")) {
       return fulfillJson(route, authLogin);
+    }
+    // Uploads refresh up front before sending the file, so without this every
+    // upload dies as a session error before its request is ever made.
+    if (pathname.endsWith("/refresh")) {
+      return fulfillJson(route, {
+        data: {
+          access_token: "e2e-access-token",
+          refresh_token: "e2e-refresh-token",
+          token_type: "Bearer",
+          expires_in: 900,
+        },
+      });
     }
     if (pathname.endsWith("/user")) {
       return fulfillJson(route, { data: authLogin.data.user });

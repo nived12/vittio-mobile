@@ -719,7 +719,8 @@
       "parsed": "Listo",
       "completed": "Listo",
       "error": "Error"
-    }
+    },
+    "usageCount": "{{used}} de {{limit}} estados usados"
   },
   "statement_upload": {
     "modal_title": "Subir estado de cuenta",
@@ -777,6 +778,11 @@
       "timeout": {
         "title": "Está tardando mucho",
         "body": "Seguimos procesándolo. Puedes revisarlo en Estados de cuenta en unos minutos."
+      },
+      "limit": {
+        "title": "Llegaste al límite de estados",
+        "body": "Ya usaste los {{limit}} estados de cuenta incluidos en tu prueba gratis. Premium quita el límite.",
+        "cta": "Ver Premium"
       }
     },
     "file_hint": "PDF · máx 10 MB",
@@ -1277,7 +1283,8 @@
     "appleManaged": "Tu suscripción se cobra a través de Apple.",
     "appleManageBtn": "Gestionar en ajustes de Apple",
     "storePricePerMonth": "al mes",
-    "storePricePerYear": "al año"
+    "storePricePerYear": "al año",
+    "removesLimits": "Premium quita el límite de {{statements}} estados de cuenta de tu prueba y te da muchos más mensajes con IA cada mes."
   },
   "assistant": {
     "headerTitle": "Vittbot",
