@@ -330,7 +330,9 @@ export function StatementUploadModal({ visible, onClose, preselectedAccount }: P
         const reason = axiosErr?.response?.data?.error?.reason;
         if (reason === 'upload_limit_reached') {
           setErrorKind('limit');
-          setErrorDetail(axiosErr.response?.data?.error?.message ?? null);
+          // Not the server's message: the API ignores Accept-Language and always
+          // answers in Spanish, so an English user would get a Spanish sentence.
+          setErrorDetail(null);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           setStep('error');
           return;

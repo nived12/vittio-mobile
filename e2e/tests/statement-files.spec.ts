@@ -124,8 +124,11 @@ test("hitting the cap explains itself instead of bouncing to the paywall", async
   await expect(
     page.getByText(/llegaste al l[ií]mite de estados|statement limit reached/i)
   ).toBeVisible({ timeout: 15_000 });
-  // The server's own message, so the user sees the real number rather than a guess.
-  await expect(page.getByText(/12 estados de cuenta/)).toBeVisible();
+  // The app's own copy, not the server's: the API answers in Spanish regardless of
+  // Accept-Language, so rendering its message would leak Spanish to EN users.
+  await expect(
+    page.getByText(/ya usaste todos los estados de cuenta|used every statement file/i)
+  ).toBeVisible();
   await expect(page.getByText(/^(Ver Premium|See Premium)$/)).toBeVisible();
   await expect(page).not.toHaveURL(/premium/);
 });

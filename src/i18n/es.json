@@ -781,7 +781,7 @@
       },
       "limit": {
         "title": "Llegaste al límite de estados",
-        "body": "Ya usaste los {{limit}} estados de cuenta incluidos en tu prueba gratis. Premium quita el límite.",
+        "body": "Ya usaste todos los estados de cuenta incluidos en tu prueba gratis. Premium quita el límite.",
         "cta": "Ver Premium"
       }
     },

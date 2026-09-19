@@ -781,7 +781,7 @@
       },
       "limit": {
         "title": "Statement limit reached",
-        "body": "You have used all {{limit}} statements included in your free trial. Premium removes the limit.",
+        "body": "You have used every statement file included in your free trial. Premium removes the limit.",
         "cta": "See Premium"
       }
     },
